@@ -11,6 +11,10 @@ SRS_shutter_open_time=0
 SRS_shutter_close_time=0
 
 def blow_away(t):
+    # Trigger scope at beginning of run
+    scope_trigger.go_high(t)
+    scope_trigger.go_low(t+.01)
+
     # AOMs are on
     blue_MOT_RF_TTL.go_low(t)
     probe_RF_TTL.go_low(t)
@@ -38,7 +42,7 @@ def initialize(t):
 
     # Turn on MOT field
     current_lock_enable.go_high(t)
-    MOT_field.ramp(t,0.04,0,BlueMOTField,100, units='A')
+    MOT_field.ramp(t,0.04,0,BlueMOTField,1000, units='A')
 
     # Turn on trim fields
     shim_X.constant(t,BlueMOTShimX, units = 'A')
@@ -113,7 +117,7 @@ def grasshopper_exposure(t,exp,name):
 def return_to_defaults(t):
     # Turn MOT field back on
     current_lock_enable.go_high(t+0.01)
-    MOT_field.ramp(t,0.09,0,BlueMOTField,100, units='A')
+    MOT_field.ramp(t,0.09,0,BlueMOTField,1000, units='A')
 
     # Open MOT shutter
     blue_MOT_shutter.go_high(t)

@@ -56,6 +56,7 @@ DigitalOut(name='gMOT_coil_TTL',            parent_device=pulseblaster_0.direct_
 DigitalOut(name='gMOT_MOS_TTL_t',           parent_device=pulseblaster_0.direct_outputs, connection = 'flag 26')
 DigitalOut(name='gMOT_MOS_TTL_b',           parent_device=pulseblaster_0.direct_outputs, connection = 'flag 27')
 DigitalOut(name='pixis_ext_shutter',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 28')
+DigitalOut(name='scope_trigger',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 25')
 
 
 
