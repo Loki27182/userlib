@@ -20,6 +20,7 @@ import logging
 import numpy as np
 from threading import Timer
 from time import time
+from datetime import datetime
 
 SERVER_IP_ADDRESS = '192.168.2.22'
 SERVER_PORT = 6750
@@ -30,16 +31,16 @@ SERVER_PORT = 6750
 # Levels of log CRITICAL ERROR WARNING INFO DEBUG NOTSET
 
 #logging.basicConfig(level = logging.DEBUG)
-log_name = 'BLACS.%s_%s.worker'%("pynqapi","pynqapi") # Jeff's debugging code
-pynqapilogger = logging.getLogger(log_name) # Jeff's debugging code
+#log_name = 'BLACS.%s_%s.worker'%("pynqapi","pynqapi") # Jeff's debugging code
+#pynqapilogger = logging.getLogger(log_name) # Jeff's debugging code
 
 def _check():
     global _pynqcom
     try:
         _pynqcom
     except NameError:
-        logging.debug("Creating _pynqcom")
-        pynqapilogger.debug('Creating _pynqcom')
+        #logging.debug("Creating _pynqcom")
+        #pynqapilogger.debug('Creating _pynqcom')
         _pynqcom = LINK(server_ip_address = SERVER_IP_ADDRESS, server_port = SERVER_PORT)
         _pynqcom.addr_range = 524288
         _pynqcom.program = [np.array(np.zeros([_pynqcom.addr_range//16,4]),dtype = np.uint32)]
@@ -52,6 +53,7 @@ def _check():
 
 # Minimum time between sending signals
 DelayTime = 0.1
+EnableDelay = False
 
 # Whether or not to tell the spincore library to write debug logfiles.
 # User can set to False before calling any spinapi functions to disable debugging.
@@ -107,15 +109,16 @@ def restart_watchdog():
 def stop_watchdog():
     _pynqcom.timer.cancel()
 
-def watchdog2():
-    pynqapilogger.debug('Watchdog2 triggered') # Jeff's debugging code
-    _pynqcom.send_string("send_status()")
-    _pynqcom.timer.start()
+#def watchdog2():
+#    pynqapilogger.debug('Watchdog2 triggered') # Jeff's debugging code
+#    _pynqcom.send_string("send_status()")
+#    _pynqcom.timer.start()
 
 def min_wait(dt):
-    while time() - _pynqcom.lastSignalTime < dt:
-        pass
-    _pynqcom.lastSignalTime = time()
+    if EnableDelay:
+        while time() - _pynqcom.lastSignalTime < dt:
+            pass
+        _pynqcom.lastSignalTime = time()
 
 
 def pb_read_status():
@@ -206,6 +209,7 @@ def pb_core_clock(clock_freq):
     buff = _pynqcom.read_all_data(8)
     #_pynqcom.frequency = np.frombuffer(buff,dtype = np.float)
     _pynqcom.frequency = np.frombuffer(buff,dtype = float)
+    #pynqapilogger.debug('Jane frequency is ' + str(_pynqcom.frequency))
     #_pynqcom.frequency = np.frombuffer(buff,dtype = np.float64)
     restart_watchdog()
 
@@ -389,7 +393,7 @@ def program_amp_regs(*amps):
     else:
         return tuple(range(len(amps)))
 
-def pb_stop_programming():
+def pb_stop_programming(trans_to_buffered=False):
     '''
     _checkloaded()
     _spinapi.pb_stop_programming.restype = ctypes.c_int
@@ -409,6 +413,52 @@ def pb_stop_programming():
     for i in _pynqcom.program:
         i.resize(_pynqcom.addr_range//4)
         _pynqcom.send_buff(memoryview(i))
+
+
+    ###########
+    ## Reading back data
+    ###########
+    ##   Receiving data size as 4 bytes to firm a 32 bit number
+    #pynqapilogger.debug('Reading data back...')
+    #data_size = np.array(0,dtype=np.uint32)
+    ##buff = _pynqcom.read_all_data(4)
+    ##np.copyto(data_size,np.frombuffer(buff,dtype=np.uint32))
+    ##pynqapilogger.debug('Size read: %d' %data_size)
+    ###Receiving program
+    ##buff = _pynqcom.read_all_data(data_size)
+    ###print("Buffer received {} bytes".format(len(buff)))
+    ###with open(r'C:\Users\jqisr\labscript-suite\userlib\pythonlib\readback.log','a') as f:
+    ###    f.write('Data read back: ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f") + ": ")
+    ###    f.write(buff.hex() + '\n')
+    ###    #f.write(str(len(buff)) + '\n')
+    ##pynqapilogger.debug('Read-back data written to file')
+#
+    #buff = _pynqcom.read_all_data(4)
+    #np.copyto(data_size,np.frombuffer(buff,dtype=np.uint32))
+    #pynqapilogger.debug('Size read: %d' %data_size)
+    ##Receiving program
+    #buff = _pynqcom.read_all_data(data_size)
+    ##print("Buffer received {} bytes".format(len(buff)))
+    #pynqapilogger.debug('Data read')
+#
+    #if trans_to_buffered:
+    #    with open(r'C:\Users\jqisr\labscript-suite\userlib\pythonlib\send.log','a') as f:
+    #        f.write('Data sent: ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f") + ": ")
+    #        s = ''
+    #        for i in _pynqcom.program:
+    #            i.resize(_pynqcom.addr_range//4)
+    #            for j in i:
+    #                #format(j, 'x')
+    #                s += j.tobytes().hex()
+    #        f.write(s.rstrip('0') + '\n')
+#
+    #    s = buff.hex()
+    #    with open(r'C:\Users\jqisr\labscript-suite\userlib\pythonlib\readback.log','a') as f:
+    #        f.write('Data read back: ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f") + ': ' + s.rstrip('0') + '\n')# + ": " + buff.hex() + "\n")
+    #        #f2.write('\n')
+    #    pynqapilogger.debug('Read data written to file')
+#
+    ###########
 
     _pynqcom.program = [np.array(np.zeros([_pynqcom.addr_range//16,4]),dtype = np.uint32)]
     _pynqcom.current_addr = 0
@@ -505,7 +555,7 @@ def create_instruction(program,n,flags,opcode,data,time):
     logging.debug("flags_hi = {:032b}".format(flags_hi))
     logging.debug("flags = {:064b}".format(flags))
 
-    clock_rate = 100.0 #MHz
+    clock_rate = 50.0 #MHz
     new_time = int(time/1e3*clock_rate) - 1 #time is in ns
 
     if (new_time <= 0):
