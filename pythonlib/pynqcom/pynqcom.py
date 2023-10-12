@@ -23,7 +23,7 @@ class LINK():
         print('connecting to server {0:} port {1:}'.format(server_ip_address,server_port))
         self.connection.connect(self.server_address)
 
-        self.DelayTime = 0.03
+        self.DelayTime = 0.04
         self.EnableDelay = True
 
         self.lastCommTime = time()

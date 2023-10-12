@@ -23,7 +23,7 @@ from labscript_utils.unitconversions import UnidirectionalCoilDriver
 #    PULSEBLASTER
 ###############################################################################
 
-PulseBlasterUSB(name='pulseblaster_0', board_number=0, time_based_stop_workaround=True, time_based_stop_workaround_extra_time=0.5)
+PulseBlasterUSB(name='pulseblaster_0', board_number=0, time_based_stop_workaround=True, time_based_stop_workaround_extra_time=.1)#,start_order=1)
 
 ClockLine(name='pulseblaster_0_ni_0_clock',				pseudoclock=pulseblaster_0.pseudoclock, connection='flag 0')
 ClockLine(name='pulseblaster_0_ni_1_clock',             pseudoclock=pulseblaster_0.pseudoclock, connection='flag 11')
@@ -64,7 +64,7 @@ DigitalOut(name='scope_trigger',          parent_device=pulseblaster_0.direct_ou
 #    NI CARD 1
 ###############################################################################
 
-NI_PCI_6733(name='ni_0', parent_device=pulseblaster_0_ni_0_clock, clock_terminal='/Dev1/PFI1', MAX_name = 'Dev1')
+NI_PCI_6733(name='ni_0', parent_device=pulseblaster_0_ni_0_clock, clock_terminal='/Dev1/PFI1', MAX_name = 'Dev1', clock_mirror_terminal='/Dev1/PFI8')
 
 AnalogOut(name='red_MOT_VCO',           parent_device=ni_0, connection='ao0',
           unit_conversion_class=AOMVCO,                     unit_conversion_parameters={'m':-22.422*10**6, 'b':60.831*10**6, 'magnitudes':['k','M']})

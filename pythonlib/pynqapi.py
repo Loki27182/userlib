@@ -555,7 +555,7 @@ def create_instruction(program,n,flags,opcode,data,time):
     logging.debug("flags_hi = {:032b}".format(flags_hi))
     logging.debug("flags = {:064b}".format(flags))
 
-    clock_rate = 50.0 #MHz
+    clock_rate = 100.0 #MHz
     new_time = int(time/1e3*clock_rate) - 1 #time is in ns
 
     if (new_time <= 0):

@@ -40,4 +40,4 @@ MOT_field.constant(t,0)
 t+=1.5*dt
 scope_trigger.go_low(t)
 
-stop(t)
+stop(t+3)
