@@ -36,10 +36,10 @@ class LINK():
             self.lastCommTime = time()
 
     def send_string(self,string):
-        logging.debug("Sending {}".format(bytes(string,'utf-8')))
+        #logging.debug("Sending {}".format(bytes(string,'utf-8')))
         buffer=bytes(string, 'utf-8')
         length_of_buffer=len(buffer)
-        logging.debug("Length is {}".format(length_of_buffer))
+        #logging.debug("Length is {}".format(length_of_buffer))
         self.min_wait()
         self.connection.sendall(np.array(length_of_buffer,dtype=np.uint8))
         #self.min_wait()

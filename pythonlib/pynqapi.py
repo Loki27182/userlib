@@ -205,13 +205,21 @@ def pb_core_clock(clock_freq):
     _check()
     stop_watchdog()
     min_wait(DelayTime) 
+    #pynqapilogger.debug('Sending clock set command')
     _pynqcom.send_string("read_clk_freq()")
+    min_wait(DelayTime) 
+    #pynqapilogger.debug('Sending clock rate')
+    data = np.array(clock_freq, dtype = np.float64)
+    _pynqcom.connection.sendall(data)
+    #pynqapilogger.debug('Reading clock rate')
     buff = _pynqcom.read_all_data(8)
-    #_pynqcom.frequency = np.frombuffer(buff,dtype = np.float)
-    _pynqcom.frequency = np.frombuffer(buff,dtype = float)
+    #pynqapilogger.debug('Clock rate read')
+    _pynqcom.frequency = np.frombuffer(buff,dtype = np.float64)
+    #pynqapilogger.debug('Saving clock rate')
     #pynqapilogger.debug('Jane frequency is ' + str(_pynqcom.frequency))
     #_pynqcom.frequency = np.frombuffer(buff,dtype = np.float64)
     restart_watchdog()
+    return _pynqcom.frequency
 
 def pb_start_programming(device):
     '''_checkloaded()
@@ -477,6 +485,7 @@ def pb_start():
     stop_watchdog()
     min_wait(DelayTime) 
     _pynqcom.send_string("toggle_start()")
+    status = _pynqcom.read_all_data(1)
 # Should be external trigger
     # _pynqcom.send_string("toggle_trigger()")
     restart_watchdog()
@@ -555,11 +564,13 @@ def create_instruction(program,n,flags,opcode,data,time):
     logging.debug("flags_hi = {:032b}".format(flags_hi))
     logging.debug("flags = {:064b}".format(flags))
 
-    clock_rate = 100.0 #MHz
+    #clock_rate = 20.0 #MHz
+    clock_rate = _pynqcom.frequency
+
     new_time = int(time/1e3*clock_rate) - 1 #time is in ns
 
     if (new_time <= 0):
-        raise RuntimeError("Time is too short.")
+        raise RuntimeError(f"Time is too short. Time = {time}, new_time = {new_time}")
 
     logging.debug("n = {}, flags = {}, opcode = {}, data = {}, time = {}".format(n, flags, opcode, data, time))
     program[n][0] = new_time
