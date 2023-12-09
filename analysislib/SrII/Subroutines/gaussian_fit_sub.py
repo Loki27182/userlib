@@ -35,10 +35,15 @@ def gaussian_fit_sub(image, zero_ref = False):
             p_opt_z, p_cov_z = curve_fit(gauss_zero_ref, z, image_z, p0=initial_guess_z[0:3], bounds=([0, -np.inf, 0], [np.inf, np.inf, np.inf]))
             p_opt_x, p_cov_x = curve_fit(gauss_zero_ref, x, image_x, p0=initial_guess_x[0:3], bounds=([0, -np.inf, 0], [np.inf, np.inf, np.inf]))
     except RuntimeError:
-        p_opt_x = (-.001, 0, 1, 0)
-        p_cov_x = np.zeros((4,4))
-        p_opt_z = (-.001, 0, 1, 0)
-        p_cov_z = np.zeros((4,4))
-        pass
+        if not zero_ref:
+            p_opt_x = (-.001, 0, 1, 0)
+            p_cov_x = np.zeros((4,4))
+            p_opt_z = (-.001, 0, 1, 0)
+            p_cov_z = np.zeros((4,4))
+        else:
+            p_opt_x = (-.001, 0, 1)
+            p_cov_x = np.zeros((3,3))
+            p_opt_z = (-.001, 0, 1)
+            p_cov_z = np.zeros((3,3))
     
     return[x, image_x, p_opt_x, p_cov_x, z, image_z, p_opt_z, p_cov_z]

@@ -9,9 +9,11 @@ Isotope = 88
 
 # single_gaussian_analysis parameters
 #SGROI = [00,1600,0,1200]
-SGROI = [0,-1,0,-1]
-SGMedFilterWidth = 5
-SGGaussFilterWidth = 1.5
+SGROI = [25,-25,25,-25]
+SGMedFilterWidth = 11
+SGGaussFilterWidth = 5
+
+dfdV = 41.63
 
 # ParameterOptimization:
 #POIndependentVar = "PixisBrightTime"

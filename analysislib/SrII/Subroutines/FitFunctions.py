@@ -6,6 +6,9 @@ import SrConstants
 def gaussian_1d(x, a=1, center=100, width=10, offset=0):
     return np.ravel(a * np.exp(-((x - center) / width) ** 2) + offset)
 
+def lorentzian(x, *p):
+    a, b, c = p
+    return a/(1+((x-b)/c)**2)
 
 def linear_y_offset(x, *p):
     m, y0 = p

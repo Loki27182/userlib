@@ -15,9 +15,6 @@ def blow_away(t):
     scope_trigger.go_high(t)
     scope_trigger.go_low(t+.01)
 
-    # Set probe frequency (repurposing an old analog line from the grating MOT)
-    gMOT_coil_current_b.constant(t,ProbeVCOVoltage)
-
     # AOMs are on
     blue_MOT_RF_TTL.go_low(t)
     probe_RF_TTL.go_high(t)
@@ -25,7 +22,9 @@ def blow_away(t):
 
     # MOT shutter is closed
     blue_MOT_shutter.go_low(t)
-    red_MOT_shutter.go_low(t)
+
+    # Red MOT shutter is open
+    red_MOT_shutter.go_high(t)
 
     # Probe and repump shutters are open to blow away atoms
     probe_shutter.go_high(t)
@@ -35,6 +34,9 @@ def blow_away(t):
     # Set Blue frequency
     blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')
 
+    # Set REd cooling beatnote frequency
+    red_BN_DDS.setfreq(t,RedCoolingBeatnote / 48, units = 'MHz')
+
     # Turn off MOT field
     current_lock_enable.go_low(t)
     MOT_field.constant(t,0, units='A')
@@ -43,7 +45,6 @@ def blow_away(t):
 def initialize(t):
     # Close probe shutter
     probe_shutter.go_low(t)
-    red_BN_DDS.setfreq(t,RedCoolingBeatnote/48, units = 'MHz')
 
     # Turn on MOT field
     current_lock_enable.go_high(t)
@@ -73,24 +74,25 @@ def load_blue_MOT(t):
 
     return BlueMOTLoadTime
 
+def compress_blue_MOT(t):
+    blue_MOT_power.ramp(t,BlueMOTCompressionTime,BlueMOTPower,BlueMOTTransferPower,1000)
+    MOT_field.ramp(t,BlueMOTCompressionTime,BlueMOTField,BlueMOTCompressionField,1000, units='A')
+
+    return BlueMOTCompressionTime
+
 ################################################################################
-#   TOF
+#   Red MOT
 ################################################################################
-def time_of_flight(t):
-    # Turn light back off
+
+def transfer_to_red_MOT(t):
     blue_MOT_RF_TTL.go_high(t)
-    
-    # Then close shutter and turn AOM back on if this is an absorption image
+    MOT_field.constant(t,RedMOTField, units='A')
+
     if Absorption:
         blue_MOT_shutter.go_low(t)
         blue_MOT_RF_TTL.go_low(t+.02)
 
-    
-
-    # Switch off MOT field
-    current_lock_enable.go_low(t)
-    
-    return TimeOfFlight
+    return 0
 
 ################################################################################
 #   Imaging
@@ -111,13 +113,13 @@ def grasshopper_exposure(t,exp,name):
         probe_RF_TTL.go_high(t+PulseDuration+.02)
 
         # Set up camera exposure
-        GrassHp_XZ.expose(t-0.0001,'absorption',name, GHExposureTime+.0002)
+        GrassHp_XZ.expose(t-0.00005,'absorption',name, GHExposureTime+.0001)
     else:
         if exp:
             blue_MOT_RF_TTL.go_low(t)
             blue_MOT_RF_TTL.go_high(t+PulseDuration)
 
-        GrassHp_XZ.expose(t-0.0001,'fluorescence',name, GHExposureTime+.0002)
+        GrassHp_XZ.expose(t-0.00005,'fluorescence',name, GHExposureTime+.0001)
 
     return GHExposureTime + 0.02
 
@@ -127,7 +129,7 @@ def grasshopper_exposure(t,exp,name):
 def return_to_defaults(t):
     # Turn MOT field back on
     current_lock_enable.go_high(t+0.01)
-    MOT_field.ramp(t,0.09,0,BlueMOTField,1000, units='A')
+    MOT_field.ramp(t,0.01,0,BlueMOTField,1000, units='A')
 
     # Open MOT shutter
     blue_MOT_shutter.go_high(t)
@@ -140,8 +142,6 @@ def return_to_defaults(t):
     # Turn 2D MOT back on
     MOT_2D_RF_TTL.go_low(t)
     blue_MOT_RF_TTL.go_low(t)
-
-    gMOT_coil_current_b.constant(t,ProbeVCOVoltage)
 
     return(.1)
 
@@ -156,10 +156,10 @@ t=0
 t+=blow_away(t)
 t+=initialize(t)
 t+=load_blue_MOT(t)
-t+=BlueMOTHoldTime
-t+=time_of_flight(t)
+t+=compress_blue_MOT(t)
+t+=transfer_to_red_MOT(t)
+t+=TimeOfFlight
 
-grasshopper_exposure(t-GHDownTime,False,'clear')
 t+=grasshopper_exposure(t,True,'atoms')
 t+=GHDownTime
 if Absorption:

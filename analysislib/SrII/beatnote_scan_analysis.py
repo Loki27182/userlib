@@ -29,9 +29,9 @@ N_cutoff = N_min + dN/2
 
 N_fit = np.delete(N,np.where(N<N_cutoff))
 f_fit = np.delete(BlueMOTBeatnote,np.where(N<N_cutoff))
-df = np.max(f_fit) - np.min(f_fit)
+df1 = np.max(f_fit) - np.min(f_fit)
 
-initial_guess = (-dN*2/df**2,np.average(f_fit[np.argmax(N_fit)]),N_max)
+initial_guess = (-dN*2/df1**2,np.average(f_fit[np.argmax(N_fit)]),N_max)
 #print(initial_guess)
 
 fitresult, fitresult_con = curve_fit(parabola, f_fit, N_fit, p0=initial_guess, 
@@ -46,4 +46,10 @@ ax.plot(BlueMOTBeatnote, N)
 ax.plot(f_fit, parabola(f_fit, *fitresult))
 ax.set_xlabel("Blue Beatnote Frequency (MHz)")
 ax.set_ylabel("Atom Number (arb)")
+ax.grid(True)
 
+datapath = df['filepath'][0].split('\\')
+
+savepath = '\\'.join(datapath[0:-1]) + '\\beatnote_scan.png'
+
+plt.savefig(savepath)

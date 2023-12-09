@@ -14,7 +14,7 @@ df = data()
 dataLength = len(df['run number'])
 
 try:
-    TimeOfFlight = np.array(df["single_gaussian_analysis", "TimeOfFlight"])
+    BlueMOTHoldTime = np.array(df["single_gaussian_analysis", "BlueMOTHoldTime"])
 except:
     print('couldn\'t create TimeOfFlight' )
 try:
@@ -22,12 +22,12 @@ try:
 except:
     print('couldn\'t create N' )
 
-idx = np.argsort(TimeOfFlight)
-TimeOfFlight = TimeOfFlight[idx]
+idx = np.argsort(BlueMOTHoldTime)
+BlueMOTHoldTime = BlueMOTHoldTime[idx]
 N = N[idx]
 
 N_fit = N/np.max(N)
-f_fit = TimeOfFlight
+f_fit = BlueMOTHoldTime
 
 
 initial_guess = (N_fit[0],.7,1,N_fit[-1])
@@ -55,7 +55,7 @@ ax = fig.add_subplot(111)
 
 ax.plot(f_fit, exp_decay(f_fit, *fitresult2) - fitresult1[3],label=r'Exponential fit: $N = N_0 e^{-t/\tau}$: $\tau = ' + "{:.2f}".format(fitresult2[1]) + r'$ s',color=colors[1])
 ax.plot(f_fit, super_exp_decay(f_fit, *fitresult1) - fitresult1[3],label=r'Super-exponential fit: $N = N_0 e^{-(t/\tau)^\alpha}$: $\tau = ' + "{:.2f}".format(fitresult1[1]) + r'$ s, $\alpha = ' + "{:.2f}".format(fitresult1[2]) + r'$',color=colors[2])
-ax.plot(TimeOfFlight, N_fit - fitresult1[3],marker='x',linestyle='None',label='Data',color=colors[0])
+ax.plot(BlueMOTHoldTime, N_fit - fitresult1[3],marker='x',linestyle='None',label='Data',color=colors[0])
 ax.set_xlabel("Time (s)",fontsize=12)
 ax.set_ylabel("Atom Number (arb)",fontsize=12)
 ax.grid(True)

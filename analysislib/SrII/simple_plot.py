@@ -57,29 +57,12 @@ try:
     ProbeVCOVoltage = ser['ProbeVCOVoltage']
 except:
     print("ProbeVCOVoltage does not exist for this run")
-try:
-    BlueMOTPower = ser['BlueMOTPower']
-except:
-    print("BlueMOTPower does not exist for this run")
-try:
-    BlueMOTShimX = ser['BlueMOTShimX']
-except:
-    print("BlueMOTShimX does not exist for this run")
-try:
-    BlueMOTShimY = ser['BlueMOTShimY']
-except:
-    print("BlueMOTShimY does not exist for this run")
-try:
-    BlueMOTShimZ = ser['BlueMOTShimZ']
-except:
-    print("BlueMOTShimZ does not exist for this run")
 
 print('Variables loaded')
 
 print('Loading images...')
 if ser['GrasshopperImagingOn'] and ('horizontal', 'absorption', 'atoms','CLASS') in ser.index:
     type = 'absorption'
-    print('Absorption')
 elif ser['GrasshopperImagingOn'] and ('horizontal', 'fluorescence', 'atoms','CLASS') in ser.index:
     type = 'fluorescence'
     
@@ -110,69 +93,55 @@ elif type=='fluorescence':
 atomNumber = np.sum(densityImage)*(pixelSize**2)/sigma0
 print('Images loaded and density calculated')
 
-print('Fitting gaussian...')
-if type=='absorption':
-    x, imageX, pOptX, pCovX, z, imageZ, pOptZ, pCovZ = gaussian_fit_sub(densityImage, zero_ref=True)
-elif type=='fluorescence':
-    x, imageX, pOptX, pCovX, z, imageZ, pOptZ, pCovZ = gaussian_fit_sub(densityImage, zero_ref=False)
-
-print('Fit complete')
-
-widthX =pOptX[2]*pixelSize
-widthZ =pOptZ[2]*pixelSize
-BeamRadius=((widthX/2)**2 + (widthZ/2)**2)**0.5 * 1000000
-
 print('Plotting...')
 fig = plt.figure()
 
-ax_image = fig.add_subplot(221)
+ax_image = fig.add_subplot(111)
 #ax_empty = fig.add_subplot(222)
-ax_x = fig.add_subplot(223)
-ax_z = fig.add_subplot(224)
+#ax_x = fig.add_subplot(223)
+#ax_z = fig.add_subplot(224)
 
 c_min = 0
 c_max = np.max(densityImage)
-imagePlot = ax_image.imshow(densityImage, vmin=c_min, vmax=c_max)
+x = np.array(range(densityImage.shape[1]))*pixelSize*1e3
+x -= np.median(x)
+y = np.array(range(densityImage.shape[1]))*pixelSize*1e3
+y -= np.median(y)
+imagePlot = ax_image.imshow(densityImage, vmin=c_min, vmax=c_max,extent=[np.min(x),np.max(x),np.min(y),np.max(y)])
 fig.colorbar(imagePlot, ax=ax_image)
 #if type=='absorption':
-ax_image.title.set_text("N = " + '{:.2e}'.format(atomNumber) +', Beam Radius =' + '{:.2f}'.format(BeamRadius)+ "um")#, fontdict = {'fontsize':22})
-#ax_image.set_title('             {:.2e}'.format(atomNumber), fontdict = {'fontsize':110})
+ax_image.title.set_text("N = " + '{:.2e}'.format(atomNumber))
+ax_image.set_xlabel('X (mm)')
+ax_image.set_ylabel('Z (mm)')
 
-ax_x.plot(x, imageX)
-ax_x.grid(True)
-if type=='absorption':
-    #print(len(pOptX))
-    ax_x.plot(x, gauss_zero_ref(x, *pOptX))
-elif type=='fluorescence':
-    ax_x.plot(x, gauss(x, *pOptX))
-ax_x.set_xlim(0,np.max(x))
-#ax_x.title.set_text("gaussian in x")
-
-ax_z.plot(z, imageZ)
-if type=='absorption':
-    ax_z.plot(z, gauss_zero_ref(z, *pOptZ))
-elif type=='fluorescence':
-    ax_z.plot(z, gauss(z, *pOptZ))
-ax_z.grid(True)
-ax_z.set_xlim(0,np.max(z))
+#ax_x.plot(x, imageX)
+#ax_x.grid(True)
+#if type=='absorption':
+#    #print(len(pOptX))
+#    ax_x.plot(x, gauss_zero_ref(x, *pOptX))
+#elif type=='fluorescence':
+#    ax_x.plot(x, gauss(x, *pOptX))
+#ax_x.set_xlim(0,np.max(x))
+##ax_x.title.set_text("gaussian in x")
+#
+#ax_z.plot(z, imageZ)
+#if type=='absorption':
+#    ax_z.plot(z, gauss_zero_ref(z, *pOptZ))
+#elif type=='fluorescence':
+#    ax_z.plot(z, gauss(z, *pOptZ))
+#ax_z.grid(True)
+#ax_z.set_xlim(0,np.max(z))
 
 datapath = path.split('\\')
 
 print('Saving plot...')
-if type=='absorption':
-    #print('\\'.join(datapath[0:-1]) + '\\absorption_image.png')
-    savepath = '\\'.join(datapath[0:-1]) + '\\absorption_image.png'
-    plt.savefig(savepath)
-elif type=='fluorescence':
-    savepath = '\\'.join(datapath[0:-1]) + '\\fluorescence_image.png'
-    plt.savefig(savepath)
+savepath = '\\'.join(datapath[0:-1]) + '\\MOT_image.png'
+plt.savefig(savepath)
 
 print('Plot saved')
 #ax_z.title.set_text("gaussian in z")
 
 #fig.tight_layout()
-
-
 
 #run.save_result_array("densityImage", densityImage)
 #if type=='absorption':
@@ -204,14 +173,6 @@ if "BlueMOTField" in locals():
     run.save_result("BlueMOTField", BlueMOTField)
 if "BlueMOTHoldTime" in locals():
     run.save_result("BlueMOTHoldTime", BlueMOTHoldTime)
-if "BlueMOTPower" in locals():
-    run.save_result("BlueMOTPower", BlueMOTPower)
-if "BlueMOTShimX" in locals():
-    run.save_result("BlueMOTShimX", BlueMOTShimX)
-if "BlueMOTShimY" in locals():
-    run.save_result("BlueMOTShimY", BlueMOTShimY)
-if "BlueMOTShimZ" in locals():
-    run.save_result("BlueMOTShimZ", BlueMOTShimZ)
     
 print('Data saved')
 print('Complete')

@@ -148,9 +148,9 @@ DDSAD9954(name='blue_broken_DDS',   parent_device=blue_BN_arduino, connection='c
 #    Red BN ARDUINO
 ################################################################################
 
-#Arduino_Single_DDS(name='red_BN_arduino', parent_device=pulseblaster_0_red_BN_arduino_clock, com_port='com34', baud_rate=115200, synchronous_first_line_repeat=True)
+Arduino_Single_DDS(name='red_BN_arduino', parent_device=pulseblaster_0_red_BN_arduino_clock, com_port='com7', baud_rate=115200, synchronous_first_line_repeat=True)
 
-#DDSAD9954(name='red_BN_DDS',       parent_device=red_BN_arduino, connection='channel 0')
+DDSAD9954(name='red_BN_DDS',       parent_device=red_BN_arduino, connection='channel 0')
 
 ################################################################################
 #    RED AOM ARDUINO
@@ -245,33 +245,41 @@ IMAQdxCamera(
 
 
 Grasshopper_manual_camera_attributes = {
+    'CameraAttributes::ImageFormatControl::OnBoardColorProcessEnabled': 0,
     'CameraAttributes::AnalogControl::GainAuto': 'Off',
-	'CameraAttributes::AnalogControl::Gain': 12,
-	'CameraAttributes::AnalogControl::BlackLevelEnabled': 0,
+	'CameraAttributes::AnalogControl::Gain': 0,
+	'CameraAttributes::AnalogControl::BlackLevelEnabled': 1,
+	'CameraAttributes::AnalogControl::BlackLevel': 0.4432,
 	'CameraAttributes::AnalogControl::GammaEnabled': 0,
-	'CameraAttributes::AnalogControl::SharpnessEnabled': 0,
     'CameraAttributes::AcquisitionControl::TriggerSelector': 'Frame Start',
     'CameraAttributes::AcquisitionControl::TriggerMode': 'Off',
     'CameraAttributes::AcquisitionControl::TriggerSource': 'Line 0',
     'CameraAttributes::AcquisitionControl::TriggerActivation': 'Falling Edge',
     'CameraAttributes::AcquisitionControl::ExposureMode': 'Timed',
     'CameraAttributes::AcquisitionControl::ExposureAuto': 'Off',
-	'CameraAttributes::AcquisitionControl::ExposureTime': 100.0
+	'CameraAttributes::AcquisitionControl::ExposureTime': 200.0,
+    'CameraAttributes::AcquisitionControl::pgrExposureCompensationAuto': 'Off',
+    'CameraAttributes::AcquisitionControl::pgrExposureCompensation': 0,
+    'CameraAttributes::ImageFormatControl::VideoMode': 7
 }
 
 Grasshopper_sequence_camera_attributes = {
+    'CameraAttributes::ImageFormatControl::OnBoardColorProcessEnabled': 0,
     'CameraAttributes::AnalogControl::GainAuto': 'Off',
-	'CameraAttributes::AnalogControl::Gain': 12,
-	'CameraAttributes::AnalogControl::BlackLevelEnabled': 0,
+	'CameraAttributes::AnalogControl::Gain': 0,
+	'CameraAttributes::AnalogControl::BlackLevelEnabled': 1,
+	'CameraAttributes::AnalogControl::BlackLevel': 0.4432,
 	'CameraAttributes::AnalogControl::GammaEnabled': 0,
-	'CameraAttributes::AnalogControl::SharpnessEnabled': 0,
-	'CameraAttributes::AcquisitionControl::ExposureTime': 100.0,
+	'CameraAttributes::AcquisitionControl::ExposureTime': 200.0,
     'CameraAttributes::AcquisitionControl::ExposureAuto': 'Off',
+    'CameraAttributes::AcquisitionControl::pgrExposureCompensation': 0,
+    'CameraAttributes::AcquisitionControl::pgrExposureCompensationAuto': 'Off',
     'CameraAttributes::AcquisitionControl::TriggerSelector': 'Exposure Active',
     'CameraAttributes::AcquisitionControl::TriggerMode': 'On',
     'CameraAttributes::AcquisitionControl::TriggerSource': 'Line 0',
     'CameraAttributes::AcquisitionControl::TriggerActivation': 'Falling Edge',
-    'CameraAttributes::AcquisitionControl::ExposureMode': 'Trigger Width'
+    'CameraAttributes::AcquisitionControl::ExposureMode': 'Trigger Width',
+    'CameraAttributes::ImageFormatControl::VideoMode': 7
 }
 
 # FleaCameraUSB_camera_attributes = {

@@ -15,9 +15,6 @@ def blow_away(t):
     scope_trigger.go_high(t)
     scope_trigger.go_low(t+.01)
 
-    # Set probe frequency (repurposing an old analog line from the grating MOT)
-    gMOT_coil_current_b.constant(t,ProbeVCOVoltage)
-
     # AOMs are on
     blue_MOT_RF_TTL.go_low(t)
     probe_RF_TTL.go_high(t)
@@ -25,7 +22,6 @@ def blow_away(t):
 
     # MOT shutter is closed
     blue_MOT_shutter.go_low(t)
-    red_MOT_shutter.go_low(t)
 
     # Probe and repump shutters are open to blow away atoms
     probe_shutter.go_high(t)
@@ -43,13 +39,11 @@ def blow_away(t):
 def initialize(t):
     # Close probe shutter
     probe_shutter.go_low(t)
-    red_BN_DDS.setfreq(t,RedCoolingBeatnote/48, units = 'MHz')
 
     # Turn on MOT field
     current_lock_enable.go_high(t)
     MOT_field.ramp(t,0.04,0,BlueMOTField,1000, units='A')
     #blue_MOT_power.constant(t,ProbeDetuningVoltage)
-    blue_MOT_power.constant(t,BlueMOTPower)
 
     # Turn on trim fields
     shim_X.constant(t,BlueMOTShimX, units = 'A')
@@ -76,21 +70,30 @@ def load_blue_MOT(t):
 ################################################################################
 #   TOF
 ################################################################################
-def time_of_flight(t):
+def pump_to_dark(t):
+    MOT_field.ramp(t,pumpToDarkTime,BlueMOTField,ShelvingField,1000, units='A')
+    # Turn 707nm repump light off to optically pump atoms to the magnetic shelving state
+    repump_707_shutter.go_low(t)
+    return pumpToDarkTime
+
+def hold(t):
     # Turn light back off
     blue_MOT_RF_TTL.go_high(t)
-    
     # Then close shutter and turn AOM back on if this is an absorption image
     if Absorption:
         blue_MOT_shutter.go_low(t)
         blue_MOT_RF_TTL.go_low(t+.02)
+    return holdTime
 
-    
-
+def drop_trap(t):
     # Switch off MOT field
     current_lock_enable.go_low(t)
-    
-    return TimeOfFlight
+    return 0
+
+def pump_to_bright(t):
+    # Turn 707nm repump light off to optically pump atoms to the magnetic shelving state
+    repump_707_shutter.go_high(t)
+    return pumpToBrightTime
 
 ################################################################################
 #   Imaging
@@ -111,13 +114,13 @@ def grasshopper_exposure(t,exp,name):
         probe_RF_TTL.go_high(t+PulseDuration+.02)
 
         # Set up camera exposure
-        GrassHp_XZ.expose(t-0.0001,'absorption',name, GHExposureTime+.0002)
+        GrassHp_XZ.expose(t-0.00005,'absorption',name, GHExposureTime+.0001)
     else:
         if exp:
             blue_MOT_RF_TTL.go_low(t)
             blue_MOT_RF_TTL.go_high(t+PulseDuration)
 
-        GrassHp_XZ.expose(t-0.0001,'fluorescence',name, GHExposureTime+.0002)
+        GrassHp_XZ.expose(t-0.00005,'fluorescence',name, GHExposureTime+.0001)
 
     return GHExposureTime + 0.02
 
@@ -141,8 +144,6 @@ def return_to_defaults(t):
     MOT_2D_RF_TTL.go_low(t)
     blue_MOT_RF_TTL.go_low(t)
 
-    gMOT_coil_current_b.constant(t,ProbeVCOVoltage)
-
     return(.1)
 
 ################################################################################
@@ -156,10 +157,13 @@ t=0
 t+=blow_away(t)
 t+=initialize(t)
 t+=load_blue_MOT(t)
-t+=BlueMOTHoldTime
-t+=time_of_flight(t)
+t+=pump_to_dark(t)
+t+=hold(t)
+t+=drop_trap(t)
+t+=pump_to_bright(t)
 
-grasshopper_exposure(t-GHDownTime,False,'clear')
+t+=TimeOfFlight
+
 t+=grasshopper_exposure(t,True,'atoms')
 t+=GHDownTime
 if Absorption:
