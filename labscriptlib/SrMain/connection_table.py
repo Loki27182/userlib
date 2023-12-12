@@ -15,6 +15,8 @@ from labscript_devices.LightCrafterDMD import LightCrafterDMD, ImageSet
 from labscript_utils.unitconversions.AOM_VCO import AOMVCO
 from labscript_utils.unitconversions import UnidirectionalCoilDriver
 
+from labscriptlib.SrMain.Subroutines.ConnectionTableSubs import black_level
+
 ###############################################################################
 #    CONNECTION TABLE
 ###############################################################################
@@ -243,43 +245,58 @@ IMAQdxCamera(
    manual_mode_camera_attributes=FleaCameraUSB_manual_camera_attributes
 )"""
 
+#################################################################################################################
+# Change these values to set up the grasshopper camera
+camera_mode = 7                     # Camera mode, must be 0 or 7. Mode 0 is higher noise, but lower frame rate.
+camera_manual_exposure = 50.0       # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
+camera_sequence_exposure = 200.0    # Camera exposure time in us for sequences from runmanager (40us to 30s, but timeout needs to be increased from 5s for long exposures)
+camera_gain = 0                     # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
+camera_acceptable_zeros = 100       # The black level is calculated such that you will on average
+                                    # have camera_acceptable_zeros zero counts on the low end of the distribution.
+                                    # This should be small, as any pixel that would be less than zero 
+                                    # will be clipped to 0, which we don't want for actual data
+# You shouldn't need to change anything below here for camera settings
+#################################################################################################################
+
+# Calculating correct black level for given settings
+camera_black_level = black_level(camera_gain,camera_mode,camera_acceptable_zeros)
 
 Grasshopper_manual_camera_attributes = {
     'CameraAttributes::ImageFormatControl::OnBoardColorProcessEnabled': 0,
     'CameraAttributes::AnalogControl::GainAuto': 'Off',
-	'CameraAttributes::AnalogControl::Gain': 0,
-	'CameraAttributes::AnalogControl::BlackLevelEnabled': 1,
-	'CameraAttributes::AnalogControl::BlackLevel': 0.4432,
+	'CameraAttributes::AnalogControl::Gain': camera_gain,
+	'CameraAttributes::AnalogControl::BlackLevel': camera_black_level,
 	'CameraAttributes::AnalogControl::GammaEnabled': 0,
-    'CameraAttributes::AcquisitionControl::TriggerSelector': 'Frame Start',
     'CameraAttributes::AcquisitionControl::TriggerMode': 'Off',
+    'CameraAttributes::AcquisitionControl::AcquisitionFrameRateEnabled': 0,
+    'CameraAttributes::AcquisitionControl::TriggerSelector': 'Frame Start',
     'CameraAttributes::AcquisitionControl::TriggerSource': 'Line 0',
     'CameraAttributes::AcquisitionControl::TriggerActivation': 'Falling Edge',
     'CameraAttributes::AcquisitionControl::ExposureMode': 'Timed',
     'CameraAttributes::AcquisitionControl::ExposureAuto': 'Off',
-	'CameraAttributes::AcquisitionControl::ExposureTime': 200.0,
+	'CameraAttributes::AcquisitionControl::ExposureTime': camera_manual_exposure,
     'CameraAttributes::AcquisitionControl::pgrExposureCompensationAuto': 'Off',
     'CameraAttributes::AcquisitionControl::pgrExposureCompensation': 0,
-    'CameraAttributes::ImageFormatControl::VideoMode': 7
+    'CameraAttributes::ImageFormatControl::VideoMode': camera_mode
 }
 
 Grasshopper_sequence_camera_attributes = {
     'CameraAttributes::ImageFormatControl::OnBoardColorProcessEnabled': 0,
     'CameraAttributes::AnalogControl::GainAuto': 'Off',
-	'CameraAttributes::AnalogControl::Gain': 0,
-	'CameraAttributes::AnalogControl::BlackLevelEnabled': 1,
-	'CameraAttributes::AnalogControl::BlackLevel': 0.4432,
+	'CameraAttributes::AnalogControl::Gain': camera_gain,
+	'CameraAttributes::AnalogControl::BlackLevel': camera_black_level,
 	'CameraAttributes::AnalogControl::GammaEnabled': 0,
-	'CameraAttributes::AcquisitionControl::ExposureTime': 200.0,
+	'CameraAttributes::AcquisitionControl::ExposureTime': camera_sequence_exposure,
     'CameraAttributes::AcquisitionControl::ExposureAuto': 'Off',
     'CameraAttributes::AcquisitionControl::pgrExposureCompensation': 0,
     'CameraAttributes::AcquisitionControl::pgrExposureCompensationAuto': 'Off',
+    'CameraAttributes::AcquisitionControl::AcquisitionFrameRateEnabled': 0,
     'CameraAttributes::AcquisitionControl::TriggerSelector': 'Exposure Active',
     'CameraAttributes::AcquisitionControl::TriggerMode': 'On',
     'CameraAttributes::AcquisitionControl::TriggerSource': 'Line 0',
     'CameraAttributes::AcquisitionControl::TriggerActivation': 'Falling Edge',
     'CameraAttributes::AcquisitionControl::ExposureMode': 'Trigger Width',
-    'CameraAttributes::ImageFormatControl::VideoMode': 7
+    'CameraAttributes::ImageFormatControl::VideoMode': camera_mode
 }
 
 # FleaCameraUSB_camera_attributes = {

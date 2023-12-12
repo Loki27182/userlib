@@ -159,7 +159,7 @@ t+=load_blue_MOT(t)
 t+=BlueMOTHoldTime
 t+=time_of_flight(t)
 
-grasshopper_exposure(t-GHDownTime,False,'clear')
+#grasshopper_exposure(t-GHDownTime,False,'clear')
 t+=grasshopper_exposure(t,True,'atoms')
 t+=GHDownTime
 if Absorption:
