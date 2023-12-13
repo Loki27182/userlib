@@ -158,16 +158,16 @@ ax_z.set_xlim(0,np.max(z))
 
 datapath = path.split('\\')
 
-print('Saving plot...')
-if type=='absorption':
-    #print('\\'.join(datapath[0:-1]) + '\\absorption_image.png')
-    savepath = '\\'.join(datapath[0:-1]) + '\\absorption_image.png'
-    plt.savefig(savepath)
-elif type=='fluorescence':
-    savepath = '\\'.join(datapath[0:-1]) + '\\fluorescence_image.png'
-    plt.savefig(savepath)
-
-print('Plot saved')
+#print('Saving plot...')
+#if type=='absorption':
+#    #print('\\'.join(datapath[0:-1]) + '\\absorption_image.png')
+#    savepath = '\\'.join(datapath[0:-1]) + '\\absorption_image.png'
+#    plt.savefig(savepath)
+#elif type=='fluorescence':
+#    savepath = '\\'.join(datapath[0:-1]) + '\\fluorescence_image.png'
+#    plt.savefig(savepath)
+#
+#print('Plot saved')
 #ax_z.title.set_text("gaussian in z")
 
 #fig.tight_layout()
