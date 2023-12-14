@@ -24,6 +24,10 @@ try:
 except:
     print('couldn\'t create N' )
 
+idx = np.argsort(ProbeDetuningVoltage)
+ProbeDetuningVoltage = ProbeDetuningVoltage[idx]
+N = N[idx]
+
 p_opt, p_cov = curve_fit(lorentzian, ProbeDetuningVoltage, N, p0=(np.max(N),np.mean(ProbeDetuningVoltage),.2), bounds=([0,np.min(ProbeDetuningVoltage),0], [np.inf, np.max(ProbeDetuningVoltage), np.inf]))
 center = p_opt[1]
 #

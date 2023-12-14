@@ -23,6 +23,9 @@ try:
 except:
     print('couldn\'t create N' )
 
+idx = np.argsort(BlueMOTField)
+BlueMOTField = BlueMOTField[idx]
+N = N[idx]
 #N_min = np.min(N)
 #N_max = np.max(N)
 #dN = N_max - N_min

@@ -15,6 +15,10 @@ from Subroutines.FitFunctions import gauss, gauss_zero_ref
 ser = data(path)
 run = Run(path)
 
+m = path.split('\\')
+m = m[-1].split('_')
+rep_number = m[-1][0:-3]
+
 camera = AnalysisSettings.Camera
 sigma0 = SrConstants.sigma0
 mass = SrConstants.mass
@@ -73,6 +77,14 @@ try:
     BlueMOTShimZ = ser['BlueMOTShimZ']
 except:
     print("BlueMOTShimZ does not exist for this run")
+try:
+    SaveImage = ser['SaveImage']
+except:
+    print("SaveImage does not exist for this run")
+try:
+    RedCoolingBeatnote = ser['RedCoolingBeatnote']
+except:
+    print("RedCoolingBeatnote does not exist for this run")
 
 print('Variables loaded')
 
@@ -122,11 +134,12 @@ widthX =pOptX[2]*pixelSize
 widthZ =pOptZ[2]*pixelSize
 BeamRadius=((widthX/2)**2 + (widthZ/2)**2)**0.5 * 1000000
 
+
 print('Plotting...')
+
 fig = plt.figure()
 
 ax_image = fig.add_subplot(221)
-#ax_empty = fig.add_subplot(222)
 ax_x = fig.add_subplot(223)
 ax_z = fig.add_subplot(224)
 
@@ -134,19 +147,15 @@ c_min = 0
 c_max = np.max(densityImage)
 imagePlot = ax_image.imshow(densityImage, vmin=c_min, vmax=c_max)
 fig.colorbar(imagePlot, ax=ax_image)
-#if type=='absorption':
-ax_image.title.set_text("N = " + '{:.2e}'.format(atomNumber) +', Beam Radius =' + '{:.2f}'.format(BeamRadius)+ "um")#, fontdict = {'fontsize':22})
-#ax_image.set_title('             {:.2e}'.format(atomNumber), fontdict = {'fontsize':110})
+ax_image.title.set_text('N = ' + '{:.2e}'.format(atomNumber))
 
 ax_x.plot(x, imageX)
 ax_x.grid(True)
 if type=='absorption':
-    #print(len(pOptX))
     ax_x.plot(x, gauss_zero_ref(x, *pOptX))
 elif type=='fluorescence':
     ax_x.plot(x, gauss(x, *pOptX))
 ax_x.set_xlim(0,np.max(x))
-#ax_x.title.set_text("gaussian in x")
 
 ax_z.plot(z, imageZ)
 if type=='absorption':
@@ -156,35 +165,37 @@ elif type=='fluorescence':
 ax_z.grid(True)
 ax_z.set_xlim(0,np.max(z))
 
-datapath = path.split('\\')
-
-#print('Saving plot...')
-#if type=='absorption':
-#    #print('\\'.join(datapath[0:-1]) + '\\absorption_image.png')
-#    savepath = '\\'.join(datapath[0:-1]) + '\\absorption_image.png'
-#    plt.savefig(savepath)
-#elif type=='fluorescence':
-#    savepath = '\\'.join(datapath[0:-1]) + '\\fluorescence_image.png'
-#    plt.savefig(savepath)
-#
-#print('Plot saved')
-#ax_z.title.set_text("gaussian in z")
-
-#fig.tight_layout()
+print('Done Plotting')
 
 
+if SaveImage:
+    print('Plotting figure to save...')
 
-#run.save_result_array("densityImage", densityImage)
-#if type=='absorption':
-#    run.save_result_array("atomImage", atomImage)
-#    run.save_result_array("refImage", refImage)
+    fig_save = plt.figure()
+    ax_image_save = fig_save.add_subplot(111)
+    c_min = 0
+    c_max = np.max(densityImage)
+    imagePlot_save = ax_image_save.imshow(densityImage, vmin=c_min, vmax=c_max)
+    fig_save.colorbar(imagePlot_save, ax=ax_image_save)
+    if "RedCoolingBeatnote" in locals():
+        ax_image_save.title.set_text("Red Beatnote Frequency = " + '{:.3f}'.format(RedCoolingBeatnote))
 
-#run.save_result("x", x)
-#run.save_result("imageX", imageX)
-#run.save_result("z", z)
-#run.save_result("imageZ", imageZ)
+    print('Done plotting figure to save')
+
+
+    print('Saving plot...')
+
+    datapath = path.split('\\')
+    #for part in datapath:
+    #    print(part)
+    savepath = '\\'.join(datapath[0:-1]) + '\\' + rep_number + '_density.png'
+    plt.savefig(savepath)
+
+    print('Plot saved')
+
 
 print('Saving data...')
+
 run.save_result("atomNumber", atomNumber)
 if "pOptX" in locals():
     run.save_result("sigma_x", pOptX[2]*pixelSize)
@@ -212,6 +223,9 @@ if "BlueMOTShimY" in locals():
     run.save_result("BlueMOTShimY", BlueMOTShimY)
 if "BlueMOTShimZ" in locals():
     run.save_result("BlueMOTShimZ", BlueMOTShimZ)
+if "RedCoolingBeatnote" in locals():
+    run.save_result("RedCoolingBeatnote", RedCoolingBeatnote)
     
 print('Data saved')
+
 print('Complete')

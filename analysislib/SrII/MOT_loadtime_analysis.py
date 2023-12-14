@@ -22,6 +22,9 @@ try:
 except:
     print('couldn\'t create N' )
 
+idx = np.argsort(BlueMOTLoadTime)
+BlueMOTLoadTime = BlueMOTLoadTime[idx]
+N = N[idx]
 #N_min = np.min(N)
 #N_max = np.max(N)
 #dN = N_max - N_min

@@ -70,7 +70,7 @@ x = bins_act[0:-1]+(bins_act[1]-bins_act[0])/2
 y = counts_act
 
 n0 = 10
-n_ignore = 100
+n_ignore = 200
 kernel_size = 50
 counts_act_extended = np.concatenate((np.ones(kernel_size)*counts_act[0],counts_act[0:-n_ignore],np.ones(kernel_size)*np.mean(counts_act[-n_ignore-kernel_size:-n_ignore])))
 kernel = np.ones(kernel_size) / kernel_size
