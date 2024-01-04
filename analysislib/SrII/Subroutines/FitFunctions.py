@@ -10,6 +10,10 @@ def lorentzian(x, *p):
     a, b, c = p
     return a/(1+((x-b)/c)**2)
 
+def lorentzian_with_offset(x, *p):
+    a, b, c, d = p
+    return a/(1+((x-b)/c)**2) + d
+
 def linear_y_offset(x, *p):
     m, y0 = p
     return m*x + y0
@@ -49,9 +53,17 @@ def exp_decay(x, *p):
     a, t, y0 = p
     return a*np.exp(-x/t)+y0
 
+def exp_decay_no_offset(x, *p):
+    a, t = p
+    return a*np.exp(-x/t)
+
 def super_exp_decay(x, *p):
-    a, t, n, y0 = p
+    a, t, y0, n = p
     return a*np.exp(-(x/t)**n)+y0
+
+def super_exp_decay_no_offset(x, *p):
+    a, t, n = p
+    return a*np.exp(-(x/t)**np.abs(n))
 
 def temp_fit(x, *p):
     w0, temp = p

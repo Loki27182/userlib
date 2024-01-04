@@ -69,12 +69,11 @@ def initialize(t):
 #   Blue MOT load
 ################################################################################
 def load_blue_MOT(t):
-    # Open MOT shutters with light off (only open red if this is a red MOT shot)
+    # Open MOT shutters with light off
     blue_MOT_RF_TTL.go_high(t-.02)
-    blue_MOT_shutter.go_high(t-.02)
-    if RedMOTOn:
-        red_MOT_RF_TTL.go_low(t-.02)
-        red_MOT_shutter.go_high(t-.02)
+    blue_MOT_shutter.go_high(t-.02) 
+    red_MOT_RF_TTL.go_low(t-.02)
+    red_MOT_shutter.go_high(t-.02)
 
     blue_MOT_RF_TTL.go_low(t)
     red_MOT_RF_TTL.go_high(t)
@@ -85,48 +84,43 @@ def load_blue_MOT(t):
     return BlueMOTLoadTime
 
 ################################################################################
-#   Ramp field down so we can hopefully see something
+#   Transfer
 ################################################################################
-def ramp_field(t):
-    # Trigger scope acquisition
-    scope_trigger.go_high(t)
-    scope_trigger.go_low(t + TransferTime)
+def ramp_down_blue(t):
+    blue_MOT_power.ramp(t,TransferTime,BlueMOTPower,BlueMOTTransferPower,100000)
+    MOT_field.ramp(t,TransferTime,BlueMOTField,BlueMOTCompressionField,100000,units='A')
+    blue_MOT_RF_TTL.go_high(t+TransferTime)
 
-    MOT_field.ramp(t,TransferTime,BlueMOTField,RedMOTField,100000, units='A')
-    
-    return TransferTime + HoldTime
+    return TransferTime
+
+def set_field(t):
+    blue_MOT_power.constant(t+.001,BlueMOTPower)
+    MOT_field.constant(t+.0002,RedMOTField,units='A')
+
+    return FieldExtinctionTime+.0002
 
 ################################################################################
 #   Imaging
 ################################################################################
 def grasshopper_exposure(t,name):
-    GrassHp_XZ.expose(t,'fluorescence',name, GHExposureTime)
+    GrassHp_XZ.expose(t-.0001,'fluorescence',name, GHExposureTime)
+    blue_MOT_RF_TTL.go_low(t)
+    blue_MOT_RF_TTL.go_high(t+PulseDuration)
 
     return GHExposureTime
+
 
 ################################################################################
 #   Get rid of atoms for reference shot
 ################################################################################
 def reference_setup(t):
-    # AOMs are on
-    blue_MOT_RF_TTL.go_low(t)
-    red_MOT_RF_TTL.go_high(t)
-    probe_RF_TTL.go_high(t)
-    MOT_2D_RF_TTL.go_low(t)
-
-    # Probe and repump shutters are closed to make sure we don't have atoms
-    probe_shutter.go_low(t)
-    repump_707_shutter.go_low(t)
-    repump_679_shutter.go_low(t)
-
-    if RedMOTOn:
-        red_MOT_shutter.go_high(t)
-    else:
-        red_MOT_shutter.go_low(t)
+    red_MOT_RF_TTL.go_low(t)
+    red_MOT_RF_TTL.go_high(t+GHDownTime)
 
     # Turn off MOT field to make sure we don't have atoms
     current_lock_enable.go_low(t)
     MOT_field.constant(t,0, units='A')
+    
 
     return(GHDownTime)
 
@@ -136,7 +130,7 @@ def reference_setup(t):
 def return_to_defaults(t):
     # Turn MOT field back on
     current_lock_enable.go_high(t+0.01)
-    MOT_field.ramp(t,0.09,0,BlueMOTField,1000, units='A')
+    MOT_field.ramp(t,0.09,0,BlueMOTField,10000, units='A')
 
     # Open MOT shutters
     blue_MOT_shutter.go_high(t)
@@ -166,7 +160,9 @@ t=0
 t+=blow_away(t)
 t+=initialize(t)
 t+=load_blue_MOT(t)
-t+=ramp_field(t)
+t+=ramp_down_blue(t)
+t+=set_field(t)
+t+=DelayBeforeImaging
 t+=grasshopper_exposure(t,'atoms')
 t+=reference_setup(t)
 t+=grasshopper_exposure(t,'background')

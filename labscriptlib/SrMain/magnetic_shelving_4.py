@@ -10,24 +10,20 @@ import_or_reload('labscriptlib.SrMain.connection_table')
 SRS_shutter_open_time=0
 SRS_shutter_close_time=0
 
-
-################################################################################
-#   Get rid of any old atoms
-################################################################################
 def blow_away(t):
-    # Start scope trigger low
-    scope_trigger.go_low(t)
+    # Trigger scope at beginning of run
+    scope_trigger.go_high(t)
+    scope_trigger.go_low(t+.01)
 
     # Set probe frequency (repurposing an old analog line from the grating MOT)
     gMOT_coil_current_b.constant(t,ProbeVCOVoltage)
 
     # AOMs are on
     blue_MOT_RF_TTL.go_low(t)
-    red_MOT_RF_TTL.go_high(t)
     probe_RF_TTL.go_high(t)
     MOT_2D_RF_TTL.go_low(t)
 
-    # MOT shutters are closed
+    # MOT shutter is closed
     blue_MOT_shutter.go_low(t)
     red_MOT_shutter.go_low(t)
 
@@ -36,28 +32,26 @@ def blow_away(t):
     repump_707_shutter.go_high(t)
     repump_679_shutter.go_high(t)
 
-    # Set beatnote frequencies
+    # Set Blue frequency
     blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')
-    red_BN_DDS.setfreq(t,RedCoolingBeatnote/48, units = 'MHz')
+    red_BN_DDS.setfreq(t,RedCoolingBeatnote/40, units = 'MHz')
 
     # Turn off MOT field
     current_lock_enable.go_low(t)
     MOT_field.constant(t,0, units='A')
-
     return(.05)
 
-################################################################################
-#   Get things ready for loading
-################################################################################
 def initialize(t):
     # Close probe shutter
     probe_shutter.go_low(t)
+    red_BN_DDS.setfreq(t,RedCoolingBeatnote/48, units = 'MHz')
+    print('{:1.6f}'.format(RedCoolingBeatnote/48))
 
     # Turn on MOT field
     current_lock_enable.go_high(t)
     MOT_field.ramp(t,0.04,0,BlueMOTField,1000, units='A')
+    #blue_MOT_power.constant(t,ProbeDetuningVoltage)
     blue_MOT_power.constant(t,BlueMOTPower)
-    red_MOT_power.constant(t,RedMOTPower)
 
     # Turn on trim fields
     shim_X.constant(t,BlueMOTShimX, units = 'A')
@@ -66,18 +60,15 @@ def initialize(t):
     return(.05)
 
 ################################################################################
-#   Blue MOT load
+#   Blue MOT
 ################################################################################
 def load_blue_MOT(t):
-    # Open MOT shutters with light off (only open red if this is a red MOT shot)
+    # Open MOT shutter with light off
     blue_MOT_RF_TTL.go_high(t-.02)
     blue_MOT_shutter.go_high(t-.02)
-    if RedMOTOn:
-        red_MOT_RF_TTL.go_low(t-.02)
-        red_MOT_shutter.go_high(t-.02)
 
+    # Turn light back on
     blue_MOT_RF_TTL.go_low(t)
-    red_MOT_RF_TTL.go_high(t)
 
     # Turn 2D MOT off 
     MOT_2D_RF_TTL.go_high(t+BlueMOTLoadTime-SourceShutoffTime)
@@ -85,50 +76,68 @@ def load_blue_MOT(t):
     return BlueMOTLoadTime
 
 ################################################################################
-#   Ramp field down so we can hopefully see something
+#   Optically pump atoms to dark state
 ################################################################################
-def ramp_field(t):
-    # Trigger scope acquisition
-    scope_trigger.go_high(t)
-    scope_trigger.go_low(t + TransferTime)
+def pump_to_dark(t):
+    MOT_field.ramp(t,pumpToDarkTime,BlueMOTField,ShelvingField,10000, units='A')
+    repump_707_shutter.go_low(t)
 
-    MOT_field.ramp(t,TransferTime,BlueMOTField,RedMOTField,100000, units='A')
+    return pumpToDarkTime
+
+################################################################################
+#   Optically pump atoms back to bright state
+################################################################################
+def pump_to_bright(t):
     
-    return TransferTime + HoldTime
+    repump_707_shutter.go_high(t)
+
+    return pumpToBrightTime
+
+################################################################################
+#   TOF
+################################################################################
+def time_of_flight(t):
+    # Turn light back off
+    blue_MOT_RF_TTL.go_high(t)
+    
+    # Then close shutter and turn AOM back on if this is an absorption image
+    if Absorption:
+        blue_MOT_shutter.go_low(t)
+        blue_MOT_RF_TTL.go_low(t+.02)
+
+    # Switch off MOT field
+    current_lock_enable.go_low(t)
+    
+    return TimeOfFlight
 
 ################################################################################
 #   Imaging
 ################################################################################
-def grasshopper_exposure(t,name):
-    GrassHp_XZ.expose(t,'fluorescence',name, GHExposureTime)
+def grasshopper_exposure(t,exp,name):
+    if Absorption:
+        # Turn probe AOM off and open shutter
+        probe_shutter.go_high(t-.02)
+        probe_RF_TTL.go_low(t-.02)
 
-    return GHExposureTime
+        if exp:
+            # Probe pulse if this isn't a background shot
+            probe_RF_TTL.go_high(t)
+            probe_RF_TTL.go_low(t+PulseDuration)
 
-################################################################################
-#   Get rid of atoms for reference shot
-################################################################################
-def reference_setup(t):
-    # AOMs are on
-    blue_MOT_RF_TTL.go_low(t)
-    red_MOT_RF_TTL.go_high(t)
-    probe_RF_TTL.go_high(t)
-    MOT_2D_RF_TTL.go_low(t)
+        # Close shutter and turn AOM back on
+        probe_shutter.go_low(t+PulseDuration)
+        probe_RF_TTL.go_high(t+PulseDuration+.02)
 
-    # Probe and repump shutters are closed to make sure we don't have atoms
-    probe_shutter.go_low(t)
-    repump_707_shutter.go_low(t)
-    repump_679_shutter.go_low(t)
-
-    if RedMOTOn:
-        red_MOT_shutter.go_high(t)
+        # Set up camera exposure
+        GrassHp_XZ.expose(t-0.0001,'absorption',name, GHExposureTime+.0002)
     else:
-        red_MOT_shutter.go_low(t)
+        if exp:
+            blue_MOT_RF_TTL.go_low(t)
+            blue_MOT_RF_TTL.go_high(t+PulseDuration)
 
-    # Turn off MOT field to make sure we don't have atoms
-    current_lock_enable.go_low(t)
-    MOT_field.constant(t,0, units='A')
+        GrassHp_XZ.expose(t-0.0001,'fluorescence',name, GHExposureTime+.0002)
 
-    return(GHDownTime)
+    return GHExposureTime + 0.02
 
 ################################################################################
 #   Imaging
@@ -138,10 +147,8 @@ def return_to_defaults(t):
     current_lock_enable.go_high(t+0.01)
     MOT_field.ramp(t,0.09,0,BlueMOTField,1000, units='A')
 
-    # Open MOT shutters
+    # Open MOT shutter
     blue_MOT_shutter.go_high(t)
-    repump_679_shutter.go_high(t)
-    repump_707_shutter.go_high(t)
 
     # Close probe shutter
     probe_shutter.go_low(t)
@@ -163,13 +170,24 @@ def return_to_defaults(t):
 start()
 
 t=0
+
 t+=blow_away(t)
 t+=initialize(t)
 t+=load_blue_MOT(t)
-t+=ramp_field(t)
-t+=grasshopper_exposure(t,'atoms')
-t+=reference_setup(t)
-t+=grasshopper_exposure(t,'background')
+t+=pump_to_dark(t)
+t+=BlueMOTHoldTime
+t+=pump_to_bright(t)
+t+=DelayBeforeImaging
+t+=time_of_flight(t)
+
+#grasshopper_exposure(t-GHDownTime,False,'clear')
+t+=grasshopper_exposure(t,True,'atoms')
+t+=GHDownTime
+if Absorption:
+    t+=grasshopper_exposure(t,True,'reference')
+    t+=GHDownTime
+t+=grasshopper_exposure(t,False,'background')
+
 t+=return_to_defaults(t)
 
 stop(t)

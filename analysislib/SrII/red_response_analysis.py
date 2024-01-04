@@ -14,29 +14,18 @@ df = data()
 dataLength = len(df['run number'])
 
 try:
-    BlueMOTShimX = np.array(df["single_gaussian_analysis", "BlueMOTShimX"])
+     t = np.array(df["single_gaussian_analysis", "DelayBeforeImaging"])
+    #blueMOTPower = np.array(df["single_gaussian_analysis","BlueMOTPower"])
 except:
-    print('couldn\'t create BlueMOTShimX' )
-try:
-    BlueMOTShimY = np.array(df["single_gaussian_analysis", "BlueMOTShimY"])
-except:
-    print('couldn\'t create BlueMOTShimY' )
-try:
-    BlueMOTShimZ = np.array(df["single_gaussian_analysis", "BlueMOTShimZ"])
-except:
-    print('couldn\'t create BlueMOTShimZ' )
+    print('couldn\'t create t' )
 try:
     N = np.array(df["single_gaussian_analysis", "atomNumber"])
 except:
     print('couldn\'t create N' )
 
-if len(np.unique(BlueMOTShimX)) > 1:
-    plotData = BlueMOTShimX
-if len(np.unique(BlueMOTShimY)) > 1:
-    plotData = BlueMOTShimY
-if len(np.unique(BlueMOTShimZ)) > 1:
-    plotData = BlueMOTShimZ
-
+idx = np.argsort(t)
+t = t[idx]
+N = N[idx]/np.mean(N)
 #N_min = np.min(N)
 #N_max = np.max(N)
 #dN = N_max - N_min
@@ -52,25 +41,22 @@ if len(np.unique(BlueMOTShimZ)) > 1:
 #fitresult, fitresult_con = curve_fit(parabola, f_fit, N_fit, p0=initial_guess, 
 #                                     bounds=([-np.inf, np.min(f_fit), N_min], [0, np.max(f_fit),N_max + dN]))
 #
-
-idx = np.argsort(plotData)
-plotData = plotData[idx]
-N = N[idx]
-
 fig = plt.figure()
-fig.suptitle("Scanning Trim Coil Current")
+fig.suptitle("Response to red MOT light")
 
 ax = fig.add_subplot(111)
 
-ax.plot(plotData, N)
+ax.plot(t, N)
+#ax.plot(blueMOTPower,N)
+
 #ax.plot(f_fit, parabola(f_fit, *fitresult))
-ax.set_xlabel("Shim Coil Setting (A)")
+ax.set_xlabel("Time after red light applied (s)")
 ax.set_ylabel("Atom Number (arb)")
-ax.set_ylim(0,np.max(N)*1.1)
+ax.set_ylim([0,1.6])
 ax.grid(True)
 
 datapath = df['filepath'][0].split('\\')
 
-savepath = '\\'.join(datapath[0:-1]) + '\\trim_coil_scan.png'
+savepath = '\\'.join(datapath[0:-1]) + '\\red_response.png'
 
 plt.savefig(savepath)

@@ -85,15 +85,21 @@ try:
     RedCoolingBeatnote = ser['RedCoolingBeatnote']
 except:
     print("RedCoolingBeatnote does not exist for this run")
+try:
+    DelayBeforeImaging = ser['DelayBeforeImaging']
+except:
+    print("DelayBeforeImaging does not exist for this run")
+
 
 print('Variables loaded')
 
 print('Loading images...')
 if ser['GrasshopperImagingOn'] and ('horizontal', 'absorption', 'atoms','CLASS') in ser.index:
     type = 'absorption'
-    print('Absorption')
 elif ser['GrasshopperImagingOn'] and ('horizontal', 'fluorescence', 'atoms','CLASS') in ser.index:
     type = 'fluorescence'
+elif ser['GrasshopperImagingOn'] and ('horizontal', 'fluorescence_normalized', 'atoms','CLASS') in ser.index:
+    type = 'fluorescence_normalized'
     
 #print(type)
 
@@ -112,63 +118,89 @@ if type=='absorption':
     densityImage = medfilt2d(np.log(refImage/atomImage),medFiltN)
 elif type=='fluorescence':
     densityImage = run.get_image(camera,'fluorescence','atoms').astype('float') - run.get_image(camera,'fluorescence','background').astype('float')
-    #densityImage = densityImage[ROI[2]:ROI[3],ROI[0]:ROI[1]]
+elif type=='fluorescence_normalized':
+    atomImage = run.get_image(camera,'fluorescence_normalized','atoms').astype('float') - run.get_image(camera,'fluorescence_normalized','background').astype('float')
+    refImage = run.get_image(camera,'fluorescence_normalized','reference').astype('float') - run.get_image(camera,'fluorescence_normalized','background').astype('float')
+    atomNumber = np.sum(atomImage)/np.sum(refImage)
 
 if type=='absorption':
     densityImage = gaussian_filter(densityImage, gaussFiltN)
 elif type=='fluorescence':
     densityImage = gaussian_filter(densityImage, gaussFiltN)*PulseDuration/.116 # Hand-picked factor to approximate actual atom number
 
-atomNumber = np.sum(densityImage)*(pixelSize**2)/sigma0
-print('Images loaded and density calculated')
+if type!='fluorescence_normalized':
+    atomNumber = np.sum(densityImage)*(pixelSize**2)/sigma0
 
-print('Fitting gaussian...')
-if type=='absorption':
-    x, imageX, pOptX, pCovX, z, imageZ, pOptZ, pCovZ = gaussian_fit_sub(densityImage, zero_ref=True)
-elif type=='fluorescence':
-    x, imageX, pOptX, pCovX, z, imageZ, pOptZ, pCovZ = gaussian_fit_sub(densityImage, zero_ref=False)
+    print('Images loaded and density calculated')
 
-print('Fit complete')
+    print('Fitting gaussian...')
+    if type=='absorption':
+        x, imageX, pOptX, pCovX, z, imageZ, pOptZ, pCovZ = gaussian_fit_sub(densityImage, zero_ref=True)
+    elif type=='fluorescence':
+        x, imageX, pOptX, pCovX, z, imageZ, pOptZ, pCovZ = gaussian_fit_sub(densityImage, zero_ref=False)
 
-widthX =pOptX[2]*pixelSize
-widthZ =pOptZ[2]*pixelSize
-BeamRadius=((widthX/2)**2 + (widthZ/2)**2)**0.5 * 1000000
+    print('Fit complete')
+
+    widthX =pOptX[2]*pixelSize
+    widthZ =pOptZ[2]*pixelSize
+    BeamRadius=((widthX/2)**2 + (widthZ/2)**2)**0.5 * 1000000
+
+    print('Plotting...')
+
+    fig = plt.figure()
+
+    ax_image = fig.add_subplot(221)
+    ax_x = fig.add_subplot(223)
+    ax_z = fig.add_subplot(224)
+
+    c_min = 0
+    c_max = np.max(densityImage)
+    imagePlot = ax_image.imshow(densityImage, vmin=c_min, vmax=c_max)
+    fig.colorbar(imagePlot, ax=ax_image)
+    ax_image.title.set_text('N = ' + '{:.2e}'.format(atomNumber))
+
+    ax_x.plot(x, imageX)
+    ax_x.grid(True)
+    if type=='absorption':
+        ax_x.plot(x, gauss_zero_ref(x, *pOptX))
+    elif type=='fluorescence':
+        ax_x.plot(x, gauss(x, *pOptX))
+    ax_x.set_xlim(0,np.max(x))
+
+    ax_z.plot(z, imageZ)
+    if type=='absorption':
+        ax_z.plot(z, gauss_zero_ref(z, *pOptZ))
+    elif type=='fluorescence':
+        ax_z.plot(z, gauss(z, *pOptZ))
+    ax_z.grid(True)
+    ax_z.set_xlim(0,np.max(z))
+
+    print('Done Plotting')
+else:
+    print('Plotting...')
+
+    fig = plt.figure()
+
+    ax_atoms = fig.add_subplot(122)
+    ax_ref = fig.add_subplot(121)
+
+    c_min = 0
+    c_max = np.max([np.max(atomImage),np.max(refImage)])
+
+    atomsPlot = ax_atoms.imshow(atomImage, vmin=c_min, vmax=c_max)
+    fig.colorbar(atomsPlot, ax=ax_atoms)
+    ax_atoms.title.set_text('N_atoms = ' + '{:.2e}'.format(np.sum(atomImage)))
+    
+    refPlot = ax_ref.imshow(refImage, vmin=c_min, vmax=c_max)
+    fig.colorbar(refPlot, ax=ax_ref)
+    ax_ref.title.set_text('N_ref = ' + '{:.2e}'.format(np.sum(refImage)))
+
+    fig.suptitle('N_atoms/N_ref = ' + '{:1.2g}'.format(atomNumber))
+
+    print('Done Plotting')
 
 
-print('Plotting...')
-
-fig = plt.figure()
-
-ax_image = fig.add_subplot(221)
-ax_x = fig.add_subplot(223)
-ax_z = fig.add_subplot(224)
-
-c_min = 0
-c_max = np.max(densityImage)
-imagePlot = ax_image.imshow(densityImage, vmin=c_min, vmax=c_max)
-fig.colorbar(imagePlot, ax=ax_image)
-ax_image.title.set_text('N = ' + '{:.2e}'.format(atomNumber))
-
-ax_x.plot(x, imageX)
-ax_x.grid(True)
-if type=='absorption':
-    ax_x.plot(x, gauss_zero_ref(x, *pOptX))
-elif type=='fluorescence':
-    ax_x.plot(x, gauss(x, *pOptX))
-ax_x.set_xlim(0,np.max(x))
-
-ax_z.plot(z, imageZ)
-if type=='absorption':
-    ax_z.plot(z, gauss_zero_ref(z, *pOptZ))
-elif type=='fluorescence':
-    ax_z.plot(z, gauss(z, *pOptZ))
-ax_z.grid(True)
-ax_z.set_xlim(0,np.max(z))
-
-print('Done Plotting')
-
-
-if SaveImage:
+if (SaveImage and type!='fluorescence_normalized') or True:
     print('Plotting figure to save...')
 
     fig_save = plt.figure()
@@ -225,6 +257,8 @@ if "BlueMOTShimZ" in locals():
     run.save_result("BlueMOTShimZ", BlueMOTShimZ)
 if "RedCoolingBeatnote" in locals():
     run.save_result("RedCoolingBeatnote", RedCoolingBeatnote)
+if "DelayBeforeImaging" in locals():
+    run.save_result("DelayBeforeImaging", DelayBeforeImaging)
     
 print('Data saved')
 

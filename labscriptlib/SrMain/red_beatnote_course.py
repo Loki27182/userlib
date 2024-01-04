@@ -71,30 +71,29 @@ def initialize(t):
 def load_blue_MOT(t):
     # Open MOT shutters with light off (only open red if this is a red MOT shot)
     blue_MOT_RF_TTL.go_high(t-.02)
-    blue_MOT_shutter.go_high(t-.02)
-    if RedMOTOn:
-        red_MOT_RF_TTL.go_low(t-.02)
-        red_MOT_shutter.go_high(t-.02)
+    blue_MOT_shutter.go_high(t-.02) 
 
     blue_MOT_RF_TTL.go_low(t)
-    red_MOT_RF_TTL.go_high(t)
 
     # Turn 2D MOT off 
-    MOT_2D_RF_TTL.go_high(t+BlueMOTLoadTime-SourceShutoffTime)
+    # MOT_2D_RF_TTL.go_high(t+BlueMOTLoadTime-SourceShutoffTime)
 
     return BlueMOTLoadTime
 
 ################################################################################
-#   Ramp field down so we can hopefully see something
+#   Red MOT Stage
 ################################################################################
-def ramp_field(t):
-    # Trigger scope acquisition
-    scope_trigger.go_high(t)
-    scope_trigger.go_low(t + TransferTime)
+def red_MOT_On(t):
+    red_MOT_RF_TTL.go_low(t-.02)
+    red_MOT_shutter.go_high(t-.02)
+    red_MOT_RF_TTL.go_high(t)
+    return RedMOTDuration
 
-    MOT_field.ramp(t,TransferTime,BlueMOTField,RedMOTField,100000, units='A')
-    
-    return TransferTime + HoldTime
+def red_MOT_Off(t):
+    red_MOT_RF_TTL.go_low(t)
+    red_MOT_shutter.go_low(t)
+    red_MOT_RF_TTL.go_high(t+.02)
+    return RedMOTDuration
 
 ################################################################################
 #   Imaging
@@ -166,9 +165,13 @@ t=0
 t+=blow_away(t)
 t+=initialize(t)
 t+=load_blue_MOT(t)
-t+=ramp_field(t)
-t+=grasshopper_exposure(t,'atoms')
+t0 = t + DelayBeforeImaging + grasshopper_exposure(t+DelayBeforeImaging,'atoms')
+print(t0)
+t+=red_MOT_On(t)
+t+=red_MOT_Off(t)
 t+=reference_setup(t)
+t = np.max([t,t0 + GHDownTime])
+print(t)
 t+=grasshopper_exposure(t,'background')
 t+=return_to_defaults(t)
 
