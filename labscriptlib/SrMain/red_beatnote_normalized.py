@@ -63,6 +63,7 @@ def initialize(t):
     shim_X.constant(t,BlueMOTShimX, units = 'A')
     shim_Y.constant(t,BlueMOTShimY, units = 'A')
     shim_Z.constant(t,BlueMOTShimZ, units = 'A')
+    red_AOM_DDS.setfreq(t, 80, units = 'MHz')
     return(.05)
 
 ################################################################################

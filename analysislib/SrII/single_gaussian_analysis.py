@@ -95,15 +95,16 @@ print('Variables loaded')
 
 print('Loading images...')
 if ser['GrasshopperImagingOn'] and ('horizontal', 'absorption', 'atoms','CLASS') in ser.index:
-    type = 'absorption'
+    imaging_type = 'absorption'
 elif ser['GrasshopperImagingOn'] and ('horizontal', 'fluorescence', 'atoms','CLASS') in ser.index:
-    type = 'fluorescence'
+    imaging_type = 'fluorescence'
 elif ser['GrasshopperImagingOn'] and ('horizontal', 'fluorescence_normalized', 'atoms','CLASS') in ser.index:
-    type = 'fluorescence_normalized'
+    imaging_type = 'fluorescence_normalized'
+print(imaging_type)
     
-#print(type)
+#print(imaging_type)
 
-if type=='absorption':
+if imaging_type=='absorption':
     #print('absorption')
     atomImage = run.get_image(camera,'absorption','atoms').astype('float') - run.get_image(camera,'absorption','background').astype('float')
     refImage = run.get_image(camera,'absorption','reference').astype('float') - run.get_image(camera,'absorption','background').astype('float')
@@ -116,27 +117,30 @@ if type=='absorption':
     atomImage = np.clip(atomImage,1e-10,np.Inf)
     refImage = np.clip(refImage,1e-10,np.Inf)
     densityImage = medfilt2d(np.log(refImage/atomImage),medFiltN)
-elif type=='fluorescence':
+elif imaging_type=='fluorescence':
     densityImage = run.get_image(camera,'fluorescence','atoms').astype('float') - run.get_image(camera,'fluorescence','background').astype('float')
-elif type=='fluorescence_normalized':
+elif imaging_type=='fluorescence_normalized':
     atomImage = run.get_image(camera,'fluorescence_normalized','atoms').astype('float') - run.get_image(camera,'fluorescence_normalized','background').astype('float')
     refImage = run.get_image(camera,'fluorescence_normalized','reference').astype('float') - run.get_image(camera,'fluorescence_normalized','background').astype('float')
     atomNumber = np.sum(atomImage)/np.sum(refImage)
+    print(atomImage.dtype)
+    print(atomImage.dtype)
+    #print(type(refImage[0]))
 
-if type=='absorption':
+if imaging_type=='absorption':
     densityImage = gaussian_filter(densityImage, gaussFiltN)
-elif type=='fluorescence':
+elif imaging_type=='fluorescence':
     densityImage = gaussian_filter(densityImage, gaussFiltN)*PulseDuration/.116 # Hand-picked factor to approximate actual atom number
 
-if type!='fluorescence_normalized':
+if imaging_type!='fluorescence_normalized':
     atomNumber = np.sum(densityImage)*(pixelSize**2)/sigma0
 
     print('Images loaded and density calculated')
 
     print('Fitting gaussian...')
-    if type=='absorption':
+    if imaging_type=='absorption':
         x, imageX, pOptX, pCovX, z, imageZ, pOptZ, pCovZ = gaussian_fit_sub(densityImage, zero_ref=True)
-    elif type=='fluorescence':
+    elif imaging_type=='fluorescence':
         x, imageX, pOptX, pCovX, z, imageZ, pOptZ, pCovZ = gaussian_fit_sub(densityImage, zero_ref=False)
 
     print('Fit complete')
@@ -161,16 +165,16 @@ if type!='fluorescence_normalized':
 
     ax_x.plot(x, imageX)
     ax_x.grid(True)
-    if type=='absorption':
+    if imaging_type=='absorption':
         ax_x.plot(x, gauss_zero_ref(x, *pOptX))
-    elif type=='fluorescence':
+    elif imaging_type=='fluorescence':
         ax_x.plot(x, gauss(x, *pOptX))
     ax_x.set_xlim(0,np.max(x))
 
     ax_z.plot(z, imageZ)
-    if type=='absorption':
+    if imaging_type=='absorption':
         ax_z.plot(z, gauss_zero_ref(z, *pOptZ))
-    elif type=='fluorescence':
+    elif imaging_type=='fluorescence':
         ax_z.plot(z, gauss(z, *pOptZ))
     ax_z.grid(True)
     ax_z.set_xlim(0,np.max(z))
@@ -200,7 +204,7 @@ else:
     print('Done Plotting')
 
 
-if (SaveImage and type!='fluorescence_normalized') or True:
+if SaveImage:
     print('Plotting figure to save...')
 
     fig_save = plt.figure()

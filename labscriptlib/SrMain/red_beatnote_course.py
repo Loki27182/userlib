@@ -44,6 +44,8 @@ def blow_away(t):
     current_lock_enable.go_low(t)
     MOT_field.constant(t,0, units='A')
 
+    red_AOM_DDS.setfreq(t, 80, units = 'MHz')
+
     return(.05)
 
 ################################################################################

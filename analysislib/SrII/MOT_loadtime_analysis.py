@@ -50,6 +50,8 @@ ax.plot(BlueMOTLoadTime, N)
 ax.set_xlabel("MOT Loadtime (s)")
 ax.set_ylabel("Atom Number (arb)")
 ax.grid(True)
+ax.set_ylim([0,np.max(N)*1.1])
+ax.set_xlim([0,np.max(BlueMOTLoadTime)])
 
 datapath = df['filepath'][0].split('\\')
 

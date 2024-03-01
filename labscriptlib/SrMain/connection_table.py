@@ -158,10 +158,10 @@ DDSAD9954(name='red_BN_DDS',       parent_device=red_BN_arduino, connection='cha
 #    RED AOM ARDUINO
 ################################################################################
 
-# Arduino_DDS(name='red_AOM_arduino', parent_device=pulseblaster_0_red_AOM_arduino_clock, com_port='com5',  baud_rate=115200, synchronous_first_line_repeat=True)
+Arduino_DDS(name='red_AOM_arduino', parent_device=pulseblaster_0_red_AOM_arduino_clock, com_port='com4',  baud_rate=115200, synchronous_first_line_repeat=True)
 #
-# DDSAD9954(name='red_AOM_DDS',       parent_device=red_AOM_arduino, connection='channel 0')
-# DDSAD9954(name='red_unused_DDS',    parent_device=red_AOM_arduino, connection='channel 1')
+DDSAD9954(name='red_AOM_DDS',       parent_device=red_AOM_arduino, connection='channel 0')
+DDSAD9954(name='red_unused_DDS',    parent_device=red_AOM_arduino, connection='channel 1')
 
 ################################################################################
 #    707 Repump ARDUINO
@@ -247,10 +247,10 @@ IMAQdxCamera(
 
 #################################################################################################################
 # Change these values to set up the grasshopper camera
-camera_mode = 7                     # Camera mode, must be 0 or 7. Mode 0 is higher noise, but lower frame rate.
-camera_manual_exposure = 250.0      # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
-camera_sequence_exposure = 300.0    # Camera exposure time in us for sequences from runmanager (40us to 30s, but timeout needs to be increased from 5s for long exposures)
-camera_gain =  12                   # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
+camera_mode = 0                     # Camera mode, must be 0 or 7. Mode 0 is higher noise, but lower frame rate.
+camera_manual_exposure = 100.0      # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
+camera_sequence_exposure = 50.0    # Camera exposure time in us for sequences from runmanager (40us to 30s, but timeout needs to be increased from 5s for long exposures)
+camera_gain =  24                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
 camera_acceptable_zeros = 100       # The black level is calculated such that you will on average
                                     # have camera_acceptable_zeros zero counts on the low end of the distribution.
                                     # This should be small, as any pixel that would be less than zero 

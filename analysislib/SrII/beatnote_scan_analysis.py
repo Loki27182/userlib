@@ -42,7 +42,7 @@ fitresult, fitresult_con = curve_fit(parabola, f_fit, N_fit, p0=initial_guess,
                                      bounds=([-np.inf, np.min(f_fit), N_min], [0, np.max(f_fit),N_max + dN]))
 
 fig = plt.figure()
-fig.suptitle("Scanning Blue MOT Beatnote Frequency - Peak @ " + str(fitresult[1]))
+fig.suptitle("Scanning Blue MOT Beatnote Frequency - Peak @ {:0.2f} MHz".format(fitresult[1]))
 
 ax = fig.add_subplot(111)
 

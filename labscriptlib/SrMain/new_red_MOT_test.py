@@ -73,7 +73,8 @@ def load_blue_MOT(t):
     blue_MOT_RF_TTL.go_high(t-.02)
     blue_MOT_shutter.go_high(t-.02) 
     red_MOT_RF_TTL.go_low(t-.02)
-    red_MOT_shutter.go_high(t-.02)
+    if RedMOTOn:
+        red_MOT_shutter.go_high(t-.02)
 
     blue_MOT_RF_TTL.go_low(t)
     red_MOT_RF_TTL.go_high(t)
@@ -98,6 +99,12 @@ def set_field(t):
     MOT_field.constant(t+.0002,RedMOTField,units='A')
 
     return FieldExtinctionTime+.0002
+
+def ramp_red_MOT(t):
+    red_MOT_power.ramp(t,RedMOTSweepTime,RedMOTPower,RedMOTPowerFinal,100000)
+    MOT_field.ramp(t,RedMOTSweepTime,RedMOTField,RedMOTFieldFinal,100000,units='A')
+
+    return RedMOTSweepTime
 
 ################################################################################
 #   Imaging
@@ -162,7 +169,8 @@ t+=initialize(t)
 t+=load_blue_MOT(t)
 t+=ramp_down_blue(t)
 t+=set_field(t)
-t+=DelayBeforeImaging
+t+=ramp_red_MOT(t)
+t+=HoldTime
 t+=grasshopper_exposure(t,'atoms')
 t+=reference_setup(t)
 t+=grasshopper_exposure(t,'background')

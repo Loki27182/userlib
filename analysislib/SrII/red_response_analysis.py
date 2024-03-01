@@ -14,7 +14,7 @@ df = data()
 dataLength = len(df['run number'])
 
 try:
-     t = np.array(df["single_gaussian_analysis", "DelayBeforeImaging"])
+     t = np.array(df["single_gaussian_analysis", "RedCoolingBeatnote"])
     #blueMOTPower = np.array(df["single_gaussian_analysis","BlueMOTPower"])
 except:
     print('couldn\'t create t' )
