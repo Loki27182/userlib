@@ -43,6 +43,7 @@ def blow_away(t):
     # Turn off MOT field
     current_lock_enable.go_low(t)
     MOT_field.constant(t,0, units='A')
+    red_AOM_DDS.setfreq(t, 80, units = 'MHz')
 
     return(.05)
 
@@ -153,6 +154,7 @@ def return_to_defaults(t):
     blue_MOT_RF_TTL.go_low(t)
 
     gMOT_coil_current_b.constant(t,ProbeVCOVoltage)
+    red_AOM_DDS.setfreq(t, 80, units = 'MHz')
 
     return(.1)
 
@@ -166,11 +168,16 @@ t=0
 t+=blow_away(t)
 t+=initialize(t)
 t+=load_blue_MOT(t)
+#scope_trigger.go_high(t-GHDownTime-1e-3)
 grasshopper_exposure(t-GHDownTime,'reference')
-grasshopper_exposure(t+.001,'atoms')
+#MOT_2D_RF_TTL.go_high(t-GHDownTime)
+grasshopper_exposure(t+DelayBeforeImaging,'atoms')
+scope_trigger.go_high(t)
 t+=red_MOT_On(t)
+scope_trigger.go_low(t)
 t+=reference_setup(t)
 t+=grasshopper_exposure(t,'background')
+#scope_trigger.go_low(t+1e-3)
 t+=return_to_defaults(t)
 
 stop(t)
