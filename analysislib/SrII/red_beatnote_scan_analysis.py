@@ -36,18 +36,17 @@ f_fit = np.delete(RedCoolingBeatnote,np.where(N<N_cutoff))
 df1 = np.max(f_fit) - np.min(f_fit)
 
 initial_guess = (-dN*2/df1**2,np.average(f_fit[np.argmax(N_fit)]),N_max)
-print(initial_guess)
-
-fitresult, fitresult_con = curve_fit(parabola, f_fit, N_fit, p0=initial_guess, 
-                                     bounds=([-np.inf, np.min(f_fit), N_min], [0, np.max(f_fit),N_max + dN]))
+print(N.size)
+#fitresult, fitresult_con = curve_fit(parabola, f_fit, N_fit, p0=initial_guess, 
+#                                     bounds=([-np.inf, np.min(f_fit), N_min], [0, np.max(f_fit),N_max + dN]))
 
 fig = plt.figure()
-fig.suptitle("Scanning Red MOT Beatnote Frequency - Peak @ {:0.2f} MHz".format(fitresult[1]))
+#fig.suptitle("Scanning Red MOT Beatnote Frequency - Peak @ {:0.2f} MHz".format(fitresult[1]))
 
 ax = fig.add_subplot(111)
 
 ax.plot(RedCoolingBeatnote, N)
-ax.plot(f_fit, parabola(f_fit, *fitresult))
+#ax.plot(f_fit, parabola(f_fit, *fitresult))
 ax.set_xlabel("Blue Beatnote Frequency (MHz)")
 ax.set_ylabel("Atom Number (arb)")
 ax.grid(True)
