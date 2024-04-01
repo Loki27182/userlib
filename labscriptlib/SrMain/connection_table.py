@@ -25,7 +25,7 @@ from labscriptlib.SrMain.Subroutines.ConnectionTableSubs import black_level
 #    PULSEBLASTER
 ###############################################################################
 
-PulseBlasterUSB(name='pulseblaster_0', board_number=0, time_based_stop_workaround=True, time_based_stop_workaround_extra_time=0,clock_rate=20)
+PulseBlasterUSB(name='pulseblaster_0', board_number=0, time_based_stop_workaround=True, time_based_stop_workaround_extra_time=0,clock_rate=10)
 
 ClockLine(name='pulseblaster_0_ni_0_clock',				pseudoclock=pulseblaster_0.pseudoclock, connection='flag 0')
 ClockLine(name='pulseblaster_0_ni_1_clock',             pseudoclock=pulseblaster_0.pseudoclock, connection='flag 11')
@@ -68,10 +68,10 @@ DigitalOut(name='scope_trigger',          parent_device=pulseblaster_0.direct_ou
 
 NI_PCI_6733(name='ni_0', parent_device=pulseblaster_0_ni_0_clock, clock_terminal='/Dev1/PFI1', MAX_name = 'Dev1')
 
-AnalogOut(name='red_MOT_VCO',           parent_device=ni_0, connection='ao0',
-          unit_conversion_class=AOMVCO,                     unit_conversion_parameters={'m':-22.422*10**6, 'b':60.831*10**6, 'magnitudes':['k','M']})
-AnalogOut(name='red_SRS_amp',           parent_device=ni_0, connection='ao1',
-          unit_conversion_class=AOMVCO,                     unit_conversion_parameters={'m':5.4466*10**6, 'b':0.14*10**6, 'magnitudes':['k','M']})
+AnalogOut(name='blue_MOT_VCO',          parent_device=ni_0, connection='ao0',
+          unit_conversion_class=AOMVCO,                     unit_conversion_parameters={'m':1.7588*10**6, 'b':111.2134*10**6, 'magnitudes':['k','M']})  # From data on 2024-04-01
+AnalogOut(name='red_MOT_VCO',           parent_device=ni_0, connection='ao1',
+          unit_conversion_class=AOMVCO,                     unit_conversion_parameters={'m':1.0282*10**6, 'b':79.9881*10**6, 'magnitudes':['k','M']})   # From data on 2024-04-01
 AnalogOut(name='MOT_field',             parent_device=ni_0, connection='ao2',
           unit_conversion_class=UnidirectionalCoilDriver,   unit_conversion_parameters={'slope':25, 'shift':0})
 AnalogOut(name='shim_X',                parent_device=ni_0, connection='ao3',
@@ -98,31 +98,29 @@ DigitalOut(name='repump_679_shutter',   parent_device=ni_0, connection='port0/li
 
 NI_PCI_6733(name='ni_1', parent_device=pulseblaster_0_ni_1_clock, clock_terminal='/Dev2/PFI1', MAX_name = 'Dev2')
 
-AnalogOut(name='red_inj_VCO',           parent_device=ni_1, connection='ao0',
-          unit_conversion_class=AOMVCO,                     unit_conversion_parameters={'m':-21.57549*10**6, 'b':61.48349*10**6, 'magnitudes':['k','M']})
-AnalogOut(name='red_inj_power',         parent_device=ni_1, connection='ao1')
-AnalogOut(name='grating_MOT_power',     parent_device=ni_1, connection='ao2')
-AnalogOut(name='grating_coil_current',         parent_device=ni_1, connection='ao3',
-          unit_conversion_class=UnidirectionalCoilDriver,   unit_conversion_parameters={'slope':10, 'shift':0})
-AnalogOut(name='main_DP_power',         parent_device=ni_1, connection='ao4')
-AnalogOut(name='cross_DP_power',         parent_device=ni_1, connection='ao5')
-AnalogOut(name='gMOT_coil_current_t',   parent_device=ni_1, connection='ao6')
-AnalogOut(name='gMOT_coil_current_b',   parent_device=ni_1, connection='ao7')
-
-DigitalOut(name='IGBT_TTL',             parent_device=ni_1, connection='port0/line0')
-DigitalOut(name='main_DP_AOM_TTL',                parent_device=ni_1, connection='port0/line1')
-# Trigger(   name='GH_camera_trigger',        parent_device=ni_1, connection='port0/line2',  trigger_edge_type = 'falling')
-DigitalOut(name='fake_do',             parent_device=ni_1, connection='port0/line2')
-DigitalOut(name='gMOT_IGBT_TTL',        parent_device=ni_1, connection='port0/line4')
+AnalogOut(name='probe_VCO', parent_device=ni_1, connection='ao0')
+AnalogOut(name='unused_0',  parent_device=ni_1, connection='ao1')
+#AnalogOut(name='unused_1',  parent_device=ni_1, connection='ao2')
+#AnalogOut(name='unused_2',  parent_device=ni_1, connection='ao3')
+#AnalogOut(name='unused_3',  parent_device=ni_1, connection='ao4')
+#AnalogOut(name='unused_4',  parent_device=ni_1, connection='ao5')
+#AnalogOut(name='unused_5',  parent_device=ni_1, connection='ao6')
+#AnalogOut(name='unused_6',  parent_device=ni_1, connection='ao7')
+#
+#DigitalOut(name='IGBT_TTL',             parent_device=ni_1, connection='port0/line0')
+#DigitalOut(name='main_DP_AOM_TTL',                parent_device=ni_1, connection='port0/line1')
+## Trigger(   name='GH_camera_trigger',        parent_device=ni_1, connection='port0/line2',  trigger_edge_type = 'falling')
+#DigitalOut(name='fake_do',             parent_device=ni_1, connection='port0/line2')
+#DigitalOut(name='gMOT_IGBT_TTL',        parent_device=ni_1, connection='port0/line4')
 
 ################################################################################
 #   NI CARD 4
 ################################################################################
 
-NI_PXIe_6361(name='ni_2', parent_device=pulseblaster_0_ni_2_clock, clock_terminal='/Dev4/PFI0', MAX_name = 'Dev4')#,acquisition_rate=100000)
-
-AnalogOut(name='grating_shim_y', parent_device=ni_2, connection='ao0')
-AnalogOut(name='extra', parent_device=ni_2, connection='ao1')
+#NI_PXIe_6361(name='ni_2', parent_device=pulseblaster_0_ni_2_clock, clock_terminal='/Dev4/PFI0', MAX_name = 'Dev4')#,acquisition_rate=100000)
+#
+#AnalogOut(name='grating_shim_y', parent_device=ni_2, connection='ao0')
+#AnalogOut(name='extra', parent_device=ni_2, connection='ao1')
 #AnalogIn(name='Analog_Input_Test', parent_device=ni_2, connection='ai0') # Not working - do not use
 
 # # DigitalOut(name='newNITest',parent_device=ni_2,connection = 'port0/line0')
@@ -141,10 +139,10 @@ AnalogOut(name='extra', parent_device=ni_2, connection='ao1')
 #    BLUE BN ARDUINO
 ################################################################################
 
-Arduino_DDS(name='blue_BN_arduino', parent_device=pulseblaster_0_blue_BN_arduino_clock, com_port='com5', baud_rate=115200, synchronous_first_line_repeat=True)
-
-DDSAD9954(name='blue_BN_DDS',       parent_device=blue_BN_arduino, connection='channel 0')
-DDSAD9954(name='blue_broken_DDS',   parent_device=blue_BN_arduino, connection='channel 1')
+#Arduino_DDS(name='blue_BN_arduino', parent_device=pulseblaster_0_blue_BN_arduino_clock, com_port='com5', baud_rate=115200, synchronous_first_line_repeat=True)
+#
+#DDSAD9954(name='blue_BN_DDS',       parent_device=blue_BN_arduino, connection='channel 0')
+#DDSAD9954(name='blue_broken_DDS',   parent_device=blue_BN_arduino, connection='channel 1')
 
 ################################################################################
 #    Red BN ARDUINO

@@ -19,14 +19,21 @@ def blow_away(t):
     # Start scope trigger low
     scope_trigger.go_low(t)
 
-    # Set probe frequency (repurposing an old analog line from the grating MOT)
-    gMOT_coil_current_b.constant(t,ProbeVCOVoltage)
+    # Set probe frequency
+    probe_VCO.constant(t,ProbeVCOVoltage)
 
     # AOMs are on
     blue_MOT_RF_TTL.go_low(t)
     red_MOT_RF_TTL.go_high(t)
     probe_RF_TTL.go_high(t)
     MOT_2D_RF_TTL.go_low(t)
+
+    # Set red MOT RF source to internal VCO, and set voltage
+    red_MOT_RF_select.go_low(t)
+    red_MOT_VCO.constant(t, RedMOTRamp0L, units = 'MHz')
+
+    # Set blue MOT VCO frequency
+    blue_MOT_VCO.constant(t,BlueFreqOffset, units = 'MHz')
 
     # Disable red MOT power intensity lock
     red_MOT_Int_Disable.go_high(t)
@@ -41,9 +48,9 @@ def blow_away(t):
     repump_679_shutter.go_high(t)
 
     # Set beatnote frequencies
-    blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')
-    red_BN_DDS.setfreq(t,RedCoolingBeatnote/48, units = 'MHz')
-    red_AOM_DDS.setfreq(t,RedMotFreqI, units = 'MHz')
+    #blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')
+    red_BN_DDS.setfreq(t,RedBeatnote/48, units = 'MHz')
+    red_AOM_DDS.setfreq(t,RedMOTNarrowFrequency, units = 'MHz')
 
     # Turn off MOT field
     current_lock_enable.go_low(t)
@@ -62,7 +69,7 @@ def initialize(t):
     current_lock_enable.go_high(t)
     MOT_field.ramp(t,0.04,0,BlueMOTField,1000, units='A')
     blue_MOT_power.constant(t,BlueMOTPower)
-    red_MOT_power.constant(t,RedMOTPower)
+    red_MOT_power.constant(t,RedMOTRampPower0)
 
     # Turn on trim fields
     shim_X.constant(t,BlueMOTShimX, units = 'A')
@@ -95,25 +102,41 @@ def load_blue_MOT(t):
 #   Transfer
 ################################################################################
 def ramp_down_blue(t):
-    blue_MOT_power.ramp(t,TransferTime,BlueMOTPower,BlueMOTTransferPower,100000)
-    MOT_field.ramp(t,TransferTime,BlueMOTField,BlueMOTCompressionField,100000,units='A')
-    blue_MOT_RF_TTL.go_high(t+TransferTime)
+    blue_MOT_power.ramp(t,BlueMOTRampDuration,BlueMOTPower,BlueMOTTransferPower,100000)
+    MOT_field.ramp(t,BlueMOTRampDuration,BlueMOTField,BlueMOTCompressionField,100000,units='A')
+    blue_MOT_RF_TTL.go_high(t+BlueMOTRampDuration)
 
-    return TransferTime
+    return BlueMOTRampDuration
 
 def set_field(t):
-    blue_MOT_power.constant(t+.0002,BlueMOTPower)
-    MOT_field.constant(t+.0002,RedMOTField,units='A')
+    blue_MOT_power.constant(t+.0001,BlueMOTPower)
+    MOT_field.constant(t+.0001,RedMOTField,units='A')
 
-    return np.max([FieldExtinctionTime,.0002])
+    return .0002
+
+def swap_ramp(t,dur,V_low_i,V_high_i,V_low_f,V_high_f,f_ramp):
+    tau = t/dur
+    dV_i = V_high_i - V_low_i
+    dV_f = V_high_f - V_low_f
+
+    dvdt = f_ramp*dV_i
+
+    scale_factor = (dV_i - tau*(dV_i - dV_f))/dV_i
+    offset = V_low_i + tau*(V_low_f - V_low_i)
+    return scale_factor*np.mod(dvdt*t,dV_i) + offset
+
+def ramp_down_red(t):
+    red_MOT_power.ramp(t,RedMOTRampTime,RedMOTRampPower0,RedMOTRampPowerF,500000)
+    #red_MOT_VCO.ramp(t,RedMOTRampTime,RedMOTRamp0L,RedMOTRampFH,500000,units='MHz')
+    red_MOT_VCO.customramp(t,RedMOTRampTime,swap_ramp,RedMOTRamp0L,RedMOTRamp0H,RedMOTRampFL,RedMOTRampFH,RedMOTRampFreq,samplerate=500000,units='MHz')
+    MOT_field.ramp(t,RedMOTRampTime,RedMOTField,RedMOTFieldFinal,500000,units='A')
+
+    return(RedMOTRampTime)
 
 def red_MOT_narrow(t):
-    red_MOT_power.ramp(t,RedMOTNarrowTime,RedMOTPower,RedMOTPowerFinal,100000)
-    MOT_field.ramp(t,RedMOTNarrowTime,RedMOTField,RedMOTFieldFinal,100000,units='A')
-    # Red MOT AOM 
-    # red_AOM_DDS.setrampon(t, RedMotFreqI, RedMotFreqF, RedMOTNarrowTime*1000, units='MHz')
-    # This seems necessary to make the DDS work properly. Need to look into this more
-    # red_AOM_DDS.setfreq(t+RedMOTNarrowTime+.01,RedMotFreqF, units = 'MHz')
+    red_MOT_power.constant(t,RedMOTNarrowPower)
+    red_MOT_RF_select.go_high(t)
+
     return(RedMOTNarrowTime)
 
 ################################################################################
@@ -132,7 +155,6 @@ def grasshopper_exposure(t,name):
 ################################################################################
 def reference_setup(t):
     red_MOT_RF_TTL.go_low(t)
-    red_MOT_RF_TTL.go_high(t+GHDownTime)
 
     # Turn off MOT field to make sure we don't have atoms
     current_lock_enable.go_low(t)
@@ -145,25 +167,48 @@ def reference_setup(t):
 #   Imaging
 ################################################################################
 def return_to_defaults(t):
-    # Turn MOT field back on
-    current_lock_enable.go_high(t+0.01)
-    MOT_field.ramp(t,0.09,0,BlueMOTField,10000, units='A')
+    t+=.01
+    # Start scope trigger low
+    scope_trigger.go_low(t)
 
-    # Open MOT shutters
-    blue_MOT_shutter.go_high(t)
-    repump_679_shutter.go_high(t)
-    repump_707_shutter.go_high(t)
+    # Set probe frequency
+    probe_VCO.constant(t,ProbeVCOVoltage)
 
-    # Close probe shutter
-    probe_shutter.go_low(t)
-    # Turn on probe AOM
-    probe_RF_TTL.go_high(t)
-
-    # Turn 2D MOT back on
-    MOT_2D_RF_TTL.go_low(t)
+    # AOMs are on
     blue_MOT_RF_TTL.go_low(t)
+    red_MOT_RF_TTL.go_high(t)
+    probe_RF_TTL.go_high(t)
+    MOT_2D_RF_TTL.go_low(t)
 
-    gMOT_coil_current_b.constant(t,ProbeVCOVoltage)
+    # Set red MOT RF source to internal VCO, and set voltage
+    red_MOT_RF_select.go_low(t)
+    red_MOT_VCO.constant(t, RedMOTNarrowFrequency, units = 'MHz')
+
+    # Set blue MOT VCO frequency
+    blue_MOT_VCO.constant(t,BlueFreqOffset, units = 'MHz')
+
+    # Enable red MOT power intensity lock
+    red_MOT_Int_Disable.go_low(t)
+
+    # MOT shutters are open
+    blue_MOT_shutter.go_high(t)
+    red_MOT_shutter.go_high(t)
+
+    # Repump shutters are open
+    repump_707_shutter.go_high(t)
+    repump_679_shutter.go_high(t)
+
+    # Probe shutter is closed
+    probe_shutter.go_low(t)
+
+    # Set beatnote frequencies
+    #blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')
+    red_BN_DDS.setfreq(t,RedBeatnote/48, units = 'MHz')
+    red_AOM_DDS.setfreq(t,RedMOTNarrowFrequency, units = 'MHz')
+
+    # Turn MOT field on
+    current_lock_enable.go_low(t)
+    MOT_field.constant(t,0, units='A')
 
     return(.1)
 
@@ -179,9 +224,9 @@ t+=initialize(t)
 t+=load_blue_MOT(t)
 t+=ramp_down_blue(t)
 t+=set_field(t)
+t+=ramp_down_red(t)
 t+=red_MOT_narrow(t)
 t+=DelayBeforeImaging
-current_lock_enable.go_low(t-FieldExtinctionTime)
 t+=grasshopper_exposure(t,'atoms')
 t+=reference_setup(t)
 t+=grasshopper_exposure(t,'background')

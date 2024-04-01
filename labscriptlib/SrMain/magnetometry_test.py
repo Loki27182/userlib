@@ -43,7 +43,7 @@ def blow_away(t):
     # Set beatnote frequencies
     blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')
     red_BN_DDS.setfreq(t,RedCoolingBeatnote/48, units = 'MHz')
-    red_AOM_DDS.setfreq(t,RedMotFreqI, units = 'MHz')
+    red_AOM_DDS.setfreq(t,RedMotFreqF, units = 'MHz')
 
     # Turn off MOT field
     current_lock_enable.go_low(t)
@@ -69,11 +69,11 @@ def initialize(t):
     shim_Y.constant(t,BlueMOTShimY, units = 'A')
     shim_Z.constant(t,BlueMOTShimZ, units = 'A')
 
-    if RedMOTOn:
-        red_MOT_RF_TTL.go_low(t)
-        red_MOT_shutter.go_high(t)
-        red_MOT_RF_TTL.go_high(t+.02)
-        red_MOT_Int_Disable.go_low(t+.02)
+    #if RedMOTOn:
+    red_MOT_RF_TTL.go_low(t)
+    red_MOT_shutter.go_high(t)
+    red_MOT_RF_TTL.go_high(t+.02)
+    red_MOT_Int_Disable.go_low(t+.02)
     
     return(.05)
 
@@ -92,39 +92,65 @@ def load_blue_MOT(t):
     return BlueMOTLoadTime+SourceShutoffTime
 
 ################################################################################
-#   Transfer
+#   Blue ramp, shut off red light, and set field
 ################################################################################
 def ramp_down_blue(t):
     blue_MOT_power.ramp(t,TransferTime,BlueMOTPower,BlueMOTTransferPower,100000)
     MOT_field.ramp(t,TransferTime,BlueMOTField,BlueMOTCompressionField,100000,units='A')
     blue_MOT_RF_TTL.go_high(t+TransferTime)
+    blue_MOT_shutter.go_high(t+TransferTime) 
+    blue_MOT_RF_TTL.go_low(t+TransferTime+.02)
+    blue_MOT_power.constant(t+TransferTime+.021,BlueMOTPower)
 
     return TransferTime
 
 def set_field(t):
-    blue_MOT_power.constant(t+.0002,BlueMOTPower)
-    MOT_field.constant(t+.0002,RedMOTField,units='A')
+    current_lock_enable.go_low(t)
 
     return np.max([FieldExtinctionTime,.0002])
 
-def red_MOT_narrow(t):
-    red_MOT_power.ramp(t,RedMOTNarrowTime,RedMOTPower,RedMOTPowerFinal,100000)
-    MOT_field.ramp(t,RedMOTNarrowTime,RedMOTField,RedMOTFieldFinal,100000,units='A')
-    # Red MOT AOM 
-    # red_AOM_DDS.setrampon(t, RedMotFreqI, RedMotFreqF, RedMOTNarrowTime*1000, units='MHz')
-    # This seems necessary to make the DDS work properly. Need to look into this more
-    # red_AOM_DDS.setfreq(t+RedMOTNarrowTime+.01,RedMotFreqF, units = 'MHz')
-    return(RedMOTNarrowTime)
+def turn_red_off(t):
+    red_MOT_Int_Disable.go_high(t)
+    red_MOT_RF_TTL.go_high(t)
+
+    return 0
+
+def red_pulse(t):
+    red_MOT_RF_TTL.go_low(t)
+    red_MOT_Int_Disable.go_low(t)
+    red_MOT_RF_TTL.go_high(t + RedPulseDuration)
+    red_MOT_Int_Disable.go_high(t + RedPulseDuration)
+
+    return RedPulseDuration
 
 ################################################################################
 #   Imaging
 ################################################################################
-def grasshopper_exposure(t,name):
-    GrassHp_XZ.expose(t-.0001,'fluorescence',name, GHExposureTime)
-    blue_MOT_RF_TTL.go_low(t)
-    blue_MOT_RF_TTL.go_high(t+PulseDuration)
+def grasshopper_exposure(t,exp,name):
+    if Absorption:
+        # Turn probe AOM off and open shutter
+        probe_shutter.go_high(t-.02)
+        probe_RF_TTL.go_low(t-.02)
 
-    return GHExposureTime
+        if exp:
+            # Probe pulse if this isn't a background shot
+            probe_RF_TTL.go_high(t)
+            probe_RF_TTL.go_low(t+PulseDuration)
+
+        # Close shutter and turn AOM back on
+        probe_shutter.go_low(t+PulseDuration)
+        probe_RF_TTL.go_high(t+PulseDuration+.02)
+
+        # Set up camera exposure
+        GrassHp_XZ.expose(t-0.0001,'absorption',name, GHExposureTime+.0002)
+    else:
+        if exp:
+            blue_MOT_RF_TTL.go_low(t)
+            blue_MOT_RF_TTL.go_high(t+PulseDuration)
+
+        GrassHp_XZ.expose(t-0.0001,'fluorescence',name, GHExposureTime+.0002)
+
+    return GHExposureTime + 0.02
 
 
 ################################################################################
@@ -135,7 +161,7 @@ def reference_setup(t):
     red_MOT_RF_TTL.go_high(t+GHDownTime)
 
     # Turn off MOT field to make sure we don't have atoms
-    current_lock_enable.go_low(t)
+    
     MOT_field.constant(t,0, units='A')
     
 
@@ -179,12 +205,14 @@ t+=initialize(t)
 t+=load_blue_MOT(t)
 t+=ramp_down_blue(t)
 t+=set_field(t)
-t+=red_MOT_narrow(t)
-t+=DelayBeforeImaging
-current_lock_enable.go_low(t-FieldExtinctionTime)
-t+=grasshopper_exposure(t,'atoms')
+turn_red_off(t-.001)
+if RedMOTOn:
+    t+=red_pulse(t)
+t+=grasshopper_exposure(t,True,'atoms')
 t+=reference_setup(t)
-t+=grasshopper_exposure(t,'background')
+t+=grasshopper_exposure(t,True,'reference')
+t+=GHDownTime
+t+=grasshopper_exposure(t,False,'background')
 t+=return_to_defaults(t)
 
 stop(t)
