@@ -107,4 +107,4 @@ print('Saving data...')
 for imageType, N in atomNumbers.items():
     run.save_result("atomNumber/"+imageType, N)
 print('    Data saved.')
-print('Done')
+print('Done') 
