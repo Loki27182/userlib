@@ -25,7 +25,7 @@ from labscriptlib.SrMain.Subroutines.ConnectionTableSubs import black_level
 #    PULSEBLASTER
 ###############################################################################
 
-PulseBlasterUSB(name='pulseblaster_0', board_number=0, time_based_stop_workaround=True, time_based_stop_workaround_extra_time=0,clock_rate=10)
+PulseBlasterUSB(name='pulseblaster_0', board_number=0, time_based_stop_workaround=True, time_based_stop_workaround_extra_time=0,clock_rate=20)
 
 ClockLine(name='pulseblaster_0_ni_0_clock',				pseudoclock=pulseblaster_0.pseudoclock, connection='flag 0')
 ClockLine(name='pulseblaster_0_ni_1_clock',             pseudoclock=pulseblaster_0.pseudoclock, connection='flag 11')
@@ -245,10 +245,10 @@ IMAQdxCamera(
 
 #################################################################################################################
 # Change these values to set up the grasshopper camera
-camera_mode = 7                     # Camera mode, must be 0 or 7. Mode 0 is higher noise, but lower frame rate.
-camera_manual_exposure = 100.0      # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
-camera_sequence_exposure = 50.0     # Camera exposure time in us for sequences from runmanager (40us to 30s, but timeout needs to be increased from 5s for long exposures)
-camera_gain =  24                   # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
+camera_mode = 7                     # Camera mode, must be 0 or 7. Mode 0 is higher noise, but also higher frame rate.
+camera_manual_exposure = 4000.0     # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
+camera_sequence_exposure = 150.0     # Camera exposure time in us for sequences from runmanager (40us to 30s, but timeout needs to be increased from 5s for long exposures)
+camera_gain =  0                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
 camera_acceptable_zeros = 100       # The black level is calculated such that you will on average
                                     # have camera_acceptable_zeros zero counts on the low end of the distribution.
                                     # This should be small, as any pixel that would be less than zero 

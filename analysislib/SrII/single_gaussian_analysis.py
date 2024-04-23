@@ -25,6 +25,7 @@ mass = SrConstants.mass
 pixelSize = SrConstants.pixelSizeDict["horizontal"]
 
 ROI = AnalysisSettings.SGROI
+
 medFiltN = AnalysisSettings.SGMedFilterWidth
 gaussFiltN = AnalysisSettings.SGGaussFilterWidth
 
@@ -54,9 +55,12 @@ try:
 except:
     print("ProbeDetuningVoltage does not exist for this run")
 try:
-    BlueMOTBeatnote = ser['BlueMOTBeatnote']
+    BlueMOTBeatnote = ser['BlueFreqOffset']
 except:
-    print("BlueMOTBeatnote does not exist for this run")
+    try:
+        BlueMOTBeatnote = ser['BlueMOTBeatnote']
+    except:
+        print("BlueMOTBeatnote does not exist for this run")
 try:
     ProbeVCOVoltage = ser['ProbeVCOVoltage']
 except:
@@ -82,7 +86,7 @@ try:
 except:
     print("SaveImage does not exist for this run")
 try:
-    RedCoolingBeatnote = ser['RedCoolingBeatnote']
+    RedCoolingBeatnote = ser['RedBeatnote']
 except:
     print("RedCoolingBeatnote does not exist for this run")
 try:
@@ -110,10 +114,13 @@ if imaging_type=='absorption':
     refImage = run.get_image(camera,'absorption','reference').astype('float') - run.get_image(camera,'absorption','background').astype('float')
     refNorm = refImage.copy()
     atomNorm = atomImage.copy()
-    refNorm[ROI[2]:ROI[3],ROI[0]:ROI[1]] = 0
-    atomNorm[ROI[2]:ROI[3],ROI[0]:ROI[1]] = 0
-    atomImage = atomImage[ROI[2]:ROI[3],ROI[0]:ROI[1]]
-    refImage = refImage[ROI[2]:ROI[3],ROI[0]:ROI[1]]*np.sum(atomNorm)/np.sum(refNorm)
+
+    if len(ROI)>0:
+        refNorm[ROI[2]:ROI[3],ROI[0]:ROI[1]] = 0
+        atomNorm[ROI[2]:ROI[3],ROI[0]:ROI[1]] = 0
+        atomImage = atomImage[ROI[2]:ROI[3],ROI[0]:ROI[1]]
+        refImage = refImage[ROI[2]:ROI[3],ROI[0]:ROI[1]]*np.sum(atomNorm)/np.sum(refNorm)
+
     atomImage = np.clip(atomImage,1e-10,np.Inf)
     refImage = np.clip(refImage,1e-10,np.Inf)
     densityImage = medfilt2d(np.log(refImage/atomImage),medFiltN)

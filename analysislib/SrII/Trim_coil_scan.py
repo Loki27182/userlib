@@ -41,21 +41,21 @@ if len(np.unique(BlueMOTShimZ)) > 1:
     pltTitle = 'Z-Trim'
 
 
-if len(N)>5:
-    N_min = np.min(N)
-    N_max = np.max(N)
-    dN = N_max - N_min
-    N_cutoff = N_min + dN/2
-    #
-    #N_fit = np.delete(N,np.where(N<N_cutoff))
-    #f_fit = np.delete(BlueMOTLoadTime,np.where(N<N_cutoff))
-    dx = np.max(plotData) - np.min(plotData)
-    #
-    initial_guess = (-dN*2/dx**2,np.average(plotData[np.argmax(N)]),N_max)
-    ##print(initial_guess)
-    #
-    fitresult, fitresult_con = curve_fit(parabola, plotData, N, p0=initial_guess, 
-                                         bounds=([-np.inf, np.min(plotData), N_min], [0, np.max(plotData),N_max + dN]))
+#if len(N)>5:
+#    N_min = np.min(N)
+#    N_max = np.max(N)
+#    dN = N_max - N_min
+#    N_cutoff = N_min + dN/2
+#    #
+#    #N_fit = np.delete(N,np.where(N<N_cutoff))
+#    #f_fit = np.delete(BlueMOTLoadTime,np.where(N<N_cutoff))
+#    dx = np.max(plotData) - np.min(plotData)
+#    #
+#    initial_guess = (-dN*2/dx**2,np.average(plotData[np.argmax(N)]),N_max)
+#    ##print(initial_guess)
+#    #
+#    fitresult, fitresult_con = curve_fit(parabola, plotData, N, p0=initial_guess, 
+#                                         bounds=([-np.inf, np.min(plotData), N_min], [0, np.max(plotData),N_max + dN]))
 #
 
 idx = np.argsort(plotData)
@@ -68,13 +68,13 @@ fig.suptitle("Scanning " + pltTitle + " Current")
 ax = fig.add_subplot(111)
 
 ax.plot(plotData, N)
-if len(N) > 5:
-    ax.plot(plotData, parabola(plotData, *fitresult))
-    fig.suptitle("Scanning " + pltTitle + " Current: Max at {:1.3f} A".format(fitresult[1]))
+#if len(N) > 5:
+#    ax.plot(plotData, parabola(plotData, *fitresult))
+#    fig.suptitle("Scanning " + pltTitle + " Current: Max at {:1.3f} A".format(fitresult[1]))
 ax.set_xlabel("Shim Coil Setting (A)")
 ax.set_ylabel("Atom Number (arb)")
-if len(N)>1:
-    ax.set_ylim(0,N_max*1.1)
+#if len(N)>5:
+#    ax.set_ylim(0,N_max*1.1)
 ax.grid(True)
 
 datapath = df['filepath'][-1].split('\\')

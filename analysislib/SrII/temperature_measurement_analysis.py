@@ -27,12 +27,19 @@ try:
 except:
     print('couldn\'t create widthZ' )
 
+idx = np.argsort(TimeOfFlight)
+TimeOfFlight = TimeOfFlight[idx]
+widthX = widthX[idx]
 
-TimeOfFlight=np.delete(TimeOfFlight,-1)
-widthX=np.delete(widthX,-1)
-widthZ=np.delete(widthZ,-1)
-initial_guess_x=(widthX[0], SrConstants.mass*(widthX[-1]/TimeOfFlight[-1])**2/constants.k)
-initial_guess_z=(widthZ[0], SrConstants.mass*(widthZ[-1]/TimeOfFlight[-1])**2/constants.k)
+widthZ = widthZ[idx]
+
+#TimeOfFlight=np.delete
+# (TimeOfFlight,-1)
+#widthX=np.delete(widthX,-1)
+#widthZ=np.delete(widthZ,-1)
+alpha = 2
+initial_guess_x=(widthX[0]/alpha, SrConstants.mass*((widthX[-1]-widthX[0]/alpha)/TimeOfFlight[-1])**2/constants.k)
+initial_guess_z=(widthZ[0]/alpha, SrConstants.mass*((widthZ[-1]-widthZ[0]/alpha)/TimeOfFlight[-1])**2/constants.k)
 t_fit_x, t_fit_x_con = curve_fit(temp_fit, TimeOfFlight, widthX, p0=initial_guess_x,
                              bounds=([0, 0], [np.inf, np.inf]))
 t_fit_z, t_fit_z_con = curve_fit(temp_fit, TimeOfFlight, widthZ, p0=initial_guess_z,
@@ -43,7 +50,7 @@ avgTemp=(t_fit_x[1]+t_fit_z[1])/2
 
 
 fig = plt.figure()
-fig.suptitle("$T_X= "+ '{:0.1f}'.format(t_fit_x[1]*1e3) + "$ mK\n$T_Z= "+ '{:0.1f}'.format(t_fit_z[1]*1e3) + "$ mK\n" + r"$T_\mathrm{avg}= " + '{:0.1f}'.format(avgTemp*1e3) + "$ mK", fontsize=12)
+fig.suptitle("$T_X= "+ '{:0.0f}'.format(t_fit_x[1]*1e9) + "$ nK\n$T_Z= "+ '{:0.0f}'.format(t_fit_z[1]*1e9) + "$ nK\n" + r"$T_\mathrm{avg}= " + '{:0.0f}'.format(avgTemp*1e9) + "$ nK", fontsize=12)
 
 #fig.suptitle((pOptX[0] + pOptZ[0])/2, fontsize=70)
 ax_x = fig.add_subplot(121)
