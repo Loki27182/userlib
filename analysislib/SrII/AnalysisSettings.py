@@ -8,5 +8,6 @@ ROI = {'small':[700,1300,800,1300],
         'large':[200,1800,300,1448]}
 
 filters = {'median': {'small': 3, 'large': 7}, 
-           'gaussian': {'small': 3, 'large': 7}}
+           'gaussian': {'small': 3, 'large': 7}, 
+           'binning': {'none': 0, 'small': 2, 'medium': 4, 'large': 8}}
 
