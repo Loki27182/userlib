@@ -13,7 +13,8 @@ from helper_functions import saveAnalysisImage, basic_gaussian_fit
 import re as regexp
 
 import AnalysisSettings
-
+import warnings
+warnings.filterwarnings('ignore')
 data_series = data()
 run_data = data(path)
 run = Run(path)
@@ -22,10 +23,21 @@ variables = {name: data_series[name].values for name, value in run.get_globals()
 iterated_variables = {name: value for name, value in variables.items() if len(value)>1 and len(value)==len(np.unique(value))}
 static_variables = {name: value[0] for name, value in variables.items() if not (len(value)>1 and len(value)==len(np.unique(value)))}
 
-pixel_size = AnalysisSettings.camera['GH']['pixel_size']
-sensor_size = AnalysisSettings.camera['GH']['sensor_size']
+pixel_size = np.array(AnalysisSettings.camera['GH']['pixel_size'])*AnalysisSettings.camera['GH']['magnification']
+sensor_size = np.array(AnalysisSettings.camera['GH']['sensor_size'])
+quantum_efficiency = np.array(AnalysisSettings.camera['GH']['quantum_efficiency'])
+other_losses = np.array(AnalysisSettings.camera['GH']['losses'])
+focal_length = np.array(AnalysisSettings.camera['GH']['focal_length'])
+aperture_diameter = np.array(AnalysisSettings.camera['GH']['aperture_diameter'])
+
 mass = AnalysisSettings.Sr['mass']
 sigma0 = AnalysisSettings.Sr['sigma0']
+decay_time = AnalysisSettings.Sr['tau']
+
+solid_angle_fraction = np.pi*(aperture_diameter/2)**2/(4*np.pi*focal_length**2)
+
+total_efficiency = solid_angle_fraction*quantum_efficiency*(1-other_losses)
+
 
 if 'ROI' in variables.keys():
     if run_data['ROI'] in AnalysisSettings.ROI.keys():
@@ -50,9 +62,10 @@ median_filter_size = AnalysisSettings.filters['median']['small']
 binning_size = AnalysisSettings.filters['binning']['none']
 
 imaging_types = []
-if ('horizontal', 'absorption', 'atoms','CLASS') in run_data.index:
+pprint(run_data['Absorption'])
+if run_data['Absorption']:
     imaging_types.append('absorption')
-elif ('horizontal', 'fluorescence', 'atoms','CLASS') in run_data.index:
+else:
     imaging_types.append('fluorescence')
 
 print('Detected Imaging Types:')
@@ -67,7 +80,7 @@ if 'absorption' in imaging_types:
     refImage = run.get_image('horizontal','absorption','reference').astype('float') - run.get_image('horizontal','absorption','background').astype('float')
     refNorm = refImage.copy()
     atomNorm = atomImage.copy()
-
+    
     if len(ROI)>0:
         refNorm[ROI[2]:ROI[3],ROI[0]:ROI[1]] = 0
         atomNorm[ROI[2]:ROI[3],ROI[0]:ROI[1]] = 0
@@ -95,7 +108,7 @@ elif 'fluorescence' in imaging_types:
         atomImage = atomImage[ROI[2]:ROI[3],ROI[0]:ROI[1]]
         
     densityImages['fluorescence'] = gaussian_filter(atomImage,gaussian_filter_size)
-    atomNumbers['fluorescence'] = np.sum(densityImages['fluorescence'])
+    atomNumbers['fluorescence'] = np.sum(densityImages['fluorescence'])*decay_time/(total_efficiency*run_data['PulseDuration'])
 
     print('    Fluorescence image processed.')
 
@@ -152,7 +165,7 @@ for imageType, imageData in densityImages.items():
     else:
         titleString = '$N$ = {:.2E}'.format(atomNumbers[imageType])
     axImage.title.set_text(titleString)
-    
+    plt.tight_layout()
     print('    Done plotting ' + imageType + ' image.')
 
 print('Saving data...')
@@ -165,6 +178,12 @@ for imageType in atomNumbers.keys():
         run.save_result(imageType + '/y_width', w[imageType][1]/1*10**6)
 for imageType, imageData in densityImages.items():
     if run_data['SaveImage']:
+        datapath = path.split('\\')
+        #m = path.split('\\')
+        m = datapath[-1].split('_')
+        rep_number = m[-1][0:-3]
+        savepath = '\\'.join(datapath[0:-1]) + '\\' + rep_number + '_density.png'
+        plt.savefig(savepath)
         saveAnalysisImage(path,'single_shot_analysis',imageType,imageData)
 
 print('    Data saved.')

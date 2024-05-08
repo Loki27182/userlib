@@ -11,6 +11,8 @@ import_or_reload('labscriptlib.SrMain.connection_table')
 SRS_shutter_open_time=0
 SRS_shutter_close_time=0
 
+if CompensateProbeDetuning>0:
+    ProbeVCOVoltage = ProbeVCOVoltage - CompensateProbeDetuning*(.016-TimeOfFlight)/.016
 
 ################################################################################
 #   Get rid of any old atoms
@@ -38,8 +40,9 @@ def blow_away(t):
     # Disable red MOT power intensity lock
     red_MOT_Int_Disable.go_high(t)
 
-    # MOT shutters are closed
-    blue_MOT_shutter.go_low(t)
+    # blue MOT shutter is open for the DelayBeforeStart time, then closed for the last 50ms for the actual blow away.
+    blue_MOT_shutter.go_high(t)
+    blue_MOT_shutter.go_low(t + DelayBeforeStart)
     red_MOT_shutter.go_low(t)
 
     # Probe and repump shutters are open to blow away atoms
@@ -56,7 +59,7 @@ def blow_away(t):
     current_lock_enable.go_low(t)
     MOT_field.constant(t,0, units='A')
 
-    return(.05)
+    return(.05 + DelayBeforeStart)
 
 ################################################################################
 #   Get things ready for loading
@@ -114,11 +117,18 @@ def hold_blue(t):
 
     # Turn blue off
     blue_MOT_RF_TTL.go_high(t+BlueMOTHoldTime)
-    blue_MOT_shutter.go_low(t+BlueMOTHoldTime) 
     blue_MOT_power.constant(t+BlueMOTHoldTime+.0001,BlueMOTPower)
+    
+    blue_MOT_shutter.go_low(t+BlueMOTHoldTime) 
     blue_MOT_RF_TTL.go_low(t+BlueMOTHoldTime+.02)
 
     return BlueMOTHoldTime
+
+def blue_MOT_off(t):
+    MOT_field.constant(t,0,units='A')
+    current_lock_enable.go_low(t)
+
+    return TimeOfFlight
 
 def swap_ramp(t,dur,V_low_i,V_high_i,V_low_f,V_high_f,f_ramp):
     tau = t/dur
@@ -158,14 +168,25 @@ def red_MOT_off(t):
 #   Imaging
 ################################################################################
 def grasshopper_exposure(t,name,exposure):
-    GrassHp_XZ.expose(t-.0001,'absorption',name, GHExposureTime)
+    if Absorption:
+        GrassHp_XZ.expose(t-.0001,'absorption',name, GHExposureTime)
+    else:
+        GrassHp_XZ.expose(t-.0001,'fluorescence',name, GHExposureTime)
     if exposure:
-        probe_RF_TTL.go_low(t-.02)
-        probe_shutter.go_high(t-.02)
-        probe_RF_TTL.go_high(t)
-        probe_RF_TTL.go_low(t+PulseDuration)
-        probe_shutter.go_low(t+PulseDuration)
-        probe_RF_TTL.go_high(t+PulseDuration+.02)
+        if Absorption:
+            probe_RF_TTL.go_low(t-.02)
+            probe_shutter.go_high(t-.02)
+            probe_RF_TTL.go_high(t)
+            probe_RF_TTL.go_low(t+PulseDuration)
+            probe_shutter.go_low(t+PulseDuration)
+            probe_RF_TTL.go_high(t+PulseDuration+.02)
+        else:
+            blue_MOT_RF_TTL.go_high(t-.02)
+            blue_MOT_shutter.go_high(t-.02)
+            blue_MOT_RF_TTL.go_low(t)
+            blue_MOT_RF_TTL.go_high(t+PulseDuration)
+            blue_MOT_shutter.go_low(t+PulseDuration)
+            blue_MOT_RF_TTL.go_low(t+PulseDuration+.02)
 
     return GHExposureTime
 
@@ -228,13 +249,17 @@ t+=initialize(t)
 t+=load_blue_MOT(t)
 t+=ramp_down_blue(t)
 t+=hold_blue(t)
-t+=ramp_down_red(t)
-t+=red_MOT_narrow(t)
-t+=red_MOT_off(t)
+if RedMOTOn:
+    t+=ramp_down_red(t)
+    t+=red_MOT_narrow(t)
+    t+=red_MOT_off(t)
+else:
+    t+=blue_MOT_off(t)
 t+=grasshopper_exposure(t,'atoms',True)
 t+=GHDownTime
-t+=grasshopper_exposure(t,'reference',True)
-t+=GHDownTime
+if Absorption:
+    t+=grasshopper_exposure(t,'reference',True)
+    t+=GHDownTime
 t+=grasshopper_exposure(t,'background',False)
 t+=return_to_defaults(t)
 
