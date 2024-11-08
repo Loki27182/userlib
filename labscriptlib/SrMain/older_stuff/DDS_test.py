@@ -18,6 +18,8 @@ if CompensateProbeDetuning>0:
 #   Get rid of any old atoms
 ################################################################################
 def blow_away(t):
+    AD9914_test.set_freq(200000000.0)
+    AD9914_test.enable()
     # Start scope trigger low
     scope_trigger.go_low(t)
 
@@ -35,7 +37,7 @@ def blow_away(t):
     red_MOT_VCO.constant(t, RedMOTNarrowFrequency, units = 'MHz')
 
     # Set blue MOT VCO frequency
-    blue_sat_abs_AOM_offset.constant(t,SatAbsOffset)
+    blue_MOT_VCO.constant(t,BlueFreqOffset, units = 'MHz')
 
     # Disable red MOT power intensity lock
     red_MOT_Int_Disable.go_high(t)
@@ -51,7 +53,7 @@ def blow_away(t):
     repump_679_shutter.go_high(t)
 
     # Set beatnote frequencies
-    blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')
+    #blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')
     red_BN_DDS.setfreq(t,RedBeatnote/48, units = 'MHz')
     red_AOM_DDS.setfreq(t,RedMOTNarrowFrequency, units = 'MHz')
 
@@ -209,8 +211,8 @@ def return_to_defaults(t):
     red_MOT_RF_select.go_low(t)
     red_MOT_VCO.constant(t, RedMOTNarrowFrequency, units = 'MHz')
 
-    # Set blue sat abs AOM driver VCO offset voltage
-    blue_sat_abs_AOM_offset.constant(t,SatAbsOffset)
+    # Set blue MOT VCO frequency
+    blue_MOT_VCO.constant(t,BlueFreqOffset, units = 'MHz')
 
     # Enable red MOT power intensity lock
     red_MOT_Int_Disable.go_low(t)
@@ -227,7 +229,7 @@ def return_to_defaults(t):
     probe_shutter.go_low(t)
 
     # Set beatnote frequencies
-    blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')
+    #blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')
     red_BN_DDS.setfreq(t,RedBeatnote/48, units = 'MHz')
     red_AOM_DDS.setfreq(t,RedMOTNarrowFrequency, units = 'MHz')
 
@@ -247,8 +249,7 @@ t=0
 t+=blow_away(t)
 t+=initialize(t)
 t+=load_blue_MOT(t)
-if RampDownBlue:
-    t+=ramp_down_blue(t)
+t+=ramp_down_blue(t)
 t+=hold_blue(t)
 if RedMOTOn:
     t+=ramp_down_red(t)

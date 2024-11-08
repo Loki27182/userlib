@@ -26,7 +26,7 @@ from labscriptlib.SrMain.Subroutines.ConnectionTableSubs import black_level
 #    PULSEBLASTER
 ###############################################################################
 
-PulseBlasterUSB(name='pulseblaster_0', board_number=0, time_based_stop_workaround=True, time_based_stop_workaround_extra_time=0,clock_rate=10)
+PulseBlasterUSB(name='pulseblaster_0', board_number=0, time_based_stop_workaround=True, time_based_stop_workaround_extra_time=0,clock_rate=20)
 
 ClockLine(name='pulseblaster_0_ni_0_clock',				pseudoclock=pulseblaster_0.pseudoclock, connection='flag 0')
 ClockLine(name='pulseblaster_0_ni_1_clock',             pseudoclock=pulseblaster_0.pseudoclock, connection='flag 11')
@@ -73,8 +73,8 @@ DigitalOut(name='scope_trigger',          parent_device=pulseblaster_0.direct_ou
 
 NI_PCI_6733(name='ni_0', parent_device=pulseblaster_0_ni_0_clock, clock_terminal='/Dev1/PFI1', MAX_name = 'Dev1')
 
-AnalogOut(name='blue_sat_abs_AOM_offset',          parent_device=ni_0, connection='ao0')
-#          unit_conversion_class=AOMVCO,                     unit_conversion_parameters={'m':1.7588*10**6, 'b':111.2134*10**6, 'magnitudes':['k','M']})  # From data on 2024-04-01
+AnalogOut(name='blue_MOT_VCO',          parent_device=ni_0, connection='ao0',
+          unit_conversion_class=AOMVCO,                     unit_conversion_parameters={'m':1.7588*10**6, 'b':111.2134*10**6, 'magnitudes':['k','M']})  # From data on 2024-04-01
 AnalogOut(name='red_MOT_VCO',           parent_device=ni_0, connection='ao1',
           unit_conversion_class=AOMVCO,                     unit_conversion_parameters={'m':1.0282*10**6, 'b':79.9881*10**6, 'magnitudes':['k','M']})   # From data on 2024-04-01
 AnalogOut(name='MOT_field',             parent_device=ni_0, connection='ao2',
@@ -251,7 +251,7 @@ IMAQdxCamera(
 #################################################################################################################
 # Change these values to set up the grasshopper camera
 camera_mode = 7                     # Camera mode, must be 0 or 7. Mode 0 is higher noise, but also higher frame rate.
-camera_manual_exposure = 40.0     # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
+camera_manual_exposure = 4000.0     # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
 camera_sequence_exposure = 150.0     # Camera exposure time in us for sequences from runmanager (40us to 30s, but timeout needs to be increased from 5s for long exposures)
 camera_gain =  0                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
 camera_acceptable_zeros = 100       # The black level is calculated such that you will on average

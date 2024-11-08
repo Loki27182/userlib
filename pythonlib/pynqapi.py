@@ -22,7 +22,8 @@ from threading import Timer
 from time import time
 from datetime import datetime
 
-SERVER_IP_ADDRESS = '192.168.2.22'
+#SERVER_IP_ADDRESS = '192.168.2.22' # Old Jane
+SERVER_IP_ADDRESS = '192.168.2.32' # New (evil) Jane
 SERVER_PORT = 6750
 
 #LINK = imp.load_source('LINK', './pynqcom/pynqcom.py')
@@ -52,7 +53,7 @@ def _check():
         _pynqcom.lastSignalTime = time() # Jeff's debugging code
 
 # Minimum time between sending signals
-DelayTime = 0.1
+DelayTime = 0.15
 EnableDelay = False
 
 # Whether or not to tell the spincore library to write debug logfiles.
@@ -208,15 +209,17 @@ def pb_core_clock(clock_freq):
     #pynqapilogger.debug('Sending clock set command')
     _pynqcom.send_string("read_clk_freq()")
     min_wait(DelayTime) 
-    #pynqapilogger.debug('Sending clock rate')
     data = np.array(clock_freq, dtype = np.float64)
+    #pynqapilogger.debug('Sending clock rate: {:f}'.format(data))
     _pynqcom.connection.sendall(data)
     #pynqapilogger.debug('Reading clock rate')
     buff = _pynqcom.read_all_data(8)
+    return_val = np.frombuffer(buff,dtype = np.float64)
+    _pynqcom.frequency  = return_val*3/2
     #pynqapilogger.debug('Clock rate read')
-    _pynqcom.frequency = np.frombuffer(buff,dtype = np.float64)
     #pynqapilogger.debug('Saving clock rate')
-    #pynqapilogger.debug('Jane frequency is ' + str(_pynqcom.frequency))
+    #pynqapilogger.debug('Jane says frequency is {:f}'.format(np.float64(return_val)))
+    #print('Jane says frequency is {:f}'.format(np.float64(return_val)))
     #_pynqcom.frequency = np.frombuffer(buff,dtype = np.float64)
     restart_watchdog()
     return _pynqcom.frequency

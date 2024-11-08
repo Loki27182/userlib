@@ -88,7 +88,7 @@ def freefall_fit(t,z,t_test):
     z_test = drop_position(t_test,*p)
     return [p,dp,z_test]
 
-def plot_the_thing(ax,x,y,xlab,ylab,titleStr):
+def plot_the_thing(ax,x,y,xlab,ylab,titleStr,plottype='linear'):
     ax.plot(x,y,'--x')
     ax.set_xlabel(xlab,fontsize=20)
     ax.set_ylabel(ylab,fontsize=20)
@@ -98,4 +98,4 @@ def plot_the_thing(ax,x,y,xlab,ylab,titleStr):
     ax.tick_params(axis='y', labelsize=12)
     ax.set_ylim([np.min([0,np.min(y)*1.1]),np.max([0,np.max(y)*1.1])])
     ax.grid(True)
-
+    ax.set_xscale(plottype)

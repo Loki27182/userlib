@@ -11,11 +11,12 @@
 % logged duration, as well as a plot of the center frequency and power over
 % time, and an Allen deviation curve for the frequency data. It saves the
 % data as a .mat file, and saves the plots as a matlab figure and a png.
-
-clear
+function AOM_drift_logging(T,name,)
+% clear
 
 % path = 'D:/misc/2024/01/08/drift_plots/';       % Today's misc datapath
-
+f_0 = 79.95;
+f_f = 80.01;
 
 % T = 1;                                         % Max duration of log
 % name = 'short_test';                            % Root name of save files
@@ -50,23 +51,23 @@ clear
 % T = 60*19-11;
 % name = 'DDS_overnight';
 
-path = 'D:/misc/2024/01/11/drift_plots/';
+% path = 'D:/misc/2024/01/11/drift_plots/';
 % T = 10;
 % name = 'DDS_test';
 
 % T = 2*60;
 % name = 'DDS_long_test';
 
-T = 15*60;
-name = 'DDS_overnight';
+% T = 15*60;
+% name = 'DDS_overnight';
 
 dt = .5;                            % Timestep - needs to be chosen so data logging doesn't back up (>0.3s works for initial testing settings)
 saveData = true;                    % Save files or not
 remoteSave = false;                  % Whether or not to copy saved files to google drive
-plotContinuous = false;
+plotContinuous = true;
 timeout = 60;                       % Max timeout while waiting for SA to respond
 
-f = linspace(79.95,80.01,601);      % Hard coded until I figure out how to pull this from the SA
+f = linspace(f_0,f_f,601);      % Hard coded until I figure out how to pull this from the SA
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % You shouldn't have to adjust anything below here

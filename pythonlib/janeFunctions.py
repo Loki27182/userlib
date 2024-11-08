@@ -23,7 +23,8 @@ from time import time
 from datetime import datetime
 from sipyco.pc_rpc import Client
 
-SERVER_IP_ADDRESS = '192.168.2.22'
+#SERVER_IP_ADDRESS = '192.168.2.22' # Old Jane
+SERVER_IP_ADDRESS = '192.168.2.32'  # New (evil) Jane
 SERVER_PORT = 6750
 
 # Minimum time between sending signals

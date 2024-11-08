@@ -13,17 +13,18 @@ from time import time
 
 
 class LINK():
-    def __init__(self,server_ip_address = '192.168.2.99', server_port = 6750):
+    def __init__(self,server_ip_address = '192.168.2.32', server_port = 6750): # New (evil) Jane
+#    def __init__(self,server_ip_address = '192.168.2.22', server_port = 6750): # Old Jane
 
         # Create a TCP/IP socket
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         # Connect the socket to the port where the server is listening
         self.server_address = (server_ip_address, server_port)
-        print('connecting to server {0:} port {1:}'.format(server_ip_address,server_port))
+        #print('connecting to server {0:} port {1:}'.format(server_ip_address,server_port))
         self.connection.connect(self.server_address)
 
-        self.DelayTime = 0.12
+        self.DelayTime = 0.01
         self.EnableDelay = True
 
         self.lastCommTime = time()
@@ -80,4 +81,4 @@ class LINK():
 
     def __del__(self):
         self.connection.close()
-        print('connection to {} has been closed'.format(self.server_address))
+        #print('connection to {} has been closed'.format(self.server_address))
