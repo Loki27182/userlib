@@ -45,6 +45,7 @@ class LINK():
         self.connection.sendall(np.array(length_of_buffer,dtype=np.uint8))
         #self.min_wait()
         self.connection.sendall(buffer)
+        #print(string)
 
     def send_buff(self,buffer):
         self.min_wait()

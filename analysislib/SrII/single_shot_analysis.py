@@ -172,10 +172,10 @@ print('Saving data...')
 for imageType in atomNumbers.keys():
     run.save_result(imageType + "/atomNumber", atomNumbers[imageType])
     if run_data['FitData']:
-        run.save_result(imageType + '/x_position', x_0[imageType][0]/1*10**6)
-        run.save_result(imageType + '/y_position', x_0[imageType][1]/1*10**6)
-        run.save_result(imageType + '/x_width', w[imageType][0]/1*10**6)
-        run.save_result(imageType + '/y_width', w[imageType][1]/1*10**6)
+        run.save_result(imageType + '/x_position', x_0[imageType][0]/(1*10**6))
+        run.save_result(imageType + '/y_position', x_0[imageType][1]/(1*10**6))
+        run.save_result(imageType + '/x_width', w[imageType][0]/(1*10**6))
+        run.save_result(imageType + '/y_width', w[imageType][1]/(1*10**6))
 for imageType, imageData in densityImages.items():
     if run_data['SaveImage']:
         datapath = path.split('\\')

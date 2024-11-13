@@ -18,7 +18,7 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-variables, iterated_variables, results, filepaths = load_data()
+variables, iterated_variables, results, filepaths, all_iterated_variables = load_data()
 
 display_variable_info = dict()
 for name, val in iterated_variables.items():

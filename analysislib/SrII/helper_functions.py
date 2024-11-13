@@ -99,3 +99,15 @@ def plot_the_thing(ax,x,y,xlab,ylab,titleStr,plottype='linear'):
     ax.set_ylim([np.min([0,np.min(y)*1.1]),np.max([0,np.max(y)*1.1])])
     ax.grid(True)
     ax.set_xscale(plottype)
+
+def plot_the_thing_2D(ax,fig,x,y,z,xlab,ylab,titleStr,type1='linear',type2='linear'):
+    image = ax.imshow(np.flipud(z),extent=[np.min(x),np.max(x),np.min(y),np.max(y)],vmin=np.min(z),vmax=np.max(z))
+    cb = fig.colorbar(image, ax=ax)
+    cb.set_label(titleStr,fontsize=14)
+    ax.set_xlabel(xlab + ' (' + type1 + ')',fontsize=14)
+    ax.set_ylabel(ylab + ' (' + type1 + ')',fontsize=14)
+    #ax.set_ylabel(ylab,fontsize=14)
+    ax.set_aspect('auto')
+    #ax.title.set_text(titleStr)
+    #ax.title.set_size(14)
+    #ax.invert_yaxis()

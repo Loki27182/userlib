@@ -48,8 +48,8 @@ def _check():
         _pynqcom.current_addr = 0
         _pynqcom.current_bank = 0
         _pynqcom.max_banks = 250
-        _pynqcom.timer = Timer(2, watchdog)
-        _pynqcom.timer.start()
+        #_pynqcom.timer = Timer(2, watchdog)
+        #_pynqcom.timer.start()
         _pynqcom.lastSignalTime = time() # Jeff's debugging code
 
 # Minimum time between sending signals
@@ -96,19 +96,19 @@ ANALOG_OFF = 0
 PHASE_RESET = 1
 NO_PHASE_RESET = 0
 
-def watchdog():
-    min_wait(DelayTime)
-    _pynqcom.send_string("watchdog()")
-    _pynqcom.timer = Timer(2, watchdog)
-    _pynqcom.lastWatchdogTime = time()
-    _pynqcom.timer.start()
-
-def restart_watchdog():
-    _pynqcom.timer = Timer(2, watchdog)
-    _pynqcom.timer.start()
-
-def stop_watchdog():
-    _pynqcom.timer.cancel()
+#def watchdog():
+#    min_wait(DelayTime)
+#    _pynqcom.send_string("watchdog()")
+#    _pynqcom.timer = Timer(2, watchdog)
+#    _pynqcom.lastWatchdogTime = time()
+#    _pynqcom.timer.start()
+#
+#def restart_watchdog():
+#    _pynqcom.timer = Timer(2, watchdog)
+#    _pynqcom.timer.start()
+#
+#def stop_watchdog():
+#    _pynqcom.timer.cancel()
 
 #def watchdog2():
 #    pynqapilogger.debug('Watchdog2 triggered') # Jeff's debugging code
@@ -141,8 +141,8 @@ def pb_read_status():
     return {"stopped":bool(int(status[0])),"reset":bool(int(status[1])),"running":bool(int(status[2])), "waiting":bool(int(status[3]))}
     '''
 
+    #stop_watchdog()
     _check()
-    stop_watchdog()
     min_wait(DelayTime) 
     _pynqcom.send_string("send_status()")
     #pynqapilogger.debug('Sent "send_status()"') # Jeff's debugging code
@@ -155,7 +155,7 @@ def pb_read_status():
     #pynqapilogger.debug('Stopping watchdog2 timer') # Jeff's debugging code
     #_pynqcom.timer.cancel()
     status = np.frombuffer(status, dtype = np.uint8)
-    restart_watchdog()
+    #restart_watchdog()
     #status = [int(status)]
     # Convert to binary string representation, remove 0b
     #status = bin(status)[2:]
@@ -204,7 +204,7 @@ def pb_core_clock(clock_freq):
     # Reads clock speed of PYNQ board and passes on to driver, does not set the speed
 
     _check()
-    stop_watchdog()
+    #stop_watchdog()
     min_wait(DelayTime) 
     #pynqapilogger.debug('Sending clock set command')
     _pynqcom.send_string("read_clk_freq()")
@@ -221,7 +221,7 @@ def pb_core_clock(clock_freq):
     #pynqapilogger.debug('Jane says frequency is {:f}'.format(np.float64(return_val)))
     #print('Jane says frequency is {:f}'.format(np.float64(return_val)))
     #_pynqcom.frequency = np.frombuffer(buff,dtype = np.float64)
-    restart_watchdog()
+    #restart_watchdog()
     return _pynqcom.frequency
 
 def pb_start_programming(device):
@@ -252,10 +252,10 @@ def pb_set_phase(phase): # possible DDS extension
     if result < 0: raise RuntimeError(pb_get_error())
     return result
     '''
+    #stop_watchdog()
     _check()
-    stop_watchdog()
     # _pynqcom.send_string('print("Received phase {}")'.format(phase))
-    restart_watchdog()
+    #restart_watchdog()
     return 0
 
 
@@ -266,10 +266,10 @@ def pb_set_freq(freq): # possible DDS extension
     if result < 0: raise RuntimeError(pb_get_error())
     return result
     '''
+    #stop_watchdog()
     _check()
-    stop_watchdog()
     # _pynqcom.send_string('print("Received freq {}")'.format(freq))
-    restart_watchdog()
+    #restart_watchdog()
     return 0
 
 def pb_set_amp(amp, register): # possible DDS extension
@@ -280,10 +280,10 @@ def pb_set_amp(amp, register): # possible DDS extension
     if result < 0: raise RuntimeError(pb_get_error())
     return result
     '''
+    #stop_watchdog()
     _check()
-    stop_watchdog()
     # _pynqcom.send_string('print("Received amplitude {} to register {}")'.format(amp, register))
-    restart_watchdog()
+    #restart_watchdog()
     return 0
 
 
@@ -412,8 +412,8 @@ def pb_stop_programming(trans_to_buffered=False):
     if result != 0: raise RuntimeError(pb_get_error())
     return result
     '''
+    #stop_watchdog()
     _check()
-    stop_watchdog()
     min_wait(DelayTime) 
     _pynqcom.send_string("receive_program(connection)")
     # length_of_program = np.array(_pynqcom.current_addr,dtype=np.uint32)
@@ -474,7 +474,7 @@ def pb_stop_programming(trans_to_buffered=False):
     _pynqcom.program = [np.array(np.zeros([_pynqcom.addr_range//16,4]),dtype = np.uint32)]
     _pynqcom.current_addr = 0
     _pynqcom.current_bank = 0
-    restart_watchdog()
+    #restart_watchdog()
 
 def pb_start():
     '''
@@ -484,14 +484,14 @@ def pb_start():
     if result != 0: raise RuntimeError(pb_get_error())
     return result
     '''
+    #stop_watchdog()
     _check()
-    stop_watchdog()
     min_wait(DelayTime) 
     _pynqcom.send_string("toggle_start()")
     status = _pynqcom.read_all_data(1)
 # Should be external trigger
     # _pynqcom.send_string("toggle_trigger()")
-    restart_watchdog()
+    #restart_watchdog()
 
 def pb_stop():
     '''
@@ -501,15 +501,15 @@ def pb_stop():
     if result != 0: raise RuntimeError(pb_get_error())
     return result
     '''
+    #stop_watchdog()
     _check()
-    stop_watchdog()
     min_wait(DelayTime) 
     _pynqcom.send_string("reset_brd()")
     result = _pynqcom.read_all_data(1)
     #print(result)
     if not (result == b'\x00'):
         raise RuntimeError("PYNQ was not reset.")
-    restart_watchdog()
+    #restart_watchdog()
     return result
 
 def pb_close():
@@ -520,8 +520,8 @@ def pb_close():
     if result != 0: raise RuntimeError(pb_get_error())
     return result
     '''
+    #stop_watchdog()
     _check()
-    stop_watchdog()
 #    _pynqcom.send_string("abort()")
 #   _pynqcom.close()
     # del _pynqcom
