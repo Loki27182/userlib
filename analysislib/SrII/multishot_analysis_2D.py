@@ -13,7 +13,7 @@ from helper_functions import basic_gaussian_fit, saveAnalysisImage, plot_the_thi
 import AnalysisSettings
 from lyse_setup import load_data
 import os
-
+import shutil
 import warnings
 
 warnings.filterwarnings('ignore')
@@ -53,7 +53,7 @@ try:
     n_sm = variables['Smooth2D'][0]
 except:
     n_sm = 0
-
+#n_sm = 10
 try:
     var_0 = display_variable_info[list(display_variable_info.keys())[0]]
     var_1 = display_variable_info[list(display_variable_info.keys())[1]]
@@ -101,6 +101,7 @@ try:
     plt.tight_layout()
     for path in filepaths:
         plt.savefig(path + '.png')
+        plt.savefig('G:\\My Drive\\SrII\\Misc\\temp_log_files\\temp.png')
 except Exception as e:
     print(e)
 

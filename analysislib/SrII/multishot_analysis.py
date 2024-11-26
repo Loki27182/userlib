@@ -43,69 +43,73 @@ wz = results['y_width']
 
 plt.rcParams['text.usetex'] = True
 plt.rc('font', family='serif')
+fig = plt.figure()
+ax_N = fig.add_subplot(1,3,1)
+ax_wx = fig.add_subplot(1,3,2)
+ax_wz = fig.add_subplot(1,3,3)
 
-if len(display_variable_info)==0:
-    fig = plt.figure()
-    ax_N = fig.add_subplot(1,3,1)
-    ax_wx = fig.add_subplot(1,3,2)
-    ax_wz = fig.add_subplot(1,3,3)
+try:
+    if len(display_variable_info)==0:
 
-    this_variable = display_variable_info[list(display_variable_info.keys())[0]]
+        this_variable = display_variable_info[list(display_variable_info.keys())[0]]
 
-    
-    x_u = np.array(range(len(N)))*this_variable['axis_scale']
-    N_plot = N
-    wx_plot = wx
-    wz_plot = wz
 
-    plot_the_thing(ax_N,x_u,N_plot,
-               'Run number',
-               'N ($\\times10^6$)',
-               'Atom Number')
-    plot_the_thing(ax_wx,x_u,wx_plot,
-               'Run number',
-               '$\sigma_x$ ($\mu$m)',
-               'Gaussian Width (X)')
-    plot_the_thing(ax_wz,x_u,wz_plot,
-               'Run number',
-               '$\sigma_z$ ($\mu$m)',
-               'Gaussian Width (Z)')
+        x_u = np.array(range(len(N)))*this_variable['axis_scale']
+        N_plot = N
+        wx_plot = wx
+        wz_plot = wz
 
-    plt.tight_layout()
-elif len(display_variable_info)==1:
-    fig = plt.figure()
-
-    ax_N = fig.add_subplot(1,3,1)
-    ax_wx = fig.add_subplot(1,3,2)
-    ax_wz = fig.add_subplot(1,3,3)
-
-    this_variable = display_variable_info[list(display_variable_info.keys())[0]]
-
-    x = np.array(this_variable['values'])*this_variable['axis_scale']
-    x_u = np.array(this_variable['unique_values'])*this_variable['axis_scale']
-
-    N_plot = np.zeros(len(x_u))
-    wx_plot = np.zeros(len(x_u))
-    wz_plot = np.zeros(len(x_u))
-    for ii, x_u_ii in enumerate(x_u):
-        N_plot[ii] = np.mean(N[x==x_u_ii])/10**6
-        wx_plot[ii] = np.mean(wx[x==x_u_ii])/10**6
-        wz_plot[ii] = np.mean(wz[x==x_u_ii])/10**6
-    
-    plot_the_thing(ax_N,x_u,N_plot,
-                   this_variable['axis_label'],
+        plot_the_thing(ax_N,x_u,N_plot,
+                   'Run number',
                    'N ($\\times10^6$)',
+                   'Atom Number')
+        plot_the_thing(ax_wx,x_u,wx_plot,
+                   'Run number',
+                   '$\sigma_x$ ($\mu$m)',
+                   'Gaussian Width (X)')
+        plot_the_thing(ax_wz,x_u,wz_plot,
+                   'Run number',
+                   '$\sigma_z$ ($\mu$m)',
+                   'Gaussian Width (Z)')
+
+        plt.tight_layout()
+    elif len(display_variable_info)==1:
+        fig = plt.figure()
+
+        ax_N = fig.add_subplot(1,3,1)
+        ax_wx = fig.add_subplot(1,3,2)
+        ax_wz = fig.add_subplot(1,3,3)
+
+        this_variable = display_variable_info[list(display_variable_info.keys())[0]]
+
+        x = np.array(this_variable['values'])*this_variable['axis_scale']
+        x_u = np.array(this_variable['unique_values'])*this_variable['axis_scale']
+
+        N_plot = np.zeros(len(x_u))
+        wx_plot = np.zeros(len(x_u))
+        wz_plot = np.zeros(len(x_u))
+        for ii, x_u_ii in enumerate(x_u):
+            N_plot[ii] = np.mean(N[x==x_u_ii])/10**6
+            wx_plot[ii] = np.mean(wx[x==x_u_ii])/10**6
+            wz_plot[ii] = np.mean(wz[x==x_u_ii])/10**6
+
+        plot_the_thing(ax_N,x_u,N_plot,
+                       this_variable['axis_label'],
+                       'N ($\\times10^6$)',
+                       '')
+        plot_the_thing(ax_wx,x_u,wx_plot,
+                   this_variable['axis_label'],
+                   '$\sigma_x$ ($\mu$m)',
                    '')
-    plot_the_thing(ax_wx,x_u,wx_plot,
-               this_variable['axis_label'],
-               '$\sigma_x$ ($\mu$m)',
-               '')
-    plot_the_thing(ax_wz,x_u,wz_plot,
-               this_variable['axis_label'],
-               '$\sigma_z$ ($\mu$m)',
-               '')
+        plot_the_thing(ax_wz,x_u,wz_plot,
+                   this_variable['axis_label'],
+                   '$\sigma_z$ ($\mu$m)',
+                   '')
 
-    plt.tight_layout()
+        plt.tight_layout()
 
-    for path in filepaths:
-        plt.savefig(path + '.png')
+        for path in filepaths:
+            plt.savefig(path + '.png')
+except Exception as ex:
+    print('Error plotting')
+    print(ex)
