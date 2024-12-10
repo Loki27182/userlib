@@ -4,6 +4,7 @@ from labscript import *
 from labscript_devices.Pyncmaster import Pyncmaster as PulseBlasterUSB
 from labscript_devices.NI_DAQmx.labscript_devices import NI_PCI_6733, NI_PXIe_6361
 from labscript_devices.Arduino_DDS import Arduino_DDS
+from labscript_devices.Arduino_DDS_n_ch import Arduino_DDS_n_ch
 from labscript_devices.Arduino_Single_DDS import Arduino_Single_DDS
 from labscript_devices.Arduino_Repump_DDS import Arduino_Repump_DDS
 from labscript_devices.RepumpDDS import RepumpDDS
@@ -37,7 +38,7 @@ ClockLine(name='pulseblaster_0_red_AOM_arduino_clock',  pseudoclock=pulseblaster
 ClockLine(name='pulseblaster_0_red_BN_arduino_clock',  pseudoclock=pulseblaster_0.pseudoclock, connection='flag 9')
 ClockLine(name='pulseblaster_0_707_repump_arduino_clock',  pseudoclock=pulseblaster_0.pseudoclock, connection='flag 20')
 ClockLine(name='pulseblaster_0_clock_EOM_arduino_clock',  pseudoclock=pulseblaster_0.pseudoclock, connection='flag 12')
-ClockLine(name='pulseblaster_0_clock_AD9914_arduino_clock',pseudoclock=pulseblaster_0.pseudoclock, connection = 'flag 25')
+ClockLine(name='pulseblaster_0_clock_AD9914_arduino_clock',pseudoclock=pulseblaster_0.pseudoclock, connection = 'flag 26')
 
 Trigger(   name='GH_camera_trigger',        parent_device=pulseblaster_0.direct_outputs, connection = 'flag 3',  trigger_edge_type = 'falling')
 Trigger(   name='flea_camera_trigger',      parent_device=pulseblaster_0.direct_outputs, connection = 'flag 22', trigger_edge_type = 'falling')
@@ -142,10 +143,12 @@ AnalogOut(name='unused_0',  parent_device=ni_1, connection='ao1')
 #    BLUE BN ARDUINO
 ################################################################################
 
+#Arduino_DDS(name='blue_BN_arduino', parent_device=pulseblaster_0_blue_BN_arduino_clock, com_port='com5', baud_rate=115200, synchronous_first_line_repeat=True)
 Arduino_DDS(name='blue_BN_arduino', parent_device=pulseblaster_0_blue_BN_arduino_clock, com_port='com5', baud_rate=115200, synchronous_first_line_repeat=True)
 #
 DDSAD9954(name='blue_BN_DDS',       parent_device=blue_BN_arduino, connection='channel 0')
-#DDSAD9954(name='blue_broken_DDS',   parent_device=blue_BN_arduino, connection='channel 1')
+DDSAD9954(name='blue_broken_DDS',   parent_device=blue_BN_arduino, connection='channel 1')
+#DDSAD9954(name='blue_broken_DDS_2',   parent_device=blue_BN_arduino, connection='channel 2')
 
 ################################################################################
 #    Red BN ARDUINO
@@ -158,7 +161,7 @@ DDSAD9954(name='red_BN_DDS',       parent_device=red_BN_arduino, connection='cha
 ################################################################################
 #    RED AOM ARDUINO
 ################################################################################
-
+Arduino_DDS(name='red_AOM_arduino', parent_device=pulseblaster_0_red_AOM_arduino_clock, com_port='com4',  baud_rate=115200, synchronous_first_line_repeat=True)
 #
 DDSAD9954(name='red_AOM_DDS',       parent_device=red_AOM_arduino, connection='channel 0')
 DDSAD9954(name='red_unused_DDS',    parent_device=red_AOM_arduino, connection='channel 1')
@@ -167,9 +170,9 @@ DDSAD9954(name='red_unused_DDS',    parent_device=red_AOM_arduino, connection='c
 ###################
 # AD9914 Test
 ###################
-Arduino_DDS(name='AD9914_arduino', parent_device=pulseblaster_0_clock_AD9914_arduino_clock, com_port='com7',  baud_rate=115200, synchronous_first_line_repeat=True)
+#Arduino_Single_DDS(name='AD9914_arduino', parent_device=pulseblaster_0_clock_AD9914_arduino_clock, com_port='com3',  baud_rate=115200, synchronous_first_line_repeat=True)
 
-AD9914(name='AD9914', parent_device = AD9914_arduino, connection = 'channel 0')
+#DDSAD9954(name='AD9914', parent_device = AD9914_arduino, connection = 'channel 0')
 
 ################################################################################
 #    707 Repump ARDUINO
