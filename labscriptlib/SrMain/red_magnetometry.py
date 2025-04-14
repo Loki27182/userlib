@@ -32,7 +32,7 @@ def blow_away(t):
 
     # Set red MOT RF source to internal VCO, and set voltage for red on resonance
     red_MOT_RF_select.go_low(t)
-    red_MOT_VCO.constant(t, RedLoadPumpFreq, units = 'MHz')
+    red_MOT_VCO.constant(t, RedMOTNarrowFrequency, units = 'MHz')
 
     # Set blue MOT VCO frequency
     blue_sat_abs_AOM_offset.constant(t,SatAbsOffset)
@@ -83,9 +83,6 @@ def initialize(t):
     if RedMOTOn:
         red_MOT_shutter.go_high(t)
         red_MOT_Int_Disable.go_low(t)
-
-    Red_kill_beam_shutter.go_low(t)
-    DP_main_shutter.go_low(t)
     
     return(.05)
 
@@ -93,7 +90,7 @@ def initialize(t):
 #   Blue MOT load
 ################################################################################
 def load_blue_MOT(t):
-    #scope_trigger.go_high(t)
+    scope_trigger.go_high(t)
     # Open MOT shutters with light off
     blue_MOT_RF_TTL.go_high(t-.02)
     blue_MOT_shutter.go_high(t-.02) 
@@ -108,7 +105,7 @@ def load_blue_MOT(t):
 #   Transfer
 ################################################################################
 def ramp_down_blue(t):
-    #scope_trigger.go_low(t)
+    scope_trigger.go_low(t)
     blue_MOT_power.ramp(t,BlueMOTRampDuration,BlueMOTPower,BlueMOTTransferPower,100000)
     MOT_field.ramp(t,BlueMOTRampDuration,BlueMOTField,BlueMOTCompressionField,100000,units='A')
     
@@ -146,7 +143,7 @@ def swap_ramp(t,dur,V_low_i,V_high_i,V_low_f,V_high_f,f_ramp):
     return scale_factor*np.mod(dvdt*t,dV_i) + offset
 
 def ramp_down_red(t):
-    #scope_trigger.go_high(t)
+    scope_trigger.go_high(t)
     red_MOT_power.ramp(t,RedMOTRampTime,RedMOTRampPower0,RedMOTRampPowerF,500000)
     red_MOT_VCO.customramp(t,RedMOTRampTime,swap_ramp,RedMOTRamp0L,RedMOTRamp0H,RedMOTRampFL,RedMOTRampFH,RedMOTRampFreq,samplerate=500000,units='MHz')
     MOT_field.ramp(t,RedMOTRampTime,RedMOTField,RedMOTFieldFinal,500000,units='A')
@@ -154,14 +151,14 @@ def ramp_down_red(t):
     return(RedMOTRampTime)
 
 def red_MOT_narrow(t):
-    #scope_trigger.go_low(t)
+    scope_trigger.go_low(t)
     red_MOT_power.constant(t,RedMOTNarrowPower)
     red_MOT_RF_select.go_high(t)
 
     return(RedMOTNarrowTime)
 
 def red_MOT_off(t):
-    #scope_trigger.go_high(t)
+    scope_trigger.go_high(t)
     red_MOT_RF_TTL.go_low(t)
     MOT_field.constant(t,0, units='A')
     current_lock_enable.go_low(t)
@@ -178,16 +175,13 @@ def grasshopper_exposure(t,name,exposure):
         GrassHp_XZ.expose(t-.0001,'fluorescence',name, GHExposureTime)
     if exposure:
         if Absorption:
-            if MagnetometryPulse>0:
-                red_MOT_RF_TTL.go_low(t-.02-RedMOTNarrowTime)
-                red_MOT_shutter.go_high(t-.02-RedMOTNarrowTime)
-                red_MOT_RF_TTL.go_high(t-RedMOTNarrowTime)
+            if MagnetometryPulse:
+                red_MOT_RF_TTL.go_low(t-.0202)
+                red_MOT_shutter.go_low(t-.0202)
+                red_MOT_RF_TTL.go_high(t-.0002)
                 red_MOT_RF_TTL.go_low(t)
-                red_MOT_shutter.go_low(t)
+                red_MOT_shutter.go_high(t)
                 red_MOT_RF_TTL.go_high(t+.02)
-            elif KillPulse>0:
-                Red_kill_beam_shutter.go_high(t-KillPulse-.00342)
-                Red_kill_beam_shutter.go_low(t)
             probe_RF_TTL.go_low(t-.02)
             probe_shutter.go_high(t-.02)
             probe_RF_TTL.go_high(t)
@@ -209,7 +203,7 @@ def grasshopper_exposure(t,name,exposure):
 ################################################################################
 def return_to_defaults(t):
     t+=.01
-    #scope_trigger.go_low(t)
+    scope_trigger.go_low(t)
     # Set probe frequency
     probe_VCO.constant(t,ProbeVCOVoltage)
 
@@ -270,7 +264,6 @@ if RedMOTOn:
     t+=red_MOT_off(t)
 else:
     t+=blue_MOT_off(t)
-t_exp = t
 t+=grasshopper_exposure(t,'atoms',True)
 t+=GHDownTime
 if Absorption:
@@ -278,8 +271,5 @@ if Absorption:
     t+=GHDownTime
 t+=grasshopper_exposure(t,'background',False)
 t+=return_to_defaults(t)
-
-scope_trigger.go_high(t_exp+ScopeTriggerOffset)
-scope_trigger.go_low(t_exp+ScopeTriggerOffset+.1)
 
 stop(t)

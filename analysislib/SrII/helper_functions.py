@@ -75,6 +75,10 @@ def temp_fit(t,w,t_test):
     w_test = expansion_TOF(t_test,*p)
     return [p, dp, w_test]
 
+def triple_peak(x,*p):
+    a, b, c, d, e, f, g = p
+    return a-b*np.exp(-(x-c)^2/d^2)-e*np.exp(-(x-c-f)^2/d^2)-g*np.exp(-(x-c+f)^2/d^2)
+
 def drop_position(t, *p):
     z0, g = p
     return z0 - g/2*t**2
@@ -104,8 +108,14 @@ def plot_the_thing_2D(ax,fig,x,y,z,xlab,ylab,titleStr,type1='linear',type2='line
     image = ax.imshow(np.flipud(z),extent=[np.min(x),np.max(x),np.min(y),np.max(y)],vmin=np.min(z),vmax=np.max(z))
     cb = fig.colorbar(image, ax=ax)
     cb.set_label(titleStr,fontsize=14)
-    ax.set_xlabel(xlab + ' (' + type1 + ')',fontsize=14)
-    ax.set_ylabel(ylab + ' (' + type1 + ')',fontsize=14)
+    if type1 is 'linear':
+        ax.set_xlabel(xlab,fontsize=14)
+    else:
+        ax.set_xlabel(xlab + ' (' + type1 + ')',fontsize=14)
+    if type2 is 'linear':
+        ax.set_ylabel(ylab,fontsize=14)
+    else:
+        ax.set_ylabel(ylab + ' (' + type2 + ')',fontsize=14)
     #ax.set_ylabel(ylab,fontsize=14)
     ax.set_aspect('auto')
     #ax.title.set_text(titleStr)

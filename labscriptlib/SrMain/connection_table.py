@@ -10,6 +10,7 @@ from labscript_devices.Arduino_Repump_DDS import Arduino_Repump_DDS
 from labscript_devices.RepumpDDS import RepumpDDS
 from labscript_devices.DDSAD9954 import DDSAD9954
 from labscript_devices.IMAQdxCamera.labscript_devices import IMAQdxCamera
+from labscript_devices.SpinnakerCamera.labscript_devices import SpinnakerCamera
 from labscript_devices.PrincetonInstrumentsCamera.labscript_devices import PrincetonInstrumentsCamera
 from labscript_devices.LightCrafterDMD import LightCrafterDMD, ImageSet
 from labscript_devices.AD9914 import AD9914
@@ -34,34 +35,35 @@ ClockLine(name='pulseblaster_0_ni_0_clock',				pseudoclock=pulseblaster_0.pseudo
 ClockLine(name='pulseblaster_0_ni_1_clock',             pseudoclock=pulseblaster_0.pseudoclock, connection='flag 11')
 ClockLine(name='pulseblaster_0_ni_2_clock',             pseudoclock=pulseblaster_0.pseudoclock, connection='flag 14')
 ClockLine(name='pulseblaster_0_blue_BN_arduino_clock', 	pseudoclock=pulseblaster_0.pseudoclock, connection='flag 1')
-ClockLine(name='pulseblaster_0_red_AOM_arduino_clock',  pseudoclock=pulseblaster_0.pseudoclock, connection='flag 2')
+#ClockLine(name='pulseblaster_0_red_AOM_arduino_clock',  pseudoclock=pulseblaster_0.pseudoclock, connection='flag 2')
 ClockLine(name='pulseblaster_0_red_BN_arduino_clock',  pseudoclock=pulseblaster_0.pseudoclock, connection='flag 9')
-ClockLine(name='pulseblaster_0_707_repump_arduino_clock',  pseudoclock=pulseblaster_0.pseudoclock, connection='flag 20')
-ClockLine(name='pulseblaster_0_clock_EOM_arduino_clock',  pseudoclock=pulseblaster_0.pseudoclock, connection='flag 12')
-ClockLine(name='pulseblaster_0_clock_AD9914_arduino_clock',pseudoclock=pulseblaster_0.pseudoclock, connection = 'flag 26')
+#ClockLine(name='pulseblaster_0_707_repump_arduino_clock',  pseudoclock=pulseblaster_0.pseudoclock, connection='flag 20')
+#ClockLine(name='pulseblaster_0_clock_EOM_arduino_clock',  pseudoclock=pulseblaster_0.pseudoclock, connection='flag 12')
+#ClockLine(name='pulseblaster_0_clock_AD9914_arduino_clock',pseudoclock=pulseblaster_0.pseudoclock, connection = 'flag 26')
 
 Trigger(   name='GH_camera_trigger',        parent_device=pulseblaster_0.direct_outputs, connection = 'flag 3',  trigger_edge_type = 'falling')
-Trigger(   name='flea_camera_trigger',      parent_device=pulseblaster_0.direct_outputs, connection = 'flag 22', trigger_edge_type = 'falling')
-Trigger(   name='PIXIS_camera_trigger',     parent_device=pulseblaster_0.direct_outputs, connection = 'flag 15', trigger_edge_type = 'rising')
+#Trigger(   name='PIXIS_camera_trigger',     parent_device=pulseblaster_0.direct_outputs, connection = 'flag 15', trigger_edge_type = 'rising')
+#Trigger(   name='Flea_camera_trigger',        parent_device=pulseblaster_0.direct_outputs, connection = 'flag 23',  trigger_edge_type = 'falling')
+Trigger(   name='Blackfly_camera_trigger',        parent_device=pulseblaster_0.direct_outputs, connection = 'flag 23',  trigger_edge_type = 'falling')
 DigitalOut(name='current_lock_enable',      parent_device=pulseblaster_0.direct_outputs, connection = 'flag 4')
-DigitalOut(name='red_inj_RF_TTL',   		parent_device=pulseblaster_0.direct_outputs, connection = 'flag 5')
+DigitalOut(name='scope_trigger',   		parent_device=pulseblaster_0.direct_outputs, connection = 'flag 5')
 DigitalOut(name='probe_shutter',            parent_device=pulseblaster_0.direct_outputs, connection = 'flag 6')
 DigitalOut(name='probe_RF_TTL',             parent_device=pulseblaster_0.direct_outputs, connection = 'flag 7')
 DigitalOut(name='red_MOT_RF_select',        parent_device=pulseblaster_0.direct_outputs, connection = 'flag 8')
 DigitalOut(name='red_MOT_Int_Disable',      parent_device=pulseblaster_0.direct_outputs, connection = 'flag 10')
-DigitalOut(name='main_DP_shutter',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 16')
-DigitalOut(name='grating_MOT_AOM_TTL',      parent_device=pulseblaster_0.direct_outputs, connection = 'flag 23')
-DigitalOut(name='grating_probe_AOM_TTL',    parent_device=pulseblaster_0.direct_outputs, connection = 'flag 21')
-DigitalOut(name='cross_DP_shutter',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 17')
-DigitalOut(name='cross_DP_AOM_TTL',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 18')
-DigitalOut(name='vert_DP_shutter',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 19')
-DigitalOut(name='vert_DP_AOM_TTL',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 13')
-DigitalOut(name='gMOT_coil_TTL',            parent_device=pulseblaster_0.direct_outputs, connection = 'flag 24')
+DigitalOut(name='Red_kill_beam_shutter',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 16')
+#DigitalOut(name='grating_MOT_AOM_TTL',      parent_device=pulseblaster_0.direct_outputs, connection = 'flag 23')
+#DigitalOut(name='grating_probe_AOM_TTL',    parent_device=pulseblaster_0.direct_outputs, connection = 'flag 21')
+#DigitalOut(name='cross_DP_shutter',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 17')
+DigitalOut(name='DP_main_shutter',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 18')
+#DigitalOut(name='vert_DP_shutter',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 19')
+#DigitalOut(name='vert_DP_AOM_TTL',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 13')
+#DigitalOut(name='gMOT_coil_TTL',            parent_device=pulseblaster_0.direct_outputs, connection = 'flag 24')
 # DigitalOut(name='gMOT_IGBT_TTL',            parent_device=pulseblaster_0.direct_outputs, connection = 'flag 25')
 #DigitalOut(name='gMOT_MOS_TTL_t',           parent_device=pulseblaster_0.direct_outputs, connection = 'flag 26')
-DigitalOut(name='gMOT_MOS_TTL_b',           parent_device=pulseblaster_0.direct_outputs, connection = 'flag 27')
-DigitalOut(name='pixis_ext_shutter',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 28')
-DigitalOut(name='scope_trigger',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 25')
+#DigitalOut(name='gMOT_MOS_TTL_b',           parent_device=pulseblaster_0.direct_outputs, connection = 'flag 27')
+#DigitalOut(name='pixis_ext_shutter',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 28')
+#DigitalOut(name='scope_trigger',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 25')
 
 
 
@@ -143,8 +145,8 @@ AnalogOut(name='unused_0',  parent_device=ni_1, connection='ao1')
 #    BLUE BN ARDUINO
 ################################################################################
 
-#Arduino_DDS(name='blue_BN_arduino', parent_device=pulseblaster_0_blue_BN_arduino_clock, com_port='com5', baud_rate=115200, synchronous_first_line_repeat=True)
 Arduino_DDS(name='blue_BN_arduino', parent_device=pulseblaster_0_blue_BN_arduino_clock, com_port='com5', baud_rate=115200, synchronous_first_line_repeat=True)
+#Arduino_DDS_n_ch(name='blue_BN_arduino', parent_device=pulseblaster_0_blue_BN_arduino_clock, com_port='com5', baud_rate=115200, synchronous_first_line_repeat=True,num_DDS=2)
 #
 DDSAD9954(name='blue_BN_DDS',       parent_device=blue_BN_arduino, connection='channel 0')
 DDSAD9954(name='blue_broken_DDS',   parent_device=blue_BN_arduino, connection='channel 1')
@@ -161,10 +163,10 @@ DDSAD9954(name='red_BN_DDS',       parent_device=red_BN_arduino, connection='cha
 ################################################################################
 #    RED AOM ARDUINO
 ################################################################################
-Arduino_DDS(name='red_AOM_arduino', parent_device=pulseblaster_0_red_AOM_arduino_clock, com_port='com4',  baud_rate=115200, synchronous_first_line_repeat=True)
+#Arduino_DDS(name='red_AOM_arduino', parent_device=pulseblaster_0_red_AOM_arduino_clock, com_port='com4',  baud_rate=115200, synchronous_first_line_repeat=True)
 #
-DDSAD9954(name='red_AOM_DDS',       parent_device=red_AOM_arduino, connection='channel 0')
-DDSAD9954(name='red_unused_DDS',    parent_device=red_AOM_arduino, connection='channel 1')
+#DDSAD9954(name='red_AOM_DDS',       parent_device=red_AOM_arduino, connection='channel 0')
+#DDSAD9954(name='red_unused_DDS',    parent_device=red_AOM_arduino, connection='channel 1')
 
 
 ###################
@@ -258,25 +260,65 @@ IMAQdxCamera(
 
 #################################################################################################################
 # Change these values to set up the grasshopper camera
-camera_mode = 7                     # Camera mode, must be 0 or 7. Mode 0 is higher noise, but also higher frame rate.
-camera_manual_exposure = 4000.0     # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
-camera_sequence_exposure = 150.0     # Camera exposure time in us for sequences from runmanager (40us to 30s, but timeout needs to be increased from 5s for long exposures)
-camera_gain =  0                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
-camera_acceptable_zeros = 100       # The black level is calculated such that you will on average
+# Basic device setup
+gh_name = 'cam_gh_0'
+gh_trig = GH_camera_trigger
+gh_SN = '1E1000E6C21E'
+gh_image_folder = 'xz'
+
+# Exposure settings
+gh_mode = 7                     # Camera mode, must be 0 or 7. Mode 0 is higher noise, but also higher frame rate.
+gh_exp = 1000.0     # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
+gh_gain_man =  0                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
+gh_gain_seq =  0                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
+gh_acceptable_zeros = 100       # The black level is calculated such that you will on average
                                     # have camera_acceptable_zeros zero counts on the low end of the distribution.
                                     # This should be small, as any pixel that would be less than zero 
                                     # will be clipped to 0, which we don't want for actual data
+#################################################################################################################
+## # Change these values to set up the flea camera
+## Basic device setup
+#fl_name = 'cam_fl_0'
+#fl_trig = Flea_camera_trigger
+#fl_SN = '1E1000E7E39C'
+#fl_image_folder = 'yz'
+#
+## Exposure settings
+#flea_mode = 7
+#flea_exp = 1000.0
+#flea_gain_man = 0
+#flea_gain_seq = 0
+## Still need to calibrate black level function for the flea, and standardize that process
+
+#################################################################################################################
+# # Change these values to set up the blackfly camera
+# Basic device setup
+bf_name = 'cam_bf_0'
+bf_trig = Blackfly_camera_trigger
+bf_SN = '1E1001674ED9'
+bf_image_folder = 'yz'
+
+# Exposure settings
+bf_mode = 7
+bf_exp = 1000.0
+bf_gain_man = 0
+bf_gain_seq = 0
+# Still need to calibrate black level function for the blackfly, and standardize that process
+
+#################################################################################################################
 # You shouldn't need to change anything below here for camera settings
 #################################################################################################################
 
 # Calculating correct black level for given settings
-camera_black_level = black_level(camera_gain,camera_mode,camera_acceptable_zeros)
+gh_black_level_man = black_level(gh_gain_man,gh_mode,gh_acceptable_zeros)
+gh_black_level_seq = black_level(gh_gain_seq,gh_mode,gh_acceptable_zeros)
 
-Grasshopper_manual_camera_attributes = {
+# Make attributes dict for GH manual and sequence modes
+gh_attr_man = {
     'CameraAttributes::ImageFormatControl::OnBoardColorProcessEnabled': 0,
     'CameraAttributes::AnalogControl::GainAuto': 'Off',
-	'CameraAttributes::AnalogControl::Gain': camera_gain,
-	'CameraAttributes::AnalogControl::BlackLevel': camera_black_level,
+	'CameraAttributes::AnalogControl::Gain': gh_gain_man,
+	'CameraAttributes::AnalogControl::BlackLevel': gh_black_level_man,
 	'CameraAttributes::AnalogControl::GammaEnabled': 0,
     'CameraAttributes::AcquisitionControl::TriggerMode': 'Off',
     'CameraAttributes::AcquisitionControl::AcquisitionFrameRateEnabled': 0,
@@ -285,19 +327,18 @@ Grasshopper_manual_camera_attributes = {
     'CameraAttributes::AcquisitionControl::TriggerActivation': 'Falling Edge',
     'CameraAttributes::AcquisitionControl::ExposureMode': 'Timed',
     'CameraAttributes::AcquisitionControl::ExposureAuto': 'Off',
-	'CameraAttributes::AcquisitionControl::ExposureTime': camera_manual_exposure,
+	'CameraAttributes::AcquisitionControl::ExposureTime': gh_exp,
     'CameraAttributes::AcquisitionControl::pgrExposureCompensationAuto': 'Off',
     'CameraAttributes::AcquisitionControl::pgrExposureCompensation': 0,
-    'CameraAttributes::ImageFormatControl::VideoMode': camera_mode
+    'CameraAttributes::ImageFormatControl::VideoMode': gh_mode
 }
-
-Grasshopper_sequence_camera_attributes = {
+gh_attr_seq = {
     'CameraAttributes::ImageFormatControl::OnBoardColorProcessEnabled': 0,
     'CameraAttributes::AnalogControl::GainAuto': 'Off',
-	'CameraAttributes::AnalogControl::Gain': camera_gain,
-	'CameraAttributes::AnalogControl::BlackLevel': camera_black_level,
+	'CameraAttributes::AnalogControl::Gain': gh_gain_seq,
+	'CameraAttributes::AnalogControl::BlackLevel': gh_black_level_seq,
 	'CameraAttributes::AnalogControl::GammaEnabled': 0,
-	'CameraAttributes::AcquisitionControl::ExposureTime': camera_sequence_exposure,
+	'CameraAttributes::AcquisitionControl::ExposureTime': gh_exp,
     'CameraAttributes::AcquisitionControl::ExposureAuto': 'Off',
     'CameraAttributes::AcquisitionControl::pgrExposureCompensation': 0,
     'CameraAttributes::AcquisitionControl::pgrExposureCompensationAuto': 'Off',
@@ -307,42 +348,117 @@ Grasshopper_sequence_camera_attributes = {
     'CameraAttributes::AcquisitionControl::TriggerSource': 'Line 0',
     'CameraAttributes::AcquisitionControl::TriggerActivation': 'Falling Edge',
     'CameraAttributes::AcquisitionControl::ExposureMode': 'Trigger Width',
-    'CameraAttributes::ImageFormatControl::VideoMode': camera_mode
+    'CameraAttributes::ImageFormatControl::VideoMode': gh_mode
 }
 
-# FleaCameraUSB_camera_attributes = {
-#     'AcquisitionAttributes::Timeout': 10000,
-#     'CameraAttributes::AcquisitionControl::AcquisitionMode': 'Continuous',
-#     'CameraAttributes::AcquisitionControl::ExposureMode': 'Trigger Width',
-#     'CameraAttributes::AcquisitionControl::TriggerActivation': 'Falling Edge',
-#     'CameraAttributes::AcquisitionControl::TriggerDelay': 0.0,
-#     'CameraAttributes::AcquisitionControl::TriggerDelayEnabled': 0,
-#     'CameraAttributes::AcquisitionControl::TriggerMode': 'On',
-#     'CameraAttributes::AcquisitionControl::TriggerSelector': 'Exposure Active',
-#     'CameraAttributes::AcquisitionControl::TriggerSource': 'Line 0',
-# }
+## Make attributes dict for Flea manual and sequence modes
+#fl_attr_man = {
+#    'CameraAttributes::AnalogControl::GainAuto': 'Off',
+#	'CameraAttributes::AnalogControl::Gain': flea_gain_man,
+#	'CameraAttributes::AnalogControl::BlackLevel': 0,
+#	'CameraAttributes::AnalogControl::GammaEnabled': 0,
+#    'CameraAttributes::AcquisitionControl::TriggerMode': 'Off',
+#    'CameraAttributes::AcquisitionControl::AcquisitionFrameRateEnabled': 0,
+#    'CameraAttributes::AcquisitionControl::TriggerSelector': 'Frame Start',
+#    'CameraAttributes::AcquisitionControl::TriggerSource': 'Line 0',
+#    'CameraAttributes::AcquisitionControl::TriggerActivation': 'Falling Edge',
+#    'CameraAttributes::AcquisitionControl::ExposureMode': 'Timed',
+#    'CameraAttributes::AcquisitionControl::ExposureAuto': 'Off',
+#	'CameraAttributes::AcquisitionControl::ExposureTime': flea_exp,
+#    'CameraAttributes::ImageFormatControl::VideoMode': flea_mode
+#}
+#
+#fl_attr_seq = {
+#    'CameraAttributes::AnalogControl::GainAuto': 'Off',
+#	'CameraAttributes::AnalogControl::Gain': flea_gain_seq,
+#	'CameraAttributes::AnalogControl::BlackLevel': 0,
+#	'CameraAttributes::AnalogControl::GammaEnabled': 0,
+#	'CameraAttributes::AcquisitionControl::ExposureTime': flea_exp,
+#    'CameraAttributes::AcquisitionControl::ExposureAuto': 'Off',
+#    'CameraAttributes::AcquisitionControl::AcquisitionFrameRateEnabled': 0,
+#    'CameraAttributes::AcquisitionControl::TriggerSelector': 'Exposure Active',
+#    'CameraAttributes::AcquisitionControl::TriggerMode': 'On',
+#    'CameraAttributes::AcquisitionControl::TriggerSource': 'Line 0',
+#    'CameraAttributes::AcquisitionControl::TriggerActivation': 'Falling Edge',
+#    'CameraAttributes::AcquisitionControl::ExposureMode': 'Trigger Width',
+#    'CameraAttributes::ImageFormatControl::VideoMode': flea_mode
+#}
 
+# Make attributes dict for Blackfly manual and sequence modes
+bf_attr_man = {
+    'CameraAttributes::AnalogControl::GainAuto': 'Off',
+	'CameraAttributes::AnalogControl::Gain': bf_gain_man,
+	'CameraAttributes::AnalogControl::GainConversion': 'HCG',
+	'CameraAttributes::AnalogControl::BlackLevel': 0,
+	'CameraAttributes::AnalogControl::BlackLevelClampingEnable': 0,
+	'CameraAttributes::AnalogControl::GammaEnable': 0,
+    'CameraAttributes::AcquisitionControl::ExposureMode': 'Timed',
+    'CameraAttributes::AcquisitionControl::TriggerMode': 'Off',
+    'CameraAttributes::AcquisitionControl::AcquisitionFrameRateEnable': 0,
+    'CameraAttributes::AcquisitionControl::TriggerDelay': 25.0,
+    'CameraAttributes::AcquisitionControl::TriggerSource': 'Line 0',
+    'CameraAttributes::AcquisitionControl::TriggerActivation': 'Falling Edge',
+    'CameraAttributes::AcquisitionControl::ExposureAuto': 'Off',
+	'CameraAttributes::AcquisitionControl::ExposureTime': bf_exp,
+    'CameraAttributes::ImageFormatControl::PixelFormat': 'Mono16',
+    'CameraAttributes::ImageFormatControl::AdcBitDepth': '12 Bit'
+}
+
+bf_attr_seq = {
+    'CameraAttributes::AnalogControl::GainAuto': 'Off',
+	'CameraAttributes::AnalogControl::Gain': bf_gain_seq,
+	'CameraAttributes::AnalogControl::GainConversion': 'HCG',
+	'CameraAttributes::AnalogControl::BlackLevel': 0,
+	'CameraAttributes::AnalogControl::BlackLevelClampingEnable': 0,
+	'CameraAttributes::AnalogControl::GammaEnable': 0,
+	'CameraAttributes::AcquisitionControl::ExposureTime': bf_exp,
+    'CameraAttributes::AcquisitionControl::ExposureAuto': 'Off',
+    'CameraAttributes::AcquisitionControl::AcquisitionFrameRateEnable': 0,
+    'CameraAttributes::AcquisitionControl::TriggerDelay': 25.0,
+    'CameraAttributes::AcquisitionControl::TriggerMode': 'On',
+    'CameraAttributes::AcquisitionControl::TriggerSource': 'Line 0',
+    'CameraAttributes::AcquisitionControl::TriggerActivation': 'Falling Edge',
+    'CameraAttributes::AcquisitionControl::ExposureMode': 'Trigger Width',
+    'CameraAttributes::ImageFormatControl::PixelFormat': 'Mono16',
+    'CameraAttributes::ImageFormatControl::AdcBitDepth': '12 Bit'
+}
+
+# Make actual GH camera device
 IMAQdxCamera(
-    name ='GrassHp_XZ',
-    parent_device=GH_camera_trigger,
+    name = gh_name,
+    parent_device=gh_trig,
     connection='trigger',
-    serial_number='1E1000E6C21E',
+    serial_number=gh_SN,
     trigger_edge_type='falling',
-	#worker=acquisition_computer,
-	orientation = 'horizontal',
-    camera_attributes=Grasshopper_sequence_camera_attributes,
-    manual_mode_camera_attributes=Grasshopper_manual_camera_attributes,
+	orientation = gh_image_folder,
+    camera_attributes=gh_attr_seq,
+    manual_mode_camera_attributes=gh_attr_man,
 )
 
-# LightCrafterDMD(
-#     name = 'DMD',
-#     parent_device = DMD_clock
-# )
-#
-# ImageSet(
-#     name = "testImage",
-#     parent_device = DMD
-# )
+## Make actual Flea camera device
+#IMAQdxCamera(
+#    name = fl_name,
+#    parent_device = fl_trig,
+#    connection = 'trigger',
+#    serial_number = fl_SN,
+#    trigger_edge_type = 'falling',
+#    orientation = fl_image_folder,
+#    camera_attributes=fl_attr_seq,
+#    manual_mode_camera_attributes=fl_attr_man,
+#)
+
+# Make actual Blackfly camera device
+IMAQdxCamera(
+    name = bf_name,
+    parent_device = bf_trig,
+    connection = 'trigger',
+    serial_number = bf_SN,
+    trigger_edge_type = 'falling',
+    orientation = bf_image_folder,
+    camera_attributes=bf_attr_seq,
+    manual_mode_camera_attributes=bf_attr_man,
+)
+
 ################################################################################
 if __name__ == '__main__':
     start()

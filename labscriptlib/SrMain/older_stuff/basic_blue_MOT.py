@@ -16,7 +16,7 @@ def blow_away(t):
     scope_trigger.go_low(t+.01)
 
     # Set probe frequency (repurposing an old analog line from the grating MOT)
-    gMOT_coil_current_b.constant(t,ProbeVCOVoltage)
+    # gMOT_coil_current_b.constant(t,ProbeVCOVoltage) # Tim commented this out Jan 24, 2025
 
     # AOMs are on
     blue_MOT_RF_TTL.go_low(t)
@@ -39,7 +39,7 @@ def blow_away(t):
     current_lock_enable.go_low(t)
     MOT_field.constant(t,0, units='A')
     red_AOM_DDS.setfreq(t, 80, units = 'MHz')
-    red_BN_DDS.setfreq(t,RedCoolingBeatnote/48, units = 'MHz')
+    # red_BN_DDS.setfreq(t,RedCoolingBeatnote/48, units = 'MHz') # Tim commented out
     return(.05)
 
 def initialize(t):
@@ -143,8 +143,8 @@ def return_to_defaults(t):
     MOT_2D_RF_TTL.go_low(t)
     blue_MOT_RF_TTL.go_low(t)
 
-    gMOT_coil_current_b.constant(t,ProbeVCOVoltage)
-    red_BN_DDS.setfreq(t,RedCoolingBeatnote/48, units = 'MHz')
+    # gMOT_coil_current_b.constant(t,ProbeVCOVoltage) # Tim commented this out Jan 24, 2025
+    # red_BN_DDS.setfreq(t,RedCoolingBeatnote/48, units = 'MHz') # Tim commented
 
     #red_AOM_DDS.setfreq(t, 80, units = 'MHz')
     return(.1)

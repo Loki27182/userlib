@@ -18,8 +18,9 @@ if CompensateProbeDetuning>0:
 #   Get rid of any old atoms
 ################################################################################
 def blow_away(t):
+
     # Start scope trigger low
-    scope_trigger.go_low(t)
+    #scope_trigger.go_low(t)
 
     # Set probe frequency
     probe_VCO.constant(t,ProbeVCOVoltage)
@@ -33,6 +34,7 @@ def blow_away(t):
     # Set red MOT RF source to internal VCO, and set voltage for red on resonance
     red_MOT_RF_select.go_low(t)
     red_MOT_VCO.constant(t, RedLoadPumpFreq, units = 'MHz')
+    #red_AOM_DDS.setfreq(t,RedMOTNarrowFrequency, units = 'MHz') 
 
     # Set blue MOT VCO frequency
     blue_sat_abs_AOM_offset.constant(t,SatAbsOffset)
@@ -53,7 +55,6 @@ def blow_away(t):
     # Set beatnote frequencies
     blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')
     red_BN_DDS.setfreq(t,RedBeatnote/48, units = 'MHz')
-    red_AOM_DDS.setfreq(t,RedMOTNarrowFrequency, units = 'MHz')
 
     # Turn off MOT field
     current_lock_enable.go_low(t)
@@ -85,7 +86,10 @@ def initialize(t):
         red_MOT_Int_Disable.go_low(t)
 
     Red_kill_beam_shutter.go_low(t)
-    DP_main_shutter.go_low(t)
+    if DipoleOn:
+        DP_main_shutter.go_high(t)
+    else:
+        DP_main_shutter.go_low(t)
     
     return(.05)
 
@@ -116,21 +120,23 @@ def ramp_down_blue(t):
 
 def hold_blue(t):
     # Set red frequency to low end of beginning of SWAP ramp
-    if RedMOTOn:
-        red_MOT_VCO.constant(t,RedMOTRamp0L,units='MHz')
+    #if RedMOTOn:
+    #    red_MOT_VCO.constant(t,RedMOTRamp0L,units='MHz')
 
     # Turn blue off
     blue_MOT_RF_TTL.go_high(t+BlueMOTHoldTime)
     blue_MOT_power.constant(t+BlueMOTHoldTime+.0001,BlueMOTPower)
     
-    blue_MOT_shutter.go_low(t+BlueMOTHoldTime) 
-    blue_MOT_RF_TTL.go_low(t+BlueMOTHoldTime+.02)
+    if Absorption:
+        blue_MOT_shutter.go_low(t+BlueMOTHoldTime) 
+        blue_MOT_RF_TTL.go_low(t+BlueMOTHoldTime+.02)
 
     return BlueMOTHoldTime
 
 def blue_MOT_off(t):
     MOT_field.constant(t,0,units='A')
     current_lock_enable.go_low(t)
+    
 
     return TimeOfFlight
 
@@ -147,6 +153,12 @@ def swap_ramp(t,dur,V_low_i,V_high_i,V_low_f,V_high_f,f_ramp):
 
 def ramp_down_red(t):
     #scope_trigger.go_high(t)
+    red_MOT_Int_Disable.go_high(t-.0004)
+    red_MOT_RF_TTL.go_low(t-.0003)
+    red_MOT_VCO.constant(t-.0001,RedMOTRamp0L,units='MHz')
+    red_MOT_RF_TTL.go_high(t)
+    red_MOT_Int_Disable.go_low(t+.0001)
+
     red_MOT_power.ramp(t,RedMOTRampTime,RedMOTRampPower0,RedMOTRampPowerF,500000)
     red_MOT_VCO.customramp(t,RedMOTRampTime,swap_ramp,RedMOTRamp0L,RedMOTRamp0H,RedMOTRampFL,RedMOTRampFH,RedMOTRampFreq,samplerate=500000,units='MHz')
     MOT_field.ramp(t,RedMOTRampTime,RedMOTField,RedMOTFieldFinal,500000,units='A')
@@ -155,16 +167,25 @@ def ramp_down_red(t):
 
 def red_MOT_narrow(t):
     #scope_trigger.go_low(t)
+    red_MOT_VCO.constant(t,RedMOTNarrowFrequency,units='MHz')
     red_MOT_power.constant(t,RedMOTNarrowPower)
-    red_MOT_RF_select.go_high(t)
+    #red_MOT_RF_select.go_high(t)
 
     return(RedMOTNarrowTime)
 
 def red_MOT_off(t):
     #scope_trigger.go_high(t)
     red_MOT_RF_TTL.go_low(t)
+
     MOT_field.constant(t,0, units='A')
     current_lock_enable.go_low(t)
+
+    if MagnetometryPulse == 0:
+        red_MOT_shutter.go_low(t)
+    else:
+        red_MOT_VCO.constant(t+.0002,RedMOTNarrowFrequency+MagPulseDetuning,units='MHz')
+        red_MOT_power.constant(t+.0002,RedMOTRampPower0)
+        red_MOT_Int_Disable.go_high(t+.0003)
 
     return TimeOfFlight
 
@@ -173,21 +194,28 @@ def red_MOT_off(t):
 ################################################################################
 def grasshopper_exposure(t,name,exposure):
     if Absorption:
-        GrassHp_XZ.expose(t-.0001,'absorption',name, GHExposureTime)
+        if ImagingCamera=='XZ':
+            cam_gh_0.expose(t-.0001,'absorption',name, GHExposureTime)
+        elif ImagingCamera=='YZ':
+            #cam_fl_0.expose(t-.0001,'absorption',name, GHExposureTime)
+            cam_bf_0.expose(t-.0001,'absorption',name, GHExposureTime)
+            #print('test')
     else:
-        GrassHp_XZ.expose(t-.0001,'fluorescence',name, GHExposureTime)
+        if ImagingCamera=='XZ':
+            cam_gh_0.expose(t-.0001,'fluorescence',name, GHExposureTime)
+        elif ImagingCamera=='YZ':
+            #cam_fl_0.expose(t-.0001,'fluorescence',name, GHExposureTime)
+            cam_bf_0.expose(t-.0001,'fluorescence',name, GHExposureTime)
+            #print('test')
     if exposure:
         if Absorption:
             if MagnetometryPulse>0:
-                red_MOT_RF_TTL.go_low(t-.02-RedMOTNarrowTime)
-                red_MOT_shutter.go_high(t-.02-RedMOTNarrowTime)
-                red_MOT_RF_TTL.go_high(t-RedMOTNarrowTime)
+                #red_MOT_RF_TTL.go_low(t-.02-MagnetometryPulse)
+                #red_MOT_shutter.go_high(t-.02-MagnetometryPulse)
+                red_MOT_RF_TTL.go_high(t-MagnetometryPulse)
                 red_MOT_RF_TTL.go_low(t)
-                red_MOT_shutter.go_low(t)
-                red_MOT_RF_TTL.go_high(t+.02)
-            elif KillPulse>0:
-                Red_kill_beam_shutter.go_high(t-KillPulse-.00342)
-                Red_kill_beam_shutter.go_low(t)
+                #red_MOT_shutter.go_low(t+PulseDuration)
+                #red_MOT_RF_TTL.go_high(t+PulseDuration+.02)
             probe_RF_TTL.go_low(t-.02)
             probe_shutter.go_high(t-.02)
             probe_RF_TTL.go_high(t)
@@ -195,12 +223,10 @@ def grasshopper_exposure(t,name,exposure):
             probe_shutter.go_low(t+PulseDuration)
             probe_RF_TTL.go_high(t+PulseDuration+.02)
         else:
-            blue_MOT_RF_TTL.go_high(t-.02)
-            blue_MOT_shutter.go_high(t-.02)
+            #blue_MOT_RF_TTL.go_high(t-.02)
+            #blue_MOT_shutter.go_high(t-.02)
             blue_MOT_RF_TTL.go_low(t)
             blue_MOT_RF_TTL.go_high(t+PulseDuration)
-            blue_MOT_shutter.go_low(t+PulseDuration)
-            blue_MOT_RF_TTL.go_low(t+PulseDuration+.02)
 
     return GHExposureTime
 
@@ -221,7 +247,8 @@ def return_to_defaults(t):
 
     # Set red MOT RF source to internal VCO, and set voltage
     red_MOT_RF_select.go_low(t)
-    red_MOT_VCO.constant(t, RedMOTNarrowFrequency, units = 'MHz')
+    red_MOT_VCO.constant(t, RedLoadPumpFreq, units = 'MHz')
+    #red_AOM_DDS.setfreq(t,RedMOTNarrowFrequency, units = 'MHz')
 
     # Set blue sat abs AOM driver VCO offset voltage
     blue_sat_abs_AOM_offset.constant(t,SatAbsOffset)
@@ -243,11 +270,15 @@ def return_to_defaults(t):
     # Set beatnote frequencies
     blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')
     red_BN_DDS.setfreq(t,RedBeatnote/48, units = 'MHz')
-    red_AOM_DDS.setfreq(t,RedMOTNarrowFrequency, units = 'MHz')
+    #red_AOM_DDS.setfreq(t,RedMOTNarrowFrequency, units = 'MHz')
+
 
     # Turn MOT field on
     current_lock_enable.go_high(t)
     MOT_field.constant(t,BlueMOTField, units='A')
+
+    # closing the dipole shutter
+    DP_main_shutter.go_low(t)
 
     return(.02)
 
@@ -267,19 +298,19 @@ t+=hold_blue(t)
 if RedMOTOn:
     t+=ramp_down_red(t)
     t+=red_MOT_narrow(t)
+    t_exp = t
     t+=red_MOT_off(t)
 else:
+    t_exp = t
     t+=blue_MOT_off(t)
-t_exp = t
 t+=grasshopper_exposure(t,'atoms',True)
 t+=GHDownTime
 if Absorption:
     t+=grasshopper_exposure(t,'reference',True)
     t+=GHDownTime
 t+=grasshopper_exposure(t,'background',False)
+t+=GHDownTime
 t+=return_to_defaults(t)
 
-scope_trigger.go_high(t_exp+ScopeTriggerOffset)
-scope_trigger.go_low(t_exp+ScopeTriggerOffset+.1)
 
-stop(t)
+stop(t+.001)

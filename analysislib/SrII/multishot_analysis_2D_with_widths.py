@@ -46,12 +46,14 @@ plt.rc('font', family='serif')
 
 fig = plt.figure()
 
-ax_N = fig.add_subplot(1,1,1)
+ax_N = fig.add_subplot(3,1,1)
+ax_wx = fig.add_subplot(3,1,2)
+ax_wz = fig.add_subplot(3,1,3)
 try:
     n_sm = variables['Smooth2D'][0]
 except:
     n_sm = 0
-n_sm = 0
+#n_sm = 10
 try:
     var_0 = display_variable_info[list(display_variable_info.keys())[0]]
     var_1 = display_variable_info[list(display_variable_info.keys())[1]]
@@ -62,6 +64,8 @@ try:
     y_u = np.array(var_1['unique_values'])*var_1['axis_scale']
 
     N_plot = np.zeros([len(y_u),len(x_u)])
+    wx_plot = np.zeros([len(y_u),len(x_u)])
+    wz_plot = np.zeros([len(y_u),len(x_u)])
 
 
     for ii, x_u_ii in enumerate(x_u):
@@ -69,20 +73,35 @@ try:
             mask = (x==x_u_ii)*(y==y_u_jj)
             if np.sum(mask)>0:
                 N_plot[jj,ii] = np.mean(N[mask])/10**6
+                wx_plot[jj,ii] = np.mean(wx[mask])*10**3
+                wz_plot[jj,ii] = np.mean(wz[mask])*10**3
 
+    wx_plot[N_plot==0] = np.mean(wx_plot[N_plot!=0])
+    wz_plot[N_plot==0] = np.mean(wz_plot[N_plot!=0])
     N_plot[N_plot==0] = np.mean(N_plot[N_plot!=0])
 
     if n_sm>0:
         N_plot = gaussian_filter(N_plot,n_sm)
+        wx_plot = gaussian_filter(wx_plot,n_sm)
+        wz_plot = gaussian_filter(wz_plot,n_sm)
 
-    plot_the_thing_2D(ax_N,fig,y_u,x_u,np.transpose(N_plot),
+    plot_the_thing_2D(ax_N,fig,np.log10(y_u),np.log10(x_u),np.transpose(N_plot),
                    var_1['axis_label'],
                    var_0['axis_label'],
-                   'N ($\\times10^6$)')
+                   'N ($\\times10^6$)','log scale','log scale')
+    plot_the_thing_2D(ax_wx,fig,np.log10(y_u),np.log10(x_u),np.transpose(wx_plot),
+               var_1['axis_label'],
+               var_0['axis_label'],
+               '$\sigma_x$ (mm)','log scale','log scale')
+    plot_the_thing_2D(ax_wz,fig,np.log10(y_u),np.log10(x_u),np.transpose(wz_plot),
+               var_1['axis_label'],
+               var_0['axis_label'],
+               '$\sigma_z$ (mm)','log scale','log scale')
 
     plt.tight_layout()
     for path in filepaths:
         plt.savefig(path + '.png')
+        plt.savefig('G:\\My Drive\\SrII\\Misc\\temp_log_files\\temp.png')
 except Exception as e:
     print(e)
 
