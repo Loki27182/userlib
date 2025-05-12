@@ -15,7 +15,7 @@ SRS_shutter_close_time=0
 ################################################################################
 #   Get rid of any old atoms
 ################################################################################
-def init(t=0,expose=False,T=0.0004,dt=0.0002,is_on=IsOn,name='init'):
+def init(t=0,expose=False,T=0.0004,dt=0.0002,is_on=True,name='init'):
     # Reset trigger line
     scope_trigger.go_high(t)
 
@@ -57,14 +57,14 @@ def init(t=0,expose=False,T=0.0004,dt=0.0002,is_on=IsOn,name='init'):
         # Open MOT and repump shutters
         blue_MOT_shutter.go_high(t0)
         repump_707_shutter.go_high(t0)
-        repump_679_shutter.go_high(t0)
+        repump_679_RF_TTL.go_low(t0)
         red_MOT_shutter.go_high(t0)
     else:
         current_lock_enable.go_low(t0)
         # ...or don't!
         blue_MOT_shutter.go_low(t0)
         repump_707_shutter.go_low(t0)
-        repump_679_shutter.go_low(t0)
+        repump_679_RF_TTL.go_high(t0)
         red_MOT_shutter.go_low(t0)
 
     # Set trim fields
@@ -98,8 +98,7 @@ scope_trigger.go_high(t)
 blue_MOT_shutter.go_high(t)
 t += 0.1
 
-cam_gh_0.expose(t_edge+ShutterDelay,'diagnostic','im_0', GHExposureTime)
-cam_bf_0.expose(t_edge+ShutterDelay,'diagnostic','im_0', GHExposureTime)
-#cam_fl_0.expose(t_edge+ShutterDelay,'diagnostic','im_0', GHExposureTime)
+cam_gh_0.expose(t_edge+ScopeTriggerOffset,'diagnostic','im_0', GHExposureTime)
+cam_bf_0.expose(t_edge+ScopeTriggerOffset,'diagnostic','im_0', GHExposureTime)
 
 stop(t)

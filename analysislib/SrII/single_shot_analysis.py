@@ -76,8 +76,12 @@ densityImages = dict()
 atomNumbers = dict()
 if 'absorption' in imaging_types:
     print('Processing absorption image...')
-    atomImage = run.get_image('horizontal','absorption','atoms').astype('float') - run.get_image('horizontal','absorption','background').astype('float')
-    refImage = run.get_image('horizontal','absorption','reference').astype('float') - run.get_image('horizontal','absorption','background').astype('float')
+    try:
+        atomImage = run.get_image('xz','absorption','atoms').astype('float') - run.get_image('xz','absorption','background').astype('float')
+        refImage = run.get_image('xz','absorption','reference').astype('float') - run.get_image('xz','absorption','background').astype('float')
+    except:
+        atomImage = run.get_image('yz','absorption','atoms').astype('float') - run.get_image('yz','absorption','background').astype('float')
+        refImage = run.get_image('yz','absorption','reference').astype('float') - run.get_image('yz','absorption','background').astype('float')
     refNorm = refImage.copy()
     atomNorm = atomImage.copy()
     
@@ -101,7 +105,11 @@ if 'absorption' in imaging_types:
 
 elif 'fluorescence' in imaging_types:
     print('Processing fluorescence image...')
-    atomImage = run.get_image('horizontal','fluorescence','atoms').astype('float') - run.get_image('horizontal','fluorescence','background').astype('float')
+    try:
+        atomImage = run.get_image('xz','fluorescence','atoms').astype('float') - run.get_image('xz','fluorescence','background').astype('float')
+    except:
+        atomImage = run.get_image('yz','fluorescence','atoms').astype('float') - run.get_image('yz','fluorescence','background').astype('float')
+    
     atomImage = medfilt2d(atomImage,median_filter_size)
     
     if len(ROI)>0:

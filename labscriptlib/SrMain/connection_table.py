@@ -74,7 +74,7 @@ DigitalOut(name='DP_main_shutter',         parent_device=pulseblaster_0.direct_o
 
 NI_PCI_6733(name='ni_0', parent_device=pulseblaster_0_ni_0_clock, clock_terminal='/Dev1/PFI1', MAX_name = 'Dev1')
 
-AnalogOut(name='blue_sat_abs_AOM_offset',          parent_device=ni_0, connection='ao0')
+AnalogOut(name='dipole_power',          parent_device=ni_0, connection='ao0')
 #          unit_conversion_class=AOMVCO,                     unit_conversion_parameters={'m':1.7588*10**6, 'b':111.2134*10**6, 'magnitudes':['k','M']})  # From data on 2024-04-01
 AnalogOut(name='red_MOT_VCO',           parent_device=ni_0, connection='ao1',
           unit_conversion_class=AOMVCO,                     unit_conversion_parameters={'m':1.0282*10**6, 'b':79.9881*10**6, 'magnitudes':['k','M']})   # From data on 2024-04-01
@@ -96,7 +96,7 @@ DigitalOut(name='red_MOT_shutter',      parent_device=ni_0, connection='port0/li
 DigitalOut(name='red_MOT_RF_TTL',       parent_device=ni_0, connection='port0/line4')
 DigitalOut(name='red_SRS_TTL',          parent_device=ni_0, connection='port0/line5')
 DigitalOut(name='repump_707_shutter',   parent_device=ni_0, connection='port0/line6')
-DigitalOut(name='repump_679_shutter',   parent_device=ni_0, connection='port0/line7')
+DigitalOut(name='repump_679_RF_TTL',   parent_device=ni_0, connection='port0/line7')
 
 ###############################################################################
 #    NI CARD 2
@@ -268,27 +268,13 @@ gh_image_folder = 'xz'
 
 # Exposure settings
 gh_mode = 7                     # Camera mode, must be 0 or 7. Mode 0 is higher noise, but also higher frame rate.
-gh_exp = 1000.0     # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
+gh_exp = 5000.0     # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
 gh_gain_man =  0                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
 gh_gain_seq =  0                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
 gh_acceptable_zeros = 100       # The black level is calculated such that you will on average
                                     # have camera_acceptable_zeros zero counts on the low end of the distribution.
                                     # This should be small, as any pixel that would be less than zero 
                                     # will be clipped to 0, which we don't want for actual data
-#################################################################################################################
-## # Change these values to set up the flea camera
-## Basic device setup
-#fl_name = 'cam_fl_0'
-#fl_trig = Flea_camera_trigger
-#fl_SN = '1E1000E7E39C'
-#fl_image_folder = 'yz'
-#
-## Exposure settings
-#flea_mode = 7
-#flea_exp = 1000.0
-#flea_gain_man = 0
-#flea_gain_seq = 0
-## Still need to calibrate black level function for the flea, and standardize that process
 
 #################################################################################################################
 # # Change these values to set up the blackfly camera
@@ -300,7 +286,7 @@ bf_image_folder = 'yz'
 
 # Exposure settings
 bf_mode = 7
-bf_exp = 1000.0
+bf_exp = 5000.0
 bf_gain_man = 0
 bf_gain_seq = 0
 # Still need to calibrate black level function for the blackfly, and standardize that process
@@ -351,6 +337,88 @@ gh_attr_seq = {
     'CameraAttributes::ImageFormatControl::VideoMode': gh_mode
 }
 
+# Make attributes dict for Blackfly manual and sequence modes
+bf_attr_man = {
+    'CameraAttributes::AnalogControl::GainAuto': 'Off',
+	'CameraAttributes::AnalogControl::Gain': bf_gain_man,
+	'CameraAttributes::AnalogControl::GainConversion': 'HCG',
+	'CameraAttributes::AnalogControl::BlackLevel': 0,
+	'CameraAttributes::AnalogControl::BlackLevelClampingEnable': 1,
+	'CameraAttributes::AnalogControl::GammaEnable': 0,
+    'CameraAttributes::AcquisitionControl::ExposureMode': 'Timed',
+    'CameraAttributes::AcquisitionControl::TriggerMode': 'Off',
+    'CameraAttributes::AcquisitionControl::AcquisitionFrameRateEnable': 0,
+    'CameraAttributes::AcquisitionControl::TriggerDelay': 25.0,
+    'CameraAttributes::AcquisitionControl::TriggerSource': 'Line 0',
+    'CameraAttributes::AcquisitionControl::TriggerActivation': 'Falling Edge',
+    'CameraAttributes::AcquisitionControl::ExposureAuto': 'Off',
+	'CameraAttributes::AcquisitionControl::ExposureTime': bf_exp,
+    'CameraAttributes::ImageFormatControl::PixelFormat': 'Mono16',
+    'CameraAttributes::ImageFormatControl::AdcBitDepth': '12 Bit',
+    'CameraAttributes::ImageFormatControl::ReverseX': 0,
+    'CameraAttributes::ImageFormatControl::ReverseY': 1,
+}
+
+bf_attr_seq = {
+    'CameraAttributes::AnalogControl::GainAuto': 'Off',
+	'CameraAttributes::AnalogControl::Gain': bf_gain_seq,
+	'CameraAttributes::AnalogControl::GainConversion': 'HCG',
+	'CameraAttributes::AnalogControl::BlackLevel': 0,
+	'CameraAttributes::AnalogControl::BlackLevelClampingEnable': 1,
+	'CameraAttributes::AnalogControl::GammaEnable': 0,
+	'CameraAttributes::AcquisitionControl::ExposureTime': bf_exp,
+    'CameraAttributes::AcquisitionControl::ExposureAuto': 'Off',
+    'CameraAttributes::AcquisitionControl::AcquisitionFrameRateEnable': 0,
+    'CameraAttributes::AcquisitionControl::TriggerDelay': 25.0,
+    'CameraAttributes::AcquisitionControl::TriggerMode': 'On',
+    'CameraAttributes::AcquisitionControl::TriggerSource': 'Line 0',
+    'CameraAttributes::AcquisitionControl::TriggerActivation': 'Falling Edge',
+    'CameraAttributes::AcquisitionControl::ExposureMode': 'Trigger Width',
+    'CameraAttributes::ImageFormatControl::PixelFormat': 'Mono16',
+    'CameraAttributes::ImageFormatControl::AdcBitDepth': '12 Bit',
+    'CameraAttributes::ImageFormatControl::ReverseX': 0,
+    'CameraAttributes::ImageFormatControl::ReverseY': 1,
+}
+
+# Make actual GH camera device
+IMAQdxCamera(
+    name = gh_name,
+    parent_device=gh_trig,
+    connection='trigger',
+    serial_number=gh_SN,
+    trigger_edge_type='falling',
+	orientation = gh_image_folder,
+    camera_attributes=gh_attr_seq,
+    manual_mode_camera_attributes=gh_attr_man,
+)
+
+# Make actual Blackfly camera device
+IMAQdxCamera(
+    name = bf_name,
+    parent_device = bf_trig,
+    connection = 'trigger',
+    serial_number = bf_SN,
+    trigger_edge_type = 'falling',
+    orientation = bf_image_folder,
+    camera_attributes=bf_attr_seq,
+    manual_mode_camera_attributes=bf_attr_man,
+)
+
+#################################################################################################################
+## # Change these values to set up the flea camera
+## Basic device setup
+#fl_name = 'cam_fl_0'
+#fl_trig = Flea_camera_trigger
+#fl_SN = '1E1000E7E39C'
+#fl_image_folder = 'yz'
+#
+## Exposure settings
+#flea_mode = 7
+#flea_exp = 1000.0
+#flea_gain_man = 0
+#flea_gain_seq = 0
+## Still need to calibrate black level function for the flea, and standardize that process
+
 ## Make attributes dict for Flea manual and sequence modes
 #fl_attr_man = {
 #    'CameraAttributes::AnalogControl::GainAuto': 'Off',
@@ -384,57 +452,6 @@ gh_attr_seq = {
 #    'CameraAttributes::ImageFormatControl::VideoMode': flea_mode
 #}
 
-# Make attributes dict for Blackfly manual and sequence modes
-bf_attr_man = {
-    'CameraAttributes::AnalogControl::GainAuto': 'Off',
-	'CameraAttributes::AnalogControl::Gain': bf_gain_man,
-	'CameraAttributes::AnalogControl::GainConversion': 'HCG',
-	'CameraAttributes::AnalogControl::BlackLevel': 0,
-	'CameraAttributes::AnalogControl::BlackLevelClampingEnable': 0,
-	'CameraAttributes::AnalogControl::GammaEnable': 0,
-    'CameraAttributes::AcquisitionControl::ExposureMode': 'Timed',
-    'CameraAttributes::AcquisitionControl::TriggerMode': 'Off',
-    'CameraAttributes::AcquisitionControl::AcquisitionFrameRateEnable': 0,
-    'CameraAttributes::AcquisitionControl::TriggerDelay': 25.0,
-    'CameraAttributes::AcquisitionControl::TriggerSource': 'Line 0',
-    'CameraAttributes::AcquisitionControl::TriggerActivation': 'Falling Edge',
-    'CameraAttributes::AcquisitionControl::ExposureAuto': 'Off',
-	'CameraAttributes::AcquisitionControl::ExposureTime': bf_exp,
-    'CameraAttributes::ImageFormatControl::PixelFormat': 'Mono16',
-    'CameraAttributes::ImageFormatControl::AdcBitDepth': '12 Bit'
-}
-
-bf_attr_seq = {
-    'CameraAttributes::AnalogControl::GainAuto': 'Off',
-	'CameraAttributes::AnalogControl::Gain': bf_gain_seq,
-	'CameraAttributes::AnalogControl::GainConversion': 'HCG',
-	'CameraAttributes::AnalogControl::BlackLevel': 0,
-	'CameraAttributes::AnalogControl::BlackLevelClampingEnable': 0,
-	'CameraAttributes::AnalogControl::GammaEnable': 0,
-	'CameraAttributes::AcquisitionControl::ExposureTime': bf_exp,
-    'CameraAttributes::AcquisitionControl::ExposureAuto': 'Off',
-    'CameraAttributes::AcquisitionControl::AcquisitionFrameRateEnable': 0,
-    'CameraAttributes::AcquisitionControl::TriggerDelay': 25.0,
-    'CameraAttributes::AcquisitionControl::TriggerMode': 'On',
-    'CameraAttributes::AcquisitionControl::TriggerSource': 'Line 0',
-    'CameraAttributes::AcquisitionControl::TriggerActivation': 'Falling Edge',
-    'CameraAttributes::AcquisitionControl::ExposureMode': 'Trigger Width',
-    'CameraAttributes::ImageFormatControl::PixelFormat': 'Mono16',
-    'CameraAttributes::ImageFormatControl::AdcBitDepth': '12 Bit'
-}
-
-# Make actual GH camera device
-IMAQdxCamera(
-    name = gh_name,
-    parent_device=gh_trig,
-    connection='trigger',
-    serial_number=gh_SN,
-    trigger_edge_type='falling',
-	orientation = gh_image_folder,
-    camera_attributes=gh_attr_seq,
-    manual_mode_camera_attributes=gh_attr_man,
-)
-
 ## Make actual Flea camera device
 #IMAQdxCamera(
 #    name = fl_name,
@@ -447,17 +464,6 @@ IMAQdxCamera(
 #    manual_mode_camera_attributes=fl_attr_man,
 #)
 
-# Make actual Blackfly camera device
-IMAQdxCamera(
-    name = bf_name,
-    parent_device = bf_trig,
-    connection = 'trigger',
-    serial_number = bf_SN,
-    trigger_edge_type = 'falling',
-    orientation = bf_image_folder,
-    camera_attributes=bf_attr_seq,
-    manual_mode_camera_attributes=bf_attr_man,
-)
 
 ################################################################################
 if __name__ == '__main__':
