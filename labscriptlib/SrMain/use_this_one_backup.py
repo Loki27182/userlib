@@ -14,67 +14,84 @@ SRS_shutter_close_time=0
 if CompensateProbeDetuning>0:
     ProbeVCOVoltage = ProbeVCOVoltage - CompensateProbeDetuning*(.016-TimeOfFlight)/.016
 
+################################################################################
+#   Get rid of any old atoms
+################################################################################
+def blow_away(t):
+    # Start scope trigger low
+    
+    scope_trigger.go_low(t)
 
+    # Set probe frequency
+    probe_VCO.constant(t,ProbeVCOVoltage)
 
+    # AOMs are on
+    blue_MOT_RF_TTL.go_low(t)
+    red_MOT_RF_TTL.go_high(t)
+    probe_RF_TTL.go_high(t)
+    MOT_2D_RF_TTL.go_low(t)
+
+    # Set red MOT RF source to internal VCO, and set voltage for red on resonance
+    red_MOT_RF_select.go_low(t)
+    red_MOT_VCO.constant(t, RedLoadPumpFreq, units = 'MHz')
+    #red_AOM_DDS.setfreq(t,RedMOTNarrowFrequency, units = 'MHz') 
+
+    # Set blue MOT VCO frequency
+    blue_sat_abs_AOM_offset.constant(t,SatAbsOffset)
+
+    # Disable red MOT power intensity lock
+    red_MOT_Int_Disable.go_high(t)
+
+    # blue MOT shutter is open for the DelayBeforeStart time, then closed for the last 50ms for the actual blow away.
+    blue_MOT_shutter.go_high(t)
+    blue_MOT_shutter.go_low(t + DelayBeforeStart)
+    red_MOT_shutter.go_low(t)
+
+    # Probe and repump shutters are open to blow away atoms
+    probe_shutter.go_high(t)
+    repump_707_shutter.go_high(t)
+    repump_679_RF_TTL.go_low(t)
+
+    # Set beatnote frequencies
+    blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')
+    red_BN_DDS.setfreq(t,RedBeatnote/48, units = 'MHz')
+    #blue_broken_DDS.setfreq(t,25 , units = 'MHz')
+
+    # Turn off MOT field
+    current_lock_enable.go_low(t)
+    MOT_field.constant(t,0, units='A')
+
+    return(0.05 + DelayBeforeStart)
 
 ################################################################################
 #   Get things ready for loading
 ################################################################################
-def initialize(t,dt=.01):
-    # Set analog values (ni_0)
-    dipole_power.constant(t,0)                                  # Set default dipole beam power to zero
-    red_MOT_VCO.constant(t, RedLoadPumpFreq, units = 'MHz')     # Set red MOT light to pump frequency for gray MOT
-    MOT_field.constant(t,MOT_field, units='A')                  # Set default MOT field
-    shim_X.constant(t,BlueMOTShimX, units = 'A')                # Set default X trim
-    shim_Y.constant(t,BlueMOTShimY, units = 'A')                # Set default Y trim
-    shim_Z.constant(t,BlueMOTShimZ, units = 'A')                # Set default Z trim
-    blue_MOT_power.constant(t,BlueMOTPower)                     # Set default blue MOT power
-    red_MOT_power.constant(t,RedMOTRampPower0)                  # Set default red MOT power
+def initialize(t):
+    # Close probe shutter
+    probe_shutter.go_low(t)
 
-    # Set analog values (ni_1)
-    probe_VCO.constant(t,ProbeVCOVoltage)                       # Set default probe power
-    unused_0.constant(t,0)                                      # Set unused channel so analog card doesn't do wierd things
+    # Turn on MOT field
+    current_lock_enable.go_high(t)
+    MOT_field.ramp(t,0.04,0,BlueMOTField,1000, units='A')
+    blue_MOT_power.constant(t,BlueMOTPower)
+    red_MOT_power.constant(t,RedMOTRampPower0)
 
-    # Set digital values (ni_0)
-    blue_MOT_shutter.go_high(t)                                 # Open blue MOT shutter
-    blue_MOT_RF_TTL.go_low(t)                                   # Turn on (low) blue MOT AOM driver
-    MOT_2D_RF_TTL.go_low(t)                                     # Turn on (low) 2D MOT AOM driver
-    red_MOT_shutter.go_low(t)                                   # Open red MOT shutter (not currently actually hooked up)
-    red_MOT_RF_TTL.go_high(t)                                   # Turn on red RF
-    red_SRS_TTL.go_low(t)                                       # Not currently used
-    repump_707_shutter.go_high(t)                               # Open 707 repump shutter
-    repump_679_RF_TTL.go_low(t)                                 # Turn on 679 repump AOM
+    shim_X.constant(t,BlueMOTShimX, units = 'A')
+    shim_Y.constant(t,BlueMOTShimY, units = 'A')
+    shim_Z.constant(t,BlueMOTShimZ, units = 'A')
 
-    # Set digital values (jane)
-    current_lock_enable.go_high(t)                              # Turn on MOT field
-    scope_trigger.go_low(t)                                     # Reset scope trigger
-    probe_shutter.go_low(t)                                     # Close probe shutter
-    probe_RF_TTL.go_high(t)                                     # Turn on probe SOM
-    red_MOT_RF_select.go_low(t)                                 # Select VCO as LF AOM frequency source
-    red_MOT_Int_Disable.go_low(t)                               # Enable red cooling intensity lock integrator
-    Red_kill_beam_shutter.go_low(t)                             # Close kill beam shutter
-    DP_main_shutter.go_low(t)                                   # Close dipole shutter
+    # Open red MOT shutter if we're actually going to make a red MOT
+    if RedMOTOn:
+        red_MOT_shutter.go_high(t)
+        red_MOT_Int_Disable.go_low(t)
 
-    # Set DDS frequencies
-    blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')   # Set blue beatnote frequency
-    blue_broken_DDS.setfreq(t, 25, units = 'MHz')               # Set unused blue DDS source to some value
-    red_BN_DDS.setfreq(t,RedBeatnote/48, units = 'MHz')         # Set red DDS frequency (not actually used, because it doesn't work for some reason)
-
-    return(dt)
-
-################################################################################
-#   Get rid of any old atoms
-################################################################################
-def blow_away(t,dt=.05):
-    # Pulse blue cooling light off
-    blue_MOT_shutter.go_low(t)
-    blue_MOT_shutter.go_high(t + dt - .01)
-
-    # Pulse on-resonant probe light on
-    probe_shutter.go_high(t)
-    probe_shutter.go_low(t + dt - .01)
-
-    return(dt)
+    Red_kill_beam_shutter.go_low(t)
+    if DipoleOn:
+        DP_main_shutter.go_high(t)
+    else:
+        DP_main_shutter.go_low(t)
+    
+    return(0.05)
 
 ################################################################################
 #   Blue MOT load
