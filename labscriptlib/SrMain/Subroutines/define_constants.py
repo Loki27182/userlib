@@ -44,7 +44,7 @@ DipoleLoadDepth = DipoleLoadDepth
 DipoleHoldTime = DipoleHoldTime
 DipoleTurnOnDelay = DipoleTurnOnDelay
 CompensateProbeDetuning = CompensateProbeDetuning
-ImagingRef = ImagingRef
+ImagingOffsetRef = ImagingOffsetRef
 if CompensateProbeDetuning>0:
     ProbeVCOVoltage = ProbeVCOVoltage - CompensateProbeDetuning*(.016-TimeOfFlight)/.016
 else:

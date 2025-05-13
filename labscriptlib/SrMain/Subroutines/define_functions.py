@@ -1,7 +1,10 @@
-# Name all blacs controls and global for proper highlighting
-from userlib.labscriptlib.SrMain.Subroutines.define_constants import *
+from labscript import add_time_marker
 import numpy as np
 
+# Uncomment the line below to make highlighting work better, but recomment to actually run
+# from labscriptlib.SrMain.Subroutines.define_constants import *
+
+################################################################################
 # Define some constants that we might want to make globals at some point
 ShutterDelay = 0.01
 AOMDelay = 0.0002
@@ -12,7 +15,7 @@ BlowawayDuration = 0.04
 ################################################################################
 def initialize(t, blowaway = True):
     # Set analog values (ni_0)
-    dipole_power.constant(t,DipoleLoadDepth)                                  # Set default dipole beam power to zero
+    dipole_power.constant(t,DipoleLoadDepth)                    # Set default dipole beam power to load depth (shutter will be closed, but lock will keep RF on and AOM warm)
     red_MOT_VCO.constant(t, RedLoadPumpFreq, units = 'MHz')     # Set red MOT light to pump frequency for gray MOT
     mot_field.constant(t,BlueMOTField, units='A')               # Set default MOT field
     shim_X.constant(t,BlueMOTShimX, units = 'A')                # Set default X trim
@@ -37,7 +40,7 @@ def initialize(t, blowaway = True):
     red_MOT_Int_Disable.go_low(t)                               # Enable red cooling intensity lock integrator
     red_aux_shutter.go_low(t)                                   # Close red aux beam shutter
     dipole_shutter.go_low(t)                                    # Close dipole shutter
-    dipole_RF_TTL.go_high(t)                                    # Turn on RF so AOM stays warm
+    dipole_RF_TTL.go_low(t)                                     # Turn on RF so AOM stays warm
     # Set conditional digital values
     if blowaway:                                        # If initializing and blowing away (start of experiment)
         dt = BlowawayDuration                                # Set a duration for blowaway
@@ -68,6 +71,7 @@ def field_off(t):
 ################################################################################
 def load_blue_MOT(t):
     # Open MOT shutters with light off
+    add_time_marker(t, 'load_blue_start')
     blue_MOT_RF_TTL.go_high(t - ShutterDelay)
     blue_MOT_shutter.go_high(t - ShutterDelay) 
     blue_MOT_RF_TTL.go_low(t)
@@ -78,11 +82,15 @@ def load_blue_MOT(t):
         else:
             raise Exception('Error: BlueMOTRampDuration must be less than or equal to BlueMOTLoadTime')
         
+        add_time_marker(t_ramp_start, 'ramp_down_blue_start')
         blue_MOT_power.ramp(t_ramp_start,BlueMOTRampDuration,BlueMOTPower,BlueMOTTransferPower,100000)
         mot_field.ramp(t_ramp_start,BlueMOTRampDuration,BlueMOTField,BlueMOTCompressionField,100000,units='A')
     # Go to end of blue hold stage (usually short, if not 0)
+    if BlueMOTHoldTime > 0:
+        add_time_marker(t_ramp_start, 'blue_hold_start')
     dt += BlueMOTHoldTime
     # Turn off blue MOT light
+    add_time_marker(t + dt, 'blue_off')
     blue_MOT_RF_TTL.go_high(t + dt)
     # Reset intensity setpoint after RF has turned off
     blue_MOT_power.constant(t + dt + AOMDelay, BlueMOTPower)
@@ -92,6 +100,7 @@ def load_blue_MOT(t):
         blue_MOT_shutter.go_low(t + BlueMOTHoldTime) 
         blue_MOT_RF_TTL.go_low(t + BlueMOTHoldTime + ShutterDelay)
     # Turn 2D MOT off when that should happen
+    add_time_marker(t + dt - SourceShutoffTime - ShutterDelay, 'source_off')
     source_RF_TTL.go_high(t + dt - SourceShutoffTime - ShutterDelay)
     return dt
 
@@ -109,6 +118,7 @@ def swap_ramp(t,dur,V_low_i,V_high_i,V_low_f,V_high_f,f_ramp):
     return scale_factor*np.mod(dvdt*t,dV_i) + offset
 
 def red_swap_MOT(t):
+    add_time_marker(t, 'red_SWAP_start')
     # Disable the intensity lock integrator in preparation for turning the light off to switch frequency (avoid windup)
     red_MOT_Int_Disable.go_high(t - 3*AOMDelay)
     # Turn off RF to red cooling AOM (LF)
@@ -133,6 +143,7 @@ def red_swap_MOT(t):
 def red_narrow_MOT(t):
     # Only set the narrow MOT parameters if we're actually doing a narrow MOT
     if RedMOTNarrowTime > 0:
+        add_time_marker(t, 'red_narrow_start')
         # Set frequency
         red_MOT_VCO.constant(t, RedMOTNarrowFrequency, units='MHz')
         # Set power
@@ -141,6 +152,7 @@ def red_narrow_MOT(t):
 
 def red_light_off(t):
     # Turn red light off
+    add_time_marker(t, 'red_off')
     red_MOT_RF_TTL.go_low(t)
     if MagnetometryPulse == 0:
         # Close red shutter if not doing magnetometry
@@ -163,6 +175,9 @@ def red_light_off(t):
 #   Dipole!!!!!!!!!!!!!!!!!!!!!
 ################################################################################
 def dipole_trap(t):
+    add_time_marker(t - DipoleRampDuration, 'dipole_ramp_start')
+    add_time_marker(t, 'dipole_hold_start')
+    add_time_marker(t + DipoleHoldTime, 'dipole_off')
     # Start by lowering intensity setpoint so the integrator saturates toward 0,
     # naturally turning the RF power down to 0, so we don't need to switch it off separately
     # Leave plenty of time for the integrator to do its thing
@@ -176,8 +191,8 @@ def dipole_trap(t):
     # NOTE: This will low pass at 8kHz (50kHz/(2pi)), which will work well for a 50kHz samplerate
     dipole_power.ramp(t - DipoleRampDuration, DipoleRampDuration, 0, DipoleLoadDepth, 50000)
     # Snap dipole trap off after holdtime
-    dipole_RF_TTL.go_low(t + DipoleHoldTime)
-    return DipoleRampDuration
+    dipole_RF_TTL.go_high(t + DipoleHoldTime)
+    return DipoleHoldTime
 
 ################################################################################
 #   Imaging

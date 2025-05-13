@@ -1,15 +1,16 @@
+from labscript import start, stop, add_time_marker
 from labscript_utils import import_or_reload
 from labscriptlib.common.functions import *
 import numpy as np
-
 # Load connection table
-from labscriptlib.SrMain.connection_table import *
 import_or_reload('labscriptlib.SrMain.connection_table')
 
 # Load all experimental sequence functions 
 # (also defines constants, globals, and controls for proper highlighting )
-from userlib.labscriptlib.SrMain.Subroutines.define_functions import *
-import_or_reload('userlib.labscriptlib.SrMain.Subroutines.define_functions')
+from labscriptlib.SrMain.Subroutines.define_functions import initialize, field_off, load_blue_MOT, red_swap_MOT, red_narrow_MOT, red_light_off, dipole_trap, exposure, AOMDelay, ShutterDelay
+
+# Uncomment the line below to make highlighting work better, but recomment to actually run
+# from labscriptlib.SrMain.Subroutines.define_constants import *
 
 ################################################################################
 #   Experiment Sequence
@@ -17,35 +18,37 @@ import_or_reload('userlib.labscriptlib.SrMain.Subroutines.define_functions')
 # Let's do this!
 start()
 
-# Starting at time=0
-# This might need to me slightly positive to avoid errors...we'll see when we try it!
-t = 0
+# Starting at time=DelayBeforeStart
+# This might need to me slightly positive to avoid errors...we'll see when we try it! Hopefully can be zero
+add_time_marker(0, 'start_delay')
+t = DelayBeforeStart
 
 # Initialize things and blow away old atoms
+add_time_marker(t, 'blow_away')
 t += initialize(t)
 
-# Load atoms into the blue MOT - includes ramp down if that is happening
-# and also blue light turn-off
+## Load atoms into the blue MOT - includes ramp down if that is happening
+## and also blue light turn-off
 t += load_blue_MOT(t)
 t_blue_off = t
 
-# Make the red MOT if doing that
-# Should think about starting SWAP prior to blue shutoff, but not now
+## Make the red MOT if doing that
+## Should think about starting SWAP prior to blue shutoff, but not now
 if RedMOTOn:
     # SWAP MOT (which ramps down)
     t += red_swap_MOT(t)
     # Narrow MOT (skips if narrow MOT duration is set to 0)
     t += red_narrow_MOT(t)
 
-# Turn red light off
-# This needs to happen, even with just the blue MOT, since we are doing the gray MOT
+## Turn red light off
+## This needs to happen, even with just the blue MOT, since we are doing the gray MOT
 red_light_off(t)
-# Turn the field off
+## Turn the field off
 field_off(t)
 
-# Set reference for earliest imaging if magnetometry is happening
+## Set reference for earliest imaging if magnetometry is happening
 t_mag = t + 2*AOMDelay
-# Set reference time for imaging at end of MOT stages
+## Set reference time for imaging at end of MOT stages
 t_red_off = t
 
 if DipoleLoadDepth > 0:
@@ -61,10 +64,12 @@ t += TimeOfFlight
 
 # Set up imaging to happen offset from one of the reference times set earlier
 # May be earlier or later than that time or the end of experiment, which should mostly be constant
-if ImagingRef == 'red':
+if ImagingOffsetRef == 'red':
     t_im = t_red_off + ImagingOffset
-elif ImagingRef == 'blue':
+elif ImagingOffsetRef == 'blue':
     t_im = t_blue_off + ImagingOffset
+else:
+    raise Exception("Error: ImagingOffsetRef must be either 'red' or 'blue'")
 
 # Not sure what happens if this time is during the blue MOT section, so throwing an exception if you try
 if t_im <= t_blue_off + 3*AOMDelay:
@@ -99,6 +104,7 @@ t += exposure(t,'background',False)
 
 # Initialize things to default, but don't blow away atoms (default on state)
 t += initialize(t, blowaway = False)
+t+= ShutterDelay
 
 # All done!
 stop(t)
