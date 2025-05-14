@@ -43,6 +43,7 @@ DipoleRampDuration = DipoleRampDuration
 DipoleLoadDepth = DipoleLoadDepth
 DipoleHoldTime = DipoleHoldTime
 DipoleTurnOnDelay = DipoleTurnOnDelay
+DipoleOn = DipoleOn
 CompensateProbeDetuning = CompensateProbeDetuning
 ImagingOffsetRef = ImagingOffsetRef
 if CompensateProbeDetuning>0:

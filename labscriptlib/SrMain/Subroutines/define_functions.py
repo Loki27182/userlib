@@ -2,7 +2,7 @@ from labscript import add_time_marker
 import numpy as np
 
 # Uncomment the line below to make highlighting work better, but recomment to actually run
-# from labscriptlib.SrMain.Subroutines.define_constants import *
+#from labscriptlib.SrMain.Subroutines.define_constants import *
 
 ################################################################################
 # Define some constants that we might want to make globals at some point
@@ -78,7 +78,7 @@ def load_blue_MOT(t):
     dt = BlueMOTLoadTime
     if RampDownBlue:
         if BlueMOTRampDuration <= dt:
-            t_ramp_start = dt - BlueMOTRampDuration
+            t_ramp_start = t + dt - BlueMOTRampDuration
         else:
             raise Exception('Error: BlueMOTRampDuration must be less than or equal to BlueMOTLoadTime')
         
@@ -97,8 +97,8 @@ def load_blue_MOT(t):
     # If this is an absorption image, close the blue shutter and turn the AOM back on to reset,
     # otherwise leave shutter open and RF off, since it will be pulsed back on later for imaging
     if Absorption:
-        blue_MOT_shutter.go_low(t + BlueMOTHoldTime) 
-        blue_MOT_RF_TTL.go_low(t + BlueMOTHoldTime + ShutterDelay)
+        blue_MOT_shutter.go_low(t + dt) 
+        blue_MOT_RF_TTL.go_low(t + dt + ShutterDelay)
     # Turn 2D MOT off when that should happen
     add_time_marker(t + dt - SourceShutoffTime - ShutterDelay, 'source_off')
     source_RF_TTL.go_high(t + dt - SourceShutoffTime - ShutterDelay)
@@ -122,13 +122,13 @@ def red_swap_MOT(t):
     # Disable the intensity lock integrator in preparation for turning the light off to switch frequency (avoid windup)
     red_MOT_Int_Disable.go_high(t - 3*AOMDelay)
     # Turn off RF to red cooling AOM (LF)
-    red_MOT_RF_TTL.go_low(t - 2*AOMDelay)
+    red_MOT_RF_TTL.go_low(t - 3*AOMDelay)
     # Change LF AOM frequency to starting point for SWAP
-    red_MOT_VCO.constant(t - AOMDelay,RedMOTRamp0L,units='MHz')
+    red_MOT_VCO.constant(t - 2*AOMDelay,RedMOTRamp0L,units='MHz')
     # Turn RF back on at requested time
-    red_MOT_RF_TTL.go_high(t)
+    red_MOT_RF_TTL.go_high(t - 1*AOMDelay)
     # Turn intensity lock integrator back on
-    red_MOT_Int_Disable.go_low(t + AOMDelay)
+    red_MOT_Int_Disable.go_low(t - 1*AOMDelay)
     # Power ramp down
     red_MOT_power.ramp(t, RedMOTRampTime, RedMOTRampPower0, RedMOTRampPowerF, 500000)
     # Ramped sawtooth frequency modulation
@@ -152,7 +152,7 @@ def red_narrow_MOT(t):
 
 def red_light_off(t):
     # Turn red light off
-    add_time_marker(t, 'red_off')
+    add_time_marker(t, 'all_off')
     red_MOT_RF_TTL.go_low(t)
     if MagnetometryPulse == 0:
         # Close red shutter if not doing magnetometry

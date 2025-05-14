@@ -10,7 +10,7 @@ import_or_reload('labscriptlib.SrMain.connection_table')
 from labscriptlib.SrMain.Subroutines.define_functions import initialize, field_off, load_blue_MOT, red_swap_MOT, red_narrow_MOT, red_light_off, dipole_trap, exposure, AOMDelay, ShutterDelay
 
 # Uncomment the line below to make highlighting work better, but recomment to actually run
-# from labscriptlib.SrMain.Subroutines.define_constants import *
+#from labscriptlib.SrMain.Subroutines.define_constants import *
 
 ################################################################################
 #   Experiment Sequence
@@ -51,13 +51,14 @@ t_mag = t + 2*AOMDelay
 ## Set reference time for imaging at end of MOT stages
 t_red_off = t
 
-if DipoleLoadDepth > 0:
+if DipoleOn > 0:
     if DipoleTurnOnDelay < -DipoleHoldTime:
         raise Exception('Error: End of dipole trap must go past end of red MOT')
     # Adjust turn-on time
     t += DipoleTurnOnDelay
     # Ramp up, hold, then drop the dipole trap
     t += dipole_trap(t)
+    t_dipole = t
 
 # TOF
 t += TimeOfFlight
@@ -68,12 +69,14 @@ if ImagingOffsetRef == 'red':
     t_im = t_red_off + ImagingOffset
 elif ImagingOffsetRef == 'blue':
     t_im = t_blue_off + ImagingOffset
+elif ImagingOffsetRef == 'dipole':
+    t_im = t_dipole + ImagingOffset
 else:
     raise Exception("Error: ImagingOffsetRef must be either 'red' or 'blue'")
 
-# Not sure what happens if this time is during the blue MOT section, so throwing an exception if you try
-if t_im <= t_blue_off + 3*AOMDelay:
-    raise Exception('Error: Imaging cannot happen during blue MOT section')
+# Not sure what happens if this time is during the blue MOT section, so force to this value if too early
+if t_im < t_blue_off + 3*AOMDelay:
+    t_im = t_blue_off + 3*AOMDelay
     
 # If we are doing magnetometry, and the imaging is being requested before the red is turned off, raise an exception, since the magnetometry pulse
 # will not yet have been properly set up - this should be changed so the setup happens in the exposure function
