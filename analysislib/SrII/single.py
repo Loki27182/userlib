@@ -11,6 +11,7 @@ from time import perf_counter as pc
 from matplotlib.patches import Ellipse
 from helper_functions import saveAnalysisImage, basic_gaussian_fit
 import re as regexp
+from lyse_setup import load_data
 
 import AnalysisSettings
 import warnings
@@ -19,9 +20,9 @@ data_series = data()
 run_data = data(path)
 run = Run(path)
 
-variables = {name: data_series[name].values for name, value in run.get_globals().items()}
-iterated_variables = {name: value for name, value in variables.items() if len(value)>1 and len(value)==len(np.unique(value))}
-static_variables = {name: value[0] for name, value in variables.items() if not (len(value)>1 and len(value)==len(np.unique(value)))}
+#variables, iterated_variables, results, filepaths = load_data(run=run)
+instance_variables = {name: data_series[name].values for name, value in run.get_globals().items()}
+
 pixel_size = {}
 sensor_size = {}
 quantum_efficiency = {}
@@ -53,7 +54,7 @@ decay_time = AnalysisSettings.Sr['tau']
 
 
 ROI = {}
-if 'ROI' in variables.keys():
+if 'ROI' in instance_variables.keys():
     if run_data['ROI'] in AnalysisSettings.ROI_GH.keys():
         ROI['xz'] = AnalysisSettings.ROI_GH[run_data['ROI']]
     else:
@@ -104,7 +105,8 @@ for name in imaging_types:
 densityImages = dict()
 atomNumbers = dict()
 
-cameras = static_variables['ImagingCamera'].lower().split(',')
+print(instance_variables['ImagingCamera'][0])
+cameras = instance_variables['ImagingCamera'][0].lower().split(',')
 
 if 'absorption' in imaging_types:
     atomImages = {}
@@ -124,7 +126,7 @@ if 'absorption' in imaging_types:
             atomNorms[camera][ROI[2]:ROI[3],ROI[0]:ROI[1]] = 0
             atomImages[camera] = atomImages[camera][ROI[2]:ROI[3],ROI[0]:ROI[1]]
             refImages[camera] = refImages[camera][ROI[2]:ROI[3],ROI[0]:ROI[1]]
-            if 'NormalizeProbe' in variables.keys() and run_data['NormalizeProbe']:
+            if 'NormalizeProbe' in instance_variables.keys() and run_data['NormalizeProbe']:
                 print('    Normalizing probe...')
                 refImages[camera] = refImages[camera]*np.sum(atomNorms[camera])/np.sum(refNorms[camera])
 

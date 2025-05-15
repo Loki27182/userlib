@@ -1,15 +1,16 @@
 from lyse import *
 import numpy as np
-from numpy import *
 import runmanager.remote as rm
 
-def load_data(cameras={'horizontal'}):
+def load_data(cameras={'horizontal','xz','yz'}):
     all_run_data = data()
     default_variables = {'labscript','sequence','sequence_index','run number','run repeat','run time','n_runs','filepath','agnostic_path'}
-    run = Run(all_run_data.filepath.iloc[-1])
-    run_globals = run.get_globals_raw()
+    #if run is None:
+    #    run = Run(all_run_data.filepath.iloc[-1])
     
-    all_iterated_variables = {name: val for name, val in run_globals.items() if np.size(np.array(eval(val)))>1}
+    #run_globals = run.get_globals_raw()
+    
+    #all_iterated_variables = {name: val for name, val in run_globals.items() if np.size(np.array(eval(val)))>1}
 
 
     for cam in cameras:
@@ -36,6 +37,12 @@ def load_data(cameras={'horizontal'}):
     run_sequence_numbers = [a[8] for a in run_paths]
     run_names = all_run_data['labscript'].values
 
+    idxs_all = [[idx for idx, val in enumerate(run_sequence_numbers)] for val0 in np.unique(run_sequence_numbers)]
+    idx0 = [idxs[0] for idxs in idxs_all]
+
+    first_paths = [path for idx_pth, path in enumerate(run_paths) if idx_pth in idx0]
+
+
     filepaths = []
     for ii, path in enumerate(run_paths):
         y = run_years[ii]
@@ -50,4 +57,4 @@ def load_data(cameras={'horizontal'}):
         if basepath + filename not in filepaths:
             filepaths.append(basepath + filename)
 
-    return variables, iterated_variables, results, filepaths, all_iterated_variables
+    return variables, iterated_variables, results, filepaths, first_paths

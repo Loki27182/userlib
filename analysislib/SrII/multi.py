@@ -18,7 +18,23 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-variables, iterated_variables, results, filepaths, all_iterated_variables = load_data()
+variables, iterated_variables, results, filepaths, first_paths = load_data()
+all_var_ranges = [{ name: [np.min(np.array(eval(val))), np.max(np.array(eval(val)))]
+                                if not isinstance(eval(val),type('')) 
+                                else [0,0]
+                            for name, val in Run(filepath).get_globals_raw().items() 
+                        if np.size(np.array(eval(val))) > 1 
+                    } 
+                    for filepath in first_paths
+                ]
+all_var_names = [{name for name in var_range} for var_range in all_var_ranges]
+
+for idx, var_names in enumerate(all_var_names):
+    if idx==0:
+        unique_var_names = var_names
+    else:
+        unique_var_names = unique_var_names | var_names
+
 
 display_variable_info = dict()
 for name, val in iterated_variables.items():
