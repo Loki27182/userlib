@@ -1,6 +1,7 @@
 from lyse import *
 import numpy as np
 import runmanager.remote as rm
+from  pprint import pp as pprint
 
 def load_data(cameras={'horizontal','xz','yz'}):
     all_run_data = data()
@@ -37,9 +38,11 @@ def load_data(cameras={'horizontal','xz','yz'}):
     run_sequence_numbers = [a[8] for a in run_paths]
     run_names = all_run_data['labscript'].values
 
+    pprint(run_sequence_numbers)
     idxs_all = [[idx for idx, val in enumerate(run_sequence_numbers)] for val0 in np.unique(run_sequence_numbers)]
+    pprint(idxs_all)
     idx0 = [idxs[0] for idxs in idxs_all]
-
+    pprint(idx0)
     first_paths = [path for idx_pth, path in enumerate(run_paths) if idx_pth in idx0]
 
 
