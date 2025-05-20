@@ -5,9 +5,6 @@ import numpy as np
 import h5py
 from scipy.ndimage import gaussian_filter
 from scipy.signal import medfilt2d
-import scipy.constants as constants
-from matplotlib.widgets import Cursor, Slider, CheckButtons, TextBox, Button
-from time import perf_counter as pc
 from matplotlib.patches import Ellipse
 from helper_functions import saveAnalysisImage, basic_gaussian_fit
 import re as regexp
