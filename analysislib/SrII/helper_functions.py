@@ -3,7 +3,7 @@ from pprint import pp as pprint
 from scipy.optimize import curve_fit
 import numpy as np
 import h5py
-import matplotlib.pylab as plt
+#import matplotlib.pylab as plt
 
 def saveAnalysisImage(h5_filepath,groupname,imagename,imagedata,imagetype='frame'):
     try:
@@ -124,14 +124,14 @@ def plot_the_thing_2D(ax,fig,x,y,z,xlab,ylab,titleStr,type1='linear',type2='line
 
 def get_scale(x):
     if np.any(x <= 0):
-        scale_type = 'lin'
+        scale_type = 'linear'
     else:
         dx = np.diff(x)
         dx_err = np.mean(((dx - np.mean(dx))/np.mean(dx))**2)**.5
         dx_log = np.diff(np.log10(x))
         dx_log_err = np.mean(((dx_log - np.mean(dx_log))/np.mean(dx_log))**2)**.5
-        if dx_log_err < dx_err:
+        if dx_log_err < dx_err/10:
             scale_type = 'log'
         else:
-            scale_type = 'lin'
+            scale_type = 'linear'
     return scale_type

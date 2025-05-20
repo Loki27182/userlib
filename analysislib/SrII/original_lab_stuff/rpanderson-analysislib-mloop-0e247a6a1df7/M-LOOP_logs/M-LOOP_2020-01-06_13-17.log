@@ -1,0 +1,294 @@
+2020-01-06 13:17:02,308 mloop                DEBUG    MLOOP Logger configured.
+2020-01-06 13:17:02,308 mloop.interfaces     DEBUG    Creating interface.
+2020-01-06 13:17:02,314 mloop.controllers    DEBUG    Controller init completed.
+2020-01-06 13:17:02,316 mloop.learners.1     DEBUG    Learner init completed.
+2020-01-06 13:17:02,319 mloop.learners.2     DEBUG    Learner init completed.
+2020-01-06 13:17:02,371 mloop.controllers    INFO     Optimization started.
+2020-01-06 13:17:02,380 mloop.interfaces     DEBUG    Entering main loop of interface.
+2020-01-06 13:17:02,380 mloop.controllers    DEBUG    ML learner started.
+2020-01-06 13:17:02,459 mloop.controllers    DEBUG    Starting training optimization.
+2020-01-06 13:17:02,459 mloop.controllers    INFO     Run:1 (training)
+2020-01-06 13:17:02,465 mloop.controllers    INFO     params [79.94 78.49  3.  ]
+2020-01-06 13:17:56,136 mloop.controllers    INFO     cost -1.4301791866734508 +/- 0.0
+2020-01-06 13:17:56,137 mloop.controllers    INFO     Run:2 (training)
+2020-01-06 13:17:56,139 mloop.controllers    INFO     params [80.00125297 78.30726857  2.75168256]
+2020-01-06 13:18:07,011 mloop.controllers    INFO     cost -0.7403805083697448 +/- 0.0
+2020-01-06 13:18:07,011 mloop.controllers    INFO     Run:3 (training)
+2020-01-06 13:18:07,014 mloop.controllers    INFO     params [79.96770204 78.63342254  1.96696547]
+2020-01-06 13:18:18,399 mloop.controllers    INFO     cost -0.0 +/- 0.0
+2020-01-06 13:18:18,400 mloop.controllers    INFO     Run:4 (training)
+2020-01-06 13:18:18,402 mloop.controllers    INFO     params [80.00788341 78.60859371  4.16765646]
+2020-01-06 13:18:29,867 mloop.controllers    INFO     cost -0.0 +/- 0.0
+2020-01-06 13:18:29,867 mloop.controllers    INFO     Run:5 (training)
+2020-01-06 13:18:29,869 mloop.controllers    INFO     params [79.97962675 78.62668516  2.47486724]
+2020-01-06 13:18:41,264 mloop.controllers    INFO     cost -0.0 +/- 0.0
+2020-01-06 13:18:41,264 mloop.controllers    INFO     Run:6 (training)
+2020-01-06 13:18:41,266 mloop.controllers    INFO     params [79.94582807 78.68645011  4.55559466]
+2020-01-06 13:18:41,267 mloop.controllers    DEBUG    Starting ML optimization.
+2020-01-06 13:18:52,167 mloop.controllers    INFO     cost -0.0 +/- 0.0
+2020-01-06 13:18:52,177 mloop.controllers    DEBUG    End training runs.
+2020-01-06 13:18:52,177 mloop.controllers    INFO     Run:7 (machine learner)
+2020-01-06 13:18:52,380 mloop.controllers    INFO     params [79.93608296 78.32515612  3.24561225]
+2020-01-06 13:19:03,496 mloop.controllers    INFO     cost -0.6575018519707545 +/- 0.0
+2020-01-06 13:19:03,496 mloop.controllers    INFO     Run:8 (machine learner)
+2020-01-06 13:19:03,497 mloop.controllers    INFO     params [80.02443609 78.39433583  3.34782412]
+2020-01-06 13:19:14,828 mloop.controllers    INFO     cost -1.4253213867008676 +/- 0.0
+2020-01-06 13:19:14,829 mloop.controllers    INFO     Run:9 (machine learner)
+2020-01-06 13:19:14,830 mloop.controllers    INFO     params [79.90432785 78.49376299  3.42664224]
+2020-01-06 13:19:26,175 mloop.controllers    INFO     cost -1.4949890658011062 +/- 0.0
+2020-01-06 13:19:26,175 mloop.controllers    INFO     Run:10 (machine learner)
+2020-01-06 13:19:26,176 mloop.controllers    INFO     params [79.94       78.49        3.15945945]
+2020-01-06 13:19:37,632 mloop.controllers    INFO     cost -1.4438443059682564 +/- 0.0
+2020-01-06 13:19:37,633 mloop.controllers    INFO     Run:11 (trainer)
+2020-01-06 13:19:37,635 mloop.controllers    INFO     params [79.98503856 78.6315198   4.31652191]
+2020-01-06 13:19:48,813 mloop.controllers    INFO     cost -0.017288764966682156 +/- 0.0
+2020-01-06 13:19:48,814 mloop.controllers    INFO     Run:12 (machine learner)
+2020-01-06 13:19:48,815 mloop.controllers    INFO     params [79.9        78.44971958  4.85973836]
+2020-01-06 13:20:00,126 mloop.controllers    INFO     cost -0.5376254088067729 +/- 0.0
+2020-01-06 13:20:00,126 mloop.controllers    INFO     Run:13 (machine learner)
+2020-01-06 13:20:00,127 mloop.controllers    INFO     params [79.9        78.44364462  4.06985538]
+2020-01-06 13:20:11,419 mloop.controllers    INFO     cost -0.6627928251471245 +/- 0.0
+2020-01-06 13:20:11,419 mloop.controllers    INFO     Run:14 (machine learner)
+2020-01-06 13:20:11,421 mloop.controllers    INFO     params [79.9        78.4392978   1.78565501]
+2020-01-06 13:20:22,723 mloop.controllers    INFO     cost -0.71232931129576 +/- 0.0
+2020-01-06 13:20:22,724 mloop.controllers    INFO     Run:15 (machine learner)
+2020-01-06 13:20:22,725 mloop.controllers    INFO     params [79.9        78.45855792  4.15452456]
+2020-01-06 13:20:33,941 mloop.controllers    INFO     cost -0.7287597711701643 +/- 0.0
+2020-01-06 13:20:33,942 mloop.controllers    INFO     Run:16 (trainer)
+2020-01-06 13:20:33,944 mloop.controllers    INFO     params [80.02006471 78.37386876  2.38780177]
+2020-01-06 13:20:45,347 mloop.controllers    INFO     cost -0.931014715065943 +/- 0.0
+2020-01-06 13:20:45,347 mloop.controllers    INFO     Run:17 (machine learner)
+2020-01-06 13:20:45,349 mloop.controllers    INFO     params [79.90385746 78.55847398  3.84825427]
+2020-01-06 13:20:56,785 mloop.controllers    INFO     cost -0.0 +/- 0.0
+2020-01-06 13:20:56,785 mloop.controllers    INFO     Run:18 (machine learner)
+2020-01-06 13:20:56,786 mloop.controllers    INFO     params [80.02528625 78.55939461  4.16522994]
+2020-01-06 13:21:08,078 mloop.controllers    INFO     cost -0.0 +/- 0.0
+2020-01-06 13:21:08,079 mloop.controllers    INFO     Run:19 (machine learner)
+2020-01-06 13:21:08,080 mloop.controllers    INFO     params [80.02549624 78.49376299  3.42664077]
+2020-01-06 13:21:19,287 mloop.controllers    INFO     cost -1.6490295318984431 +/- 0.0
+2020-01-06 13:21:19,287 mloop.controllers    INFO     Run:20 (machine learner)
+2020-01-06 13:21:19,288 mloop.controllers    INFO     params [79.90432785 78.49376299  3.42664224]
+2020-01-06 13:21:30,723 mloop.controllers    INFO     cost -1.41561769946372 +/- 0.0
+2020-01-06 13:21:30,724 mloop.controllers    INFO     Controller finished. Closing down M-LOOP. Please wait a moment...
+2020-01-06 13:21:30,724 mloop.controllers    DEBUG    ML learner end set.
+2020-01-06 13:21:32,165 mloop.controllers    DEBUG    ML learner joined
+2020-01-06 13:21:32,166 mloop.controllers    DEBUG    Learner end event set.
+2020-01-06 13:21:32,166 mloop.controllers    DEBUG    Interface end event set.
+2020-01-06 13:21:32,722 mloop.interfaces     DEBUG    Interface ended
+2020-01-06 13:21:32,960 mloop.learners.1     DEBUG    Learner end signal received. Ending
+2020-01-06 13:21:32,960 mloop.controllers    DEBUG    Learner joined.
+2020-01-06 13:21:32,960 mloop.controllers    DEBUG    Interface joined.
+2020-01-06 13:21:32,976 mloop.controllers    INFO     Optimization ended because:-
+2020-01-06 13:21:32,977 mloop.controllers    INFO     Maximum number of runs reached.
+2020-01-06 13:21:32,977 mloop.controllers    INFO     Results:-
+2020-01-06 13:21:32,978 mloop.controllers    INFO     Best parameters found:[80.02549624 78.49376299  3.42664077]
+2020-01-06 13:21:32,978 mloop.controllers    INFO     Best cost returned:-1.6490295318984431 +/- 0.0
+2020-01-06 13:21:32,979 mloop.controllers    INFO     Best run number:19
+2020-01-06 13:21:32,979 mloop.controllers    INFO     Predicted best parameters:[80.2        78.49843702  2.32724768]
+2020-01-06 13:21:32,980 mloop.controllers    INFO     Predicted best cost:[-1.78681598] +/- [0.36502856]
+2020-01-06 13:21:32,981 mloop.controllers    INFO     M-LOOP Done.
+2020-01-06 13:27:16,665 mloop.interfaces     DEBUG    Creating interface.
+2020-01-06 13:27:16,671 mloop.controllers    DEBUG    Controller init completed.
+2020-01-06 13:27:16,674 mloop.learners.3     DEBUG    Learner init completed.
+2020-01-06 13:27:16,677 mloop.learners.4     DEBUG    Learner init completed.
+2020-01-06 13:27:16,736 mloop.controllers    INFO     Optimization started.
+2020-01-06 13:27:16,737 mloop.interfaces     DEBUG    Entering main loop of interface.
+2020-01-06 13:27:16,738 mloop.controllers    DEBUG    ML learner started.
+2020-01-06 13:27:17,295 mloop.controllers    DEBUG    Starting training optimization.
+2020-01-06 13:27:17,296 mloop.controllers    INFO     Run:1 (training)
+2020-01-06 13:27:17,297 mloop.controllers    INFO     params [0.   0.   0.05]
+2020-01-06 13:27:28,445 mloop.controllers    INFO     cost -0.059812164098021564 +/- 0.0
+2020-01-06 13:27:28,446 mloop.controllers    INFO     Run:2 (training)
+2020-01-06 13:27:28,448 mloop.controllers    INFO     params [0.01254935 0.12766234 0.04951935]
+2020-01-06 13:27:39,539 mloop.controllers    INFO     cost -0.27424400808660787 +/- 0.0
+2020-01-06 13:27:39,540 mloop.controllers    INFO     Run:3 (training)
+2020-01-06 13:27:39,543 mloop.controllers    INFO     params [0.0364681  0.23601012 0.00858925]
+2020-01-06 13:27:51,260 mloop.controllers    INFO     cost -0.0 +/- 0.0
+2020-01-06 13:27:51,261 mloop.controllers    INFO     Run:4 (training)
+2020-01-06 13:27:51,263 mloop.controllers    INFO     params [0.09630861 0.01723912 0.05608751]
+2020-01-06 13:28:02,227 mloop.controllers    INFO     cost -0.03705943887508771 +/- 0.0
+2020-01-06 13:28:02,228 mloop.controllers    INFO     Run:5 (training)
+2020-01-06 13:28:02,229 mloop.controllers    INFO     params [0.05110162 0.1857369  0.10277255]
+2020-01-06 13:28:13,264 mloop.controllers    INFO     cost -0.9444488162672636 +/- 0.0
+2020-01-06 13:28:13,265 mloop.controllers    INFO     Run:6 (training)
+2020-01-06 13:28:13,267 mloop.controllers    INFO     params [0.03000621 0.04057442 0.03587519]
+2020-01-06 13:28:13,267 mloop.controllers    DEBUG    Starting ML optimization.
+2020-01-06 13:28:24,769 mloop.controllers    INFO     cost -0.06746504800627287 +/- 0.0
+2020-01-06 13:28:24,779 mloop.controllers    DEBUG    End training runs.
+2020-01-06 13:28:24,780 mloop.controllers    INFO     Run:7 (machine learner)
+2020-01-06 13:28:25,032 mloop.controllers    INFO     params [0.05110162 0.1857369  0.10277255]
+2020-01-06 13:28:35,833 mloop.controllers    INFO     cost -1.0586063280340017 +/- 0.0
+2020-01-06 13:28:35,834 mloop.controllers    INFO     Run:8 (machine learner)
+2020-01-06 13:28:35,835 mloop.controllers    INFO     params [0.05110162 0.1857369  0.1034523 ]
+2020-01-06 13:28:47,394 mloop.controllers    INFO     cost -0.8790254785928329 +/- 0.0
+2020-01-06 13:28:47,394 mloop.controllers    INFO     Run:9 (machine learner)
+2020-01-06 13:28:47,396 mloop.controllers    INFO     params [0.05110162 0.1857369  0.1037552 ]
+2020-01-06 13:28:58,469 mloop.controllers    INFO     cost -1.0150422475232792 +/- 0.0
+2020-01-06 13:28:58,469 mloop.controllers    INFO     Run:10 (machine learner)
+2020-01-06 13:28:58,471 mloop.controllers    INFO     params [0.05110162 0.1857369  0.10277255]
+2020-01-06 13:29:09,882 mloop.controllers    INFO     cost -0.977183316412259 +/- 0.0
+2020-01-06 13:29:09,883 mloop.controllers    INFO     Run:11 (trainer)
+2020-01-06 13:29:09,885 mloop.controllers    INFO     params [0.03204453 0.18306602 0.03832294]
+2020-01-06 13:29:21,297 mloop.controllers    INFO     cost -0.2503456702559138 +/- 0.0
+2020-01-06 13:29:21,298 mloop.controllers    INFO     Run:12 (machine learner)
+2020-01-06 13:29:21,299 mloop.controllers    INFO     params [0.01757541 0.29793707 0.12895951]
+2020-01-06 13:29:32,699 mloop.controllers    INFO     cost -0.9063692754892791 +/- 0.0
+2020-01-06 13:29:32,700 mloop.controllers    INFO     Run:13 (machine learner)
+2020-01-06 13:29:32,701 mloop.controllers    INFO     params [0.0040756 0.3       0.15     ]
+2020-01-06 13:29:44,042 mloop.controllers    INFO     cost -0.49100172241493256 +/- 0.0
+2020-01-06 13:29:44,043 mloop.controllers    INFO     Run:14 (machine learner)
+2020-01-06 13:29:44,044 mloop.controllers    INFO     params [0.01690808 0.3        0.15      ]
+2020-01-06 13:29:55,113 mloop.controllers    INFO     cost -0.468271819622276 +/- 0.0
+2020-01-06 13:29:55,113 mloop.controllers    INFO     Run:15 (machine learner)
+2020-01-06 13:29:55,114 mloop.controllers    INFO     params [0.01262753 0.23724461 0.11995893]
+2020-01-06 13:30:06,485 mloop.controllers    INFO     cost -0.8785156264482212 +/- 0.0
+2020-01-06 13:30:06,486 mloop.controllers    INFO     Run:16 (trainer)
+2020-01-06 13:30:06,488 mloop.controllers    INFO     params [0.12265528 0.24312696 0.06005476]
+2020-01-06 13:30:17,760 mloop.controllers    INFO     cost -0.5795151189509726 +/- 0.0
+2020-01-06 13:30:17,762 mloop.controllers    INFO     Run:17 (machine learner)
+2020-01-06 13:30:17,763 mloop.controllers    INFO     params [0.00940734 0.3        0.09381011]
+2020-01-06 13:30:28,922 mloop.controllers    INFO     cost -0.9881928533290871 +/- 0.0
+2020-01-06 13:30:28,922 mloop.controllers    INFO     Run:18 (machine learner)
+2020-01-06 13:30:28,923 mloop.controllers    INFO     params [0.1380835  0.3        0.09033845]
+2020-01-06 13:30:40,153 mloop.controllers    INFO     cost -0.9805695581096466 +/- 0.0
+2020-01-06 13:30:40,154 mloop.controllers    INFO     Run:19 (machine learner)
+2020-01-06 13:30:40,155 mloop.controllers    INFO     params [0.15098609 0.3        0.08773394]
+2020-01-06 13:30:51,369 mloop.controllers    INFO     cost -0.0 +/- 0.0
+2020-01-06 13:30:51,369 mloop.controllers    INFO     Run:20 (machine learner)
+2020-01-06 13:30:51,371 mloop.controllers    INFO     params [0.02549027 0.3        0.09831259]
+2020-01-06 13:31:02,638 mloop.controllers    INFO     cost -1.1518068543332336 +/- 0.0
+2020-01-06 13:31:02,639 mloop.controllers    INFO     Controller finished. Closing down M-LOOP. Please wait a moment...
+2020-01-06 13:31:02,640 mloop.controllers    DEBUG    ML learner end set.
+2020-01-06 13:31:04,143 mloop.controllers    DEBUG    ML learner joined
+2020-01-06 13:31:04,144 mloop.controllers    DEBUG    Learner end event set.
+2020-01-06 13:31:04,144 mloop.controllers    DEBUG    Interface end event set.
+2020-01-06 13:31:04,490 mloop.learners.3     DEBUG    Learner end signal received. Ending
+2020-01-06 13:31:04,490 mloop.controllers    DEBUG    Learner joined.
+2020-01-06 13:31:04,639 mloop.interfaces     DEBUG    Interface ended
+2020-01-06 13:31:04,639 mloop.controllers    DEBUG    Interface joined.
+2020-01-06 13:31:04,656 mloop.controllers    INFO     Optimization ended because:-
+2020-01-06 13:31:04,656 mloop.controllers    INFO     Maximum number of runs reached.
+2020-01-06 13:31:04,656 mloop.controllers    INFO     Results:-
+2020-01-06 13:31:04,657 mloop.controllers    INFO     Best parameters found:[0.02549027 0.3        0.09831259]
+2020-01-06 13:31:04,657 mloop.controllers    INFO     Best cost returned:-1.1518068543332336 +/- 0.0
+2020-01-06 13:31:04,658 mloop.controllers    INFO     Best run number:20
+2020-01-06 13:31:04,658 mloop.controllers    INFO     Predicted best parameters:[0.10973878 0.29999802 0.09178633]
+2020-01-06 13:31:04,659 mloop.controllers    INFO     Predicted best cost:[-1.15584865] +/- [0.91171894]
+2020-01-06 13:31:04,660 mloop.controllers    INFO     M-LOOP Done.
+2020-01-06 13:32:18,664 mloop.interfaces     DEBUG    Creating interface.
+2020-01-06 13:32:18,670 mloop.controllers    DEBUG    Controller init completed.
+2020-01-06 13:32:18,673 mloop.learners.5     DEBUG    Learner init completed.
+2020-01-06 13:32:18,676 mloop.learners.6     DEBUG    Learner init completed.
+2020-01-06 13:32:18,743 mloop.controllers    INFO     Optimization started.
+2020-01-06 13:32:18,751 mloop.interfaces     DEBUG    Entering main loop of interface.
+2020-01-06 13:32:18,751 mloop.controllers    DEBUG    ML learner started.
+2020-01-06 13:32:18,916 mloop.controllers    DEBUG    Starting training optimization.
+2020-01-06 13:32:18,917 mloop.controllers    INFO     Run:1 (training)
+2020-01-06 13:32:18,918 mloop.controllers    INFO     params [0.   0.   0.05]
+2020-01-06 13:32:30,329 mloop.controllers    INFO     cost -0.0127150356249617 +/- 0.0
+2020-01-06 13:32:30,330 mloop.controllers    INFO     Run:2 (training)
+2020-01-06 13:32:30,332 mloop.controllers    INFO     params [0.01826493 0.12312352 0.08257961]
+2020-01-06 13:32:41,696 mloop.controllers    INFO     cost -0.05665308312387732 +/- 0.0
+2020-01-06 13:32:41,696 mloop.controllers    INFO     Run:3 (training)
+2020-01-06 13:32:41,698 mloop.controllers    INFO     params [0.08268686 0.19828803 0.04466794]
+2020-01-06 13:32:52,984 mloop.controllers    INFO     cost -0.04444640125955105 +/- 0.0
+2020-01-06 13:32:52,985 mloop.controllers    INFO     Run:4 (training)
+2020-01-06 13:32:52,988 mloop.controllers    INFO     params [0.02355917 0.23812057 0.12934573]
+2020-01-06 13:33:04,436 mloop.controllers    INFO     cost -0.07372658089626873 +/- 0.0
+2020-01-06 13:33:04,436 mloop.controllers    INFO     Run:5 (training)
+2020-01-06 13:33:04,438 mloop.controllers    INFO     params [0.06214581 0.12192462 0.06050039]
+2020-01-06 13:33:15,748 mloop.controllers    INFO     cost -0.037478812150592275 +/- 0.0
+2020-01-06 13:33:15,749 mloop.controllers    INFO     Run:6 (training)
+2020-01-06 13:33:15,750 mloop.controllers    INFO     params [0.00742565 0.10101167 0.07629739]
+2020-01-06 13:33:15,751 mloop.controllers    DEBUG    Starting ML optimization.
+2020-01-06 13:33:27,008 mloop.controllers    INFO     cost -0.05033271197604809 +/- 0.0
+2020-01-06 13:33:27,018 mloop.controllers    DEBUG    End training runs.
+2020-01-06 13:33:27,018 mloop.controllers    INFO     Run:7 (machine learner)
+2020-01-06 13:33:27,421 mloop.controllers    INFO     params [0.         0.26075853 0.11714185]
+2020-01-06 13:33:38,519 mloop.controllers    INFO     cost -0.10648111748017114 +/- 0.0
+2020-01-06 13:33:38,520 mloop.controllers    INFO     Run:8 (machine learner)
+2020-01-06 13:33:38,521 mloop.controllers    INFO     params [0.07834295 0.23800895 0.12306827]
+2020-01-06 13:33:49,872 mloop.controllers    INFO     cost -0.1074310998624059 +/- 0.0
+2020-01-06 13:33:49,873 mloop.controllers    INFO     Run:9 (machine learner)
+2020-01-06 13:33:49,874 mloop.controllers    INFO     params [0.09472237 0.19829153 0.12470117]
+2020-01-06 13:34:01,052 mloop.controllers    INFO     cost -0.08617476216255814 +/- 0.0
+2020-01-06 13:34:01,053 mloop.controllers    INFO     Run:10 (machine learner)
+2020-01-06 13:34:01,054 mloop.controllers    INFO     params [0.02271982 0.28088027 0.12784333]
+2020-01-06 13:34:12,408 mloop.controllers    INFO     cost -0.1039490425737278 +/- 0.0
+2020-01-06 13:34:12,409 mloop.controllers    INFO     Run:11 (trainer)
+2020-01-06 13:34:12,411 mloop.controllers    INFO     params [0.01134581 0.09336559 0.13107062]
+2020-01-06 13:34:23,912 mloop.controllers    INFO     cost -0.0 +/- 0.0
+2020-01-06 13:34:23,913 mloop.controllers    INFO     Run:12 (machine learner)
+2020-01-06 13:34:23,914 mloop.controllers    INFO     params [0.01501052 0.3        0.15      ]
+2020-01-06 13:34:35,068 mloop.controllers    INFO     cost -0.08202456837117186 +/- 0.0
+2020-01-06 13:34:35,069 mloop.controllers    INFO     Run:13 (machine learner)
+2020-01-06 13:34:35,070 mloop.controllers    INFO     params [0.16657461 0.3        0.15      ]
+2020-01-06 13:34:46,634 mloop.controllers    INFO     cost -0.03122210346158184 +/- 0.0
+2020-01-06 13:34:46,635 mloop.controllers    INFO     Run:14 (machine learner)
+2020-01-06 13:34:46,636 mloop.controllers    INFO     params [0.15711803 0.3        0.15      ]
+2020-01-06 13:34:57,953 mloop.controllers    INFO     cost -0.04759715363594655 +/- 0.0
+2020-01-06 13:34:57,953 mloop.controllers    INFO     Run:15 (machine learner)
+2020-01-06 13:34:57,954 mloop.controllers    INFO     params [0.00299344 0.3        0.15      ]
+2020-01-06 13:35:09,403 mloop.controllers    INFO     cost -0.02874976920001439 +/- 0.0
+2020-01-06 13:35:09,404 mloop.controllers    INFO     Run:16 (trainer)
+2020-01-06 13:35:09,406 mloop.controllers    INFO     params [0.06413439 0.16304539 0.06681916]
+2020-01-06 13:35:20,610 mloop.controllers    INFO     cost -0.0687652187902805 +/- 0.0
+2020-01-06 13:35:20,611 mloop.controllers    INFO     Run:17 (machine learner)
+2020-01-06 13:35:20,612 mloop.controllers    INFO     params [0.16726971 0.27871745 0.11309781]
+2020-01-06 13:35:31,916 mloop.controllers    INFO     cost -0.0998189677455927 +/- 0.0
+2020-01-06 13:35:31,917 mloop.controllers    INFO     Run:18 (machine learner)
+2020-01-06 13:35:31,918 mloop.controllers    INFO     params [0.1667256  0.29493745 0.10835444]
+2020-01-06 13:35:43,213 mloop.controllers    INFO     cost -0.1097373196748372 +/- 0.0
+2020-01-06 13:35:43,214 mloop.controllers    INFO     Run:19 (machine learner)
+2020-01-06 13:35:43,215 mloop.controllers    INFO     params [0.15555343 0.3        0.10158272]
+2020-01-06 13:35:54,495 mloop.controllers    INFO     cost -0.08041626476275013 +/- 0.0
+2020-01-06 13:35:54,495 mloop.controllers    INFO     Run:20 (machine learner)
+2020-01-06 13:35:54,497 mloop.controllers    INFO     params [0.04707233 0.27061851 0.11620348]
+2020-01-06 13:36:05,893 mloop.controllers    INFO     cost -0.11946318614012838 +/- 0.0
+2020-01-06 13:36:05,894 mloop.controllers    INFO     Controller finished. Closing down M-LOOP. Please wait a moment...
+2020-01-06 13:36:05,895 mloop.controllers    DEBUG    ML learner end set.
+2020-01-06 13:36:07,172 mloop.controllers    DEBUG    ML learner joined
+2020-01-06 13:36:07,173 mloop.controllers    DEBUG    Learner end event set.
+2020-01-06 13:36:07,173 mloop.controllers    DEBUG    Interface end event set.
+2020-01-06 13:36:07,420 mloop.learners.5     DEBUG    Learner end signal received. Ending
+2020-01-06 13:36:07,420 mloop.controllers    DEBUG    Learner joined.
+2020-01-06 13:36:07,892 mloop.interfaces     DEBUG    Interface ended
+2020-01-06 13:36:07,892 mloop.controllers    DEBUG    Interface joined.
+2020-01-06 13:36:07,908 mloop.controllers    INFO     Optimization ended because:-
+2020-01-06 13:36:07,909 mloop.controllers    INFO     Maximum number of runs reached.
+2020-01-06 13:36:07,909 mloop.controllers    INFO     Results:-
+2020-01-06 13:36:07,910 mloop.controllers    INFO     Best parameters found:[0.04707233 0.27061851 0.11620348]
+2020-01-06 13:36:07,910 mloop.controllers    INFO     Best cost returned:-0.11946318614012838 +/- 0.0
+2020-01-06 13:36:07,911 mloop.controllers    INFO     Best run number:20
+2020-01-06 13:36:07,911 mloop.controllers    INFO     Predicted best parameters:[0.08793919 0.28504584 0.11750782]
+2020-01-06 13:36:07,912 mloop.controllers    INFO     Predicted best cost:[-0.10998111] +/- [14.96762383]
+2020-01-06 13:36:07,913 mloop.controllers    INFO     M-LOOP Done.
+2020-01-06 13:37:23,011 mloop.interfaces     DEBUG    Creating interface.
+2020-01-06 13:37:23,016 mloop.controllers    DEBUG    Controller init completed.
+2020-01-06 13:37:23,019 mloop.learners.7     DEBUG    Learner init completed.
+2020-01-06 13:37:23,022 mloop.learners.8     DEBUG    Learner init completed.
+2020-01-06 13:37:23,074 mloop.controllers    INFO     Optimization started.
+2020-01-06 13:37:23,075 mloop.interfaces     DEBUG    Entering main loop of interface.
+2020-01-06 13:37:23,075 mloop.controllers    DEBUG    ML learner started.
+2020-01-06 13:37:23,241 mloop.controllers    DEBUG    Starting training optimization.
+2020-01-06 13:37:23,241 mloop.controllers    INFO     Run:1 (training)
+2020-01-06 13:37:23,243 mloop.controllers    INFO     params [79.94 78.49  3.  ]
+2020-01-06 13:37:34,738 mloop.controllers    INFO     cost -0.11562101499801714 +/- 0.0
+2020-01-06 13:37:34,739 mloop.controllers    INFO     Run:2 (training)
+2020-01-06 13:37:34,741 mloop.controllers    INFO     params [79.94650182 78.38306353  4.52085238]
+2020-01-06 13:37:45,963 mloop.controllers    INFO     cost -0.0 +/- 0.0
+2020-01-06 13:37:45,964 mloop.controllers    INFO     Run:3 (training)
+2020-01-06 13:37:45,966 mloop.controllers    INFO     params [79.98884306 78.42893166  0.86319995]
+2020-01-06 13:37:57,570 mloop.controllers    INFO     cost -0.0 +/- 0.0
+2020-01-06 13:37:57,570 mloop.controllers    INFO     Run:4 (training)
+2020-01-06 13:37:57,572 mloop.controllers    INFO     params [80.00464935 78.62990632  2.60089541]
+2020-01-06 13:38:08,580 mloop.controllers    INFO     cost -0.0 +/- 0.0
+2020-01-06 13:38:08,581 mloop.controllers    INFO     Run:5 (training)
+2020-01-06 13:38:08,583 mloop.controllers    INFO     params [79.93490212 78.37239684  1.12775268]
+2020-01-06 13:38:19,754 mloop.controllers    INFO     cost -0.0 +/- 0.0
+2020-01-06 13:38:19,754 mloop.controllers    INFO     Run:6 (training)
+2020-01-06 13:38:19,756 mloop.controllers    INFO     params [79.9009674  78.36816215  1.84153502]
+2020-01-06 13:38:19,757 mloop.controllers    DEBUG    Starting ML optimization.
+2020-01-06 13:39:25,964 mloop.controllers    WARNING  Controller ended due to exception of some kind. Starting shut down...
+2020-01-06 13:39:25,964 mloop.controllers    DEBUG    ML learner end set.
+2020-01-06 13:39:26,558 mloop.controllers    DEBUG    ML learner joined

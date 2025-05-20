@@ -11,17 +11,15 @@ from time import perf_counter as pc
 from matplotlib.patches import Ellipse
 from helper_functions import saveAnalysisImage, basic_gaussian_fit
 import re as regexp
-from lyse_setup import load_data
 
 import AnalysisSettings
 import warnings
 warnings.filterwarnings('ignore')
-data_series = data()
+#data_series = data()
 run_data = data(path)
 run = Run(path)
 
-#variables, iterated_variables, results, filepaths = load_data(run=run)
-instance_variables = {name: data_series[name].values for name, value in run.get_globals().items()}
+instance_variables = run.get_globals()
 
 pixel_size = {}
 sensor_size = {}
@@ -105,8 +103,8 @@ for name in imaging_types:
 densityImages = dict()
 atomNumbers = dict()
 
-print(instance_variables['ImagingCamera'][0])
-cameras = instance_variables['ImagingCamera'][0].lower().split(',')
+print(instance_variables['ImagingCamera'])
+cameras = instance_variables['ImagingCamera'].lower().split(',')
 
 if 'absorption' in imaging_types:
     atomImages = {}
@@ -130,8 +128,8 @@ if 'absorption' in imaging_types:
                 print('    Normalizing probe...')
                 refImages[camera] = refImages[camera]*np.sum(atomNorms[camera])/np.sum(refNorms[camera])
 
-        atomImages[camera] = np.clip(medfilt2d(atomImages[camera],median_filter_size),1.0,np.Inf)
-        refImages[camera] = np.clip(medfilt2d(refImages[camera],median_filter_size),1.0,np.Inf)
+        atomImages[camera] = np.clip(medfilt2d(atomImages[camera],median_filter_size),1.0,np.inf)
+        refImages[camera] = np.clip(medfilt2d(refImages[camera],median_filter_size),1.0,np.inf)
 
         densityImages[camera] = gaussian_filter(np.log(refImages[camera]/atomImages[camera]),gaussian_filter_size)
 
@@ -216,8 +214,8 @@ for camera, imageData in densityImages.items():
     print('    Done plotting ' + camera + ' image.')
 
 print('Saving data...')
-for camera in atomNumbers.keys():
-    run.save_result(camera + "/atomNumber", atomNumbers[camera])
+for camera, N in atomNumbers.items():
+    run.save_result(camera + "/atomNumber", N)
     if run_data['FitData']:
         run.save_result(camera + '/x_position', x_0[camera][0]/(1*10**6))
         run.save_result(camera + '/y_position', x_0[camera][1]/(1*10**6))

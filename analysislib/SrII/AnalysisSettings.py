@@ -25,8 +25,17 @@ filters = {'median': {'small': 3, 'large': 7},
 
 result_plot = 'atomNumber'
 
-variable_info = {'BlueMOTShimX': {'plot_title': 'Varying X-axis Shim Current','axis_label': 'X Coil current (A)','scale': 1.0},
-                 'BlueMOTShimY': {'plot_title': 'Varying X-axis Shim Current','axis_label': 'Y Coil current (A)','scale': 1.0},
-                 'BlueMOTShimZ': {'plot_title': 'Varying X-axis Shim Current','axis_label': 'Z Coil current (A)','scale': 1.0},
-                 'PulseDuration': {'plot_title': 'Varying X-axis Shim Current','axis_label': 'Probe duration ($\mu$s)','scale': 1000000.0},
+variable_info = {'BlueMOTShimX': {'plot_title': 'Varying X-axis Shim Current','axis_label': 'X trim current (A)','scale': 1.0, 'prefer_x': 1},
+                 'BlueMOTShimZ': {'plot_title': 'Varying Z-axis Shim Current','axis_label': 'Z trim current (A)','scale': 1.0, 'prefer_x': 1},
+                 'BlueMOTShimY': {'plot_title': 'Varying Y-axis Shim Current','axis_label': 'Y trim current (A)','scale': 1.0, 'prefer_x': 1},
+                 'PulseDuration': {'plot_title': 'Varying Pulse Duration','axis_label': 'Probe duration ($\mu$s)','scale': 1.0e6, 'prefer_x': 1},
+                 'ImagingOffset': {'plot_title': 'Varying Imaging Time','axis_label': 'Imaging pulse offset (s)','scale': 1.0, 'prefer_x': 0},
+                 'DummyVariable': {'plot_title': 'Repeating','axis_label': 'Dummy variable','scale': 1.0, 'prefer_x': 0},
+                 }
+
+result_info = {'atomNumber': {'axis_label': 'Atom number (millions)','scale': 1.0e-6,'plot_flag':True},
+                 'x_position': {'axis_label': 'X-position ($\mu$m)','scale': 1.0,'plot_flag':False},
+                 'y_position': {'axis_label': 'Y-position ($\mu$m)','scale': 1.0,'plot_flag':False},
+                 'x_width': {'axis_label': 'X-width ($\mu$m)','scale': 1.0,'plot_flag':False},
+                 'y_width': {'axis_label': 'Y-width ($\mu$m)','scale': 1.0,'plot_flag':False},
                  }
