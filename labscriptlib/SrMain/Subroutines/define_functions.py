@@ -211,7 +211,7 @@ def exposure(t,name,exposure):
     ExposureTime = PulseDuration + ExposurePadding
     # Set up camera exposures with trigger advance added
     if 'XZ' in cameras:
-        cam_xy.expose(t - TriggerAdvance, imtype, name, ExposureTime + 2*TriggerAdvance)
+        cam_xz.expose(t - TriggerAdvance, imtype, name, ExposureTime + 2*TriggerAdvance)
     if 'YZ' in cameras:
         cam_yz.expose(t - TriggerAdvance, imtype, name, ExposureTime + 2*TriggerAdvance)
     if exposure:    # If we are actually applying an imaging pulse...

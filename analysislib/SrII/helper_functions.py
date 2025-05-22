@@ -3,6 +3,8 @@ from pprint import pp as pprint
 from scipy.optimize import curve_fit
 import numpy as np
 import h5py
+import AnalysisSettings
+import pandas as pd
 #import matplotlib.pylab as plt
 
 def saveAnalysisImage(h5_filepath,groupname,imagename,imagedata,imagetype='frame'):
@@ -135,3 +137,109 @@ def get_scale(x):
         else:
             scale_type = 'linear'
     return scale_type
+
+def load_iterated_data():
+    column_names = data(n_sequences=0).columns
+    n_mi = len(column_names[0])
+
+    default_variables = ['labscript','sequence','sequence_index','run number','run repeat','run time','n_runs','filepath']
+    def_var_idx = [name_to_idx(var_name,n_mi) for var_name in default_variables]
+
+    run_info = data(filter_kwargs={'items':def_var_idx})
+    script_names = np.array([[a[0:-3]] for a in run_info['labscript'].values])
+    run_dates = np.array([str(a)[0:10].split('-') for a in run_info['sequence'].values])
+    seq_idxs = np.array([[str(a)] for a in run_info['sequence_index'].values])
+    run_uid = ['_'.join(nameparts) for nameparts in np.concatenate((script_names,run_dates,seq_idxs),axis=1)]
+    idxs_all = [[idx for idx, val in enumerate(run_uid) if val == val0] for val0 in np.unique(run_uid)]
+    idx0 = [idxs[0] for idxs in idxs_all]
+    run_sample_filepaths = run_info['filepath'].values[idx0]
+    all_var_ranges = [{ name: [np.min(np.array(eval(val.replace('linspace','np.linspace').replace('logspace','np.logspace')))), 
+                               np.max(np.array(eval(val.replace('linspace','np.linspace').replace('logspace','np.logspace'))))]
+                                if not isinstance(eval(val.replace('linspace','np.linspace').replace('logspace','np.logspace')),type('')) 
+                                else [0,0]
+                            for name, val in Run(filepath).get_globals_raw().items() 
+                        if np.size(np.array(eval(val.replace('linspace','np.linspace').replace('logspace','np.logspace')))) > 1 
+                    } 
+                    for filepath in run_sample_filepaths
+                ]
+
+    var_ranges = {}
+    for var_ranges_ii in all_var_ranges:
+        for var_name, var_range in var_ranges_ii.items():
+            if var_name not in var_ranges:
+                var_ranges[var_name] = var_range
+            else:
+                var_ranges[var_name] = [np.min([var_range,var_ranges[var_name]]),np.max([var_range,var_ranges[var_name]])]
+
+    var_idx = [name_to_idx(name,n_mi) for name, val in var_ranges.items()]
+
+    variable_info = []
+    if len(var_ranges)>0:
+        for idx, (varname, varrange) in enumerate(var_ranges.items()):
+            try:
+                axis_label = AnalysisSettings.variable_info[varname]['axis_label']
+            except:
+                axis_label = varname
+            try:
+                axis_scale = AnalysisSettings.variable_info[varname]['scale']
+            except:
+                axis_scale = 1
+            try:
+                prefer_x = AnalysisSettings.variable_info[varname]['prefer_x']
+            except:
+                prefer_x = 0
+            temp_dict = dict()
+            temp_dict['name'] = varname
+            temp_dict['axis_label'] = axis_label
+            temp_dict['prefer_x'] = prefer_x
+            temp_dict['axis_scale'] = np.array(axis_scale)
+            temp_dict['values'] = data(filter_kwargs={'items':[var_idx[idx]]}).values
+            temp_dict['range'] = varrange
+            temp_dict['loglin'] = get_scale(temp_dict['values'])
+            variable_info.append(temp_dict)
+    else:
+        temp_dict['name'] = 'Time'
+        temp_dict['axis_label'] = 'Time'
+        temp_dict['prefer_x'] = 0
+        temp_dict['axis_scale'] = np.array(1.0)
+        temp_dict['values'] = pd.to_datetime(data(filter_kwargs={'items':['run time']}).values)
+        temp_dict['range'] = [np.min(temp_dict['values']),np.max(temp_dict['values'])]
+        temp_dict['loglin'] = 'linear'
+        variable_info.append(temp_dict)
+
+    result_info = dict()
+    for name in column_names:
+        if name[0]=='single':
+            result_info[name[1]] = dict()
+            result_info[name[1]]['imaging_axis'] = name[1].split('/')[0]
+            result_info[name[1]]['result_type'] = name[1].split('/')[-1]
+            try:
+                axis_label = AnalysisSettings.result_info[result_info[name[1]]['result_type']]['axis_label']
+            except:
+                axis_label = name[1]
+            try:
+                axis_scale = AnalysisSettings.result_info[result_info[name[1]]['result_type']]['scale']
+            except:
+                axis_scale = 1
+            try:
+                plot_flag = AnalysisSettings.result_info[result_info[name[1]]['result_type']]['plot_flag']
+            except:
+                plot_flag = False
+            result_info[name[1]]['axis_label'] = np.array(axis_label)
+            result_info[name[1]]['plot_flag'] = plot_flag
+            result_info[name[1]]['axis_scale'] = axis_scale
+            result_info[name[1]]['values'] = data(filter_kwargs={'items':[name]}).values
+
+    save_paths = []
+    for filepath in run_sample_filepaths:
+        directory = '\\'.join(filepath.split('\\')[0:-2]) + '\\'
+        basename = filepath.split('\\')[-2] + '\\'
+        save_paths.append(directory + basename)
+
+    return variable_info, result_info, save_paths
+
+def name_to_idx(name,n):
+    name_idx = (name,)
+    for idx in range(n-1):
+        name_idx = name_idx + ('',)
+    return name_idx

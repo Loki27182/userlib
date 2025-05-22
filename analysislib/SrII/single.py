@@ -65,7 +65,7 @@ if 'ROI' in instance_variables.keys():
         else:
             ROI['xz'] = []
 
-    if run_data['ROI'] in AnalysisSettings.ROI_GH.keys():
+    if run_data['ROI'] in AnalysisSettings.ROI_BF.keys():
         ROI['yz'] = AnalysisSettings.ROI_BF[run_data['ROI']]
     else:
         matches = regexp.findall('\[(\d+),(\d+),(\d+),(\d+)\]',run_data['ROI'])
@@ -108,19 +108,22 @@ if 'absorption' in imaging_types:
     refImages = {}
     densityImages = {}
     atomNumbers = {}
+    refNorms = {}
+    atomNorms = {}
     camera = 1
 
     for camera in cameras:
         atomImages[camera] = run.get_image(camera,'absorption','atoms').astype('float') - run.get_image(camera,'absorption','background').astype('float')
         refImages[camera] = run.get_image(camera,'absorption','reference').astype('float') - run.get_image(camera,'absorption','background').astype('float')
-        refNorms = refImages.copy()
-        atomNorms = atomImages.copy()
+        refNorms[camera] = refImages[camera].copy()
+        atomNorms[camera] = atomImages[camera].copy()
 
         if len(ROI[camera])>0:
-            refNorms[camera][ROI[2]:ROI[3],ROI[0]:ROI[1]] = 0
-            atomNorms[camera][ROI[2]:ROI[3],ROI[0]:ROI[1]] = 0
-            atomImages[camera] = atomImages[camera][ROI[2]:ROI[3],ROI[0]:ROI[1]]
-            refImages[camera] = refImages[camera][ROI[2]:ROI[3],ROI[0]:ROI[1]]
+            pprint(ROI[camera])
+            refNorms[camera][ROI[camera][2]:ROI[camera][3],ROI[camera][0]:ROI[camera][1]] = 0
+            atomNorms[camera][ROI[camera][2]:ROI[camera][3],ROI[camera][0]:ROI[camera][1]] = 0
+            atomImages[camera] = atomImages[camera][ROI[camera][2]:ROI[camera][3],ROI[camera][0]:ROI[camera][1]]
+            refImages[camera] = refImages[camera][ROI[camera][2]:ROI[camera][3],ROI[camera][0]:ROI[camera][1]]
             if 'NormalizeProbe' in instance_variables.keys() and run_data['NormalizeProbe']:
                 print('    Normalizing probe...')
                 refImages[camera] = refImages[camera]*np.sum(atomNorms[camera])/np.sum(refNorms[camera])
@@ -142,7 +145,7 @@ elif 'fluorescence' in imaging_types:
         atomImages[camera] = run.get_image(camera,'fluorescence','atoms').astype('float') - run.get_image(camera,'fluorescence','background').astype('float')
         atomImages[camera] = medfilt2d(atomImages[camera],median_filter_size)
         if len(ROI[camera])>0:
-            atomImages[camera] = atomImages[camera][ROI[2]:ROI[3],ROI[0]:ROI[1]]
+            atomImages[camera] = atomImages[camera][ROI[camera][2]:ROI[camera][3],ROI[camera][0]:ROI[camera][1]]
         densityImages[camera] = gaussian_filter(atomImages[camera],gaussian_filter_size)
         atomNumbers[camera] = np.sum(densityImages[camera])*decay_time/(total_efficiency[camera]*run_data['PulseDuration'])
         print('    Fluorescence image processed for ' + camera + ' direction')

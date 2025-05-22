@@ -3,7 +3,7 @@ import numpy as np
 import h5py
 import matplotlib.pyplot as plt
 from pprint import pp as pprint
-from lyse_setup import load_iterated_data
+from helper_functions import load_iterated_data
 
 variable_info, result_info, save_paths = load_iterated_data()
 visible_results_info = {name: val for name, val in result_info.items() if val['plot_flag']}
@@ -45,8 +45,14 @@ if len(variable_info)==1:
         axs[multi_name].tick_params(axis='x', labelsize=12)
         axs[multi_name].tick_params(axis='y', labelsize=12)
 
-        axs[multi_name].set_ylim([np.min([0,np.min(y_u)*1.1]),np.max([0,np.max(y_u)*1.1])])
-        axs[multi_name].set_xlim(x_range)
+        try:
+            axs[multi_name].set_ylim([np.min([0,np.min(y_u)*1.1]),np.max([0,np.max(y_u)*1.1])])
+        except:
+            pass
+        try:
+            axs[multi_name].set_xlim(x_range)
+        except:
+            pass
         axs[multi_name].grid(True)
         axs[multi_name].set_xscale(x_scale_type)
 
