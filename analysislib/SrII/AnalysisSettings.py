@@ -6,8 +6,8 @@ camera = {'GH':{'pixel_size': 3.69*10**-6,'sensor_size':  [1928,1448], 'magnific
                  'losses': 0.61, 'focal_length': 200e-3, 'aperture_diameter': 25e-3},
         'Flea':{'pixel_size': 2.5*10**-6,'sensor_size':  [2080,1552], 'magnification': 1.0, 'quantum_efficiency': 0.67,
                  'losses': 0.61, 'focal_length': 150e-3, 'aperture_diameter': 25e-3},
-        'Blackfly':{'pixel_size': 4.5*10**-6,'sensor_size':  [1936,1464], 'magnification': 1.0, 'quantum_efficiency': 0.67,
-                 'losses': 0.61, 'focal_length': 175e-3, 'aperture_diameter': 12e-3}}
+        'Blackfly':{'pixel_size': 4.5*10**-6,'sensor_size':  [1936,1464], 'magnification': 175.0/150.0, 'quantum_efficiency': 0.67,
+                 'losses': 0.34, 'focal_length': 175e-3, 'aperture_diameter': 12e-3}}
 
 ROI_GH = {'small':[450,1150,800,1300],
         'medium':[450,1600,650,1448],
@@ -15,9 +15,9 @@ ROI_GH = {'small':[450,1150,800,1300],
         'small_high':[550,1050,650,1050],
         'large':[300,1800,1,1448],
         'full':[1,1927,1,1448],
-        'column':[450,1150,800,1448],
-        'test':[450,1600,650,1448]}
-ROI_BF = {'test':[450,1600,650,1448]}
+        'column':[450,1550,800,1445],
+        'test':[650,1200,750,1075]}
+ROI_BF = {'test':[850,1250,550,850]}
 
 filters = {'median': {'small': 3, 'large': 7}, 
            'gaussian': {'small': 3, 'large': 7}, 
