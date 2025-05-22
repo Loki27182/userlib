@@ -2,7 +2,7 @@ import numpy as np
 
 Sr = {'sigma0': 1.015*10**(-13), 'mass': 87.906*1.661*10**(-27), 'tau': 5e-9}
 
-camera = {'GH':{'pixel_size': 3.69*10**-6,'sensor_size':  [1928,1448], 'magnification': 0.91, 'quantum_efficiency': 0.68,
+camera = {'GH':{'pixel_size': 3.69*10**-6,'sensor_size':  [1928,1448], 'magnification': 0.93, 'quantum_efficiency': 0.68,
                  'losses': 0.61, 'focal_length': 200e-3, 'aperture_diameter': 25e-3},
         'Flea':{'pixel_size': 2.5*10**-6,'sensor_size':  [2080,1552], 'magnification': 1.0, 'quantum_efficiency': 0.67,
                  'losses': 0.61, 'focal_length': 150e-3, 'aperture_diameter': 25e-3},
