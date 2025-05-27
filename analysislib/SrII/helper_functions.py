@@ -153,12 +153,12 @@ def load_iterated_data():
     idxs_all = [[idx for idx, val in enumerate(run_uid) if val == val0] for val0 in np.unique(run_uid)]
     idx0 = [idxs[0] for idxs in idxs_all]
     run_sample_filepaths = run_info['filepath'].values[idx0]
-    all_var_ranges = [{ name: [np.min(np.array(eval(val.replace('linspace','np.linspace').replace('logspace','np.logspace')))), 
-                               np.max(np.array(eval(val.replace('linspace','np.linspace').replace('logspace','np.logspace'))))]
-                                if not isinstance(eval(val.replace('linspace','np.linspace').replace('logspace','np.logspace')),type('')) 
+    all_var_ranges = [{ name: [np.min(np.array(eval(val.replace('linspace','np.linspace').replace('logspace','np.logspace').replace('arange','np.arange')))), 
+                               np.max(np.array(eval(val.replace('linspace','np.linspace').replace('logspace','np.logspace').replace('arange','np.arange'))))]
+                                if not isinstance(eval(val.replace('linspace','np.linspace').replace('logspace','np.logspace').replace('arange','np.arange')),type('')) 
                                 else [0,0]
                             for name, val in Run(filepath).get_globals_raw().items() 
-                        if np.size(np.array(eval(val.replace('linspace','np.linspace').replace('logspace','np.logspace')))) > 1 
+                        if np.size(np.array(eval(val.replace('linspace','np.linspace').replace('logspace','np.logspace').replace('arange','np.arange')))) > 1 
                     } 
                     for filepath in run_sample_filepaths
                 ]
@@ -198,11 +198,13 @@ def load_iterated_data():
             temp_dict['loglin'] = get_scale(temp_dict['values'])
             variable_info.append(temp_dict)
     else:
+        temp_dict = dict()
         temp_dict['name'] = 'Time'
         temp_dict['axis_label'] = 'Time'
         temp_dict['prefer_x'] = 0
         temp_dict['axis_scale'] = np.array(1.0)
-        temp_dict['values'] = pd.to_datetime(data(filter_kwargs={'items':['run time']}).values)
+        df = data()
+        temp_dict['values'] = pd.to_datetime(df['run time'].values)
         temp_dict['range'] = [np.min(temp_dict['values']),np.max(temp_dict['values'])]
         temp_dict['loglin'] = 'linear'
         variable_info.append(temp_dict)

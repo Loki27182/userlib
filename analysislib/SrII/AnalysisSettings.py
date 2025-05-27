@@ -12,7 +12,7 @@ camera = {'GH':{'pixel_size': 3.69*10**-6,'sensor_size':  [1928,1448], 'magnific
 ROI_GH = {'small':[450,1150,800,1300],
         'medium':[450,1600,650,1448],
         'medium_high':[300,1400,200,1248],
-        'small_high':[550,1050,650,1050],
+        'small_high':[600,950,825,1000],
         'large':[300,1800,1,1448],
         'full':[1,1927,1,1448],
         'column':[450,1550,800,1445],
@@ -31,6 +31,7 @@ variable_info = {'BlueMOTShimX': {'plot_title': 'Varying X-axis Shim Current','a
                  'PulseDuration': {'plot_title': 'Varying Pulse Duration','axis_label': 'Probe duration ($\mu$s)','scale': 1.0e6, 'prefer_x': 1},
                  'ImagingOffset': {'plot_title': 'Varying Imaging Time','axis_label': 'Imaging pulse offset (s)','scale': 1.0, 'prefer_x': 0},
                  'DummyVariable': {'plot_title': 'Repeating','axis_label': 'Dummy variable','scale': 1.0, 'prefer_x': 0},
+                 'MagPulseDetuning': {'plot_title': 'Magnetometry','axis_label': 'Field magnitude (mG)','scale': 952.620, 'prefer_x': 0},
                  }
 
 result_info = {'atomNumber': {'axis_label': 'Atom number (millions)','scale': 1.0e-6,'plot_flag':True},

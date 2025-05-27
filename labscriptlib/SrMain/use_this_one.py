@@ -7,7 +7,7 @@ import_or_reload('labscriptlib.SrMain.connection_table')
 
 # Load all experimental sequence functions 
 # (also defines constants, globals, and controls for proper highlighting )
-from labscriptlib.SrMain.Subroutines.define_functions import initialize, field_off, load_blue_MOT, red_swap_MOT, red_narrow_MOT, red_light_off, dipole_trap, exposure, AOMDelay, ShutterDelay
+from labscriptlib.SrMain.Subroutines.define_functions import initialize, field_off, load_blue_MOT, red_swap_MOT, red_narrow_MOT, red_light_off, dipole_trap, exposure, magnetometry_pulse, magnetometry_shim_ramp, AOMDelay, ShutterDelay
 
 # Uncomment the line below to make highlighting work better, but recomment to actually run
 #from labscriptlib.SrMain.Subroutines.define_constants import *
@@ -47,9 +47,11 @@ red_light_off(t)
 field_off(t)
 
 ## Set reference for earliest imaging if magnetometry is happening
-t_mag = t + 2*AOMDelay
+#t_mag = t + 2*AOMDelay
 ## Set reference time for imaging at end of MOT stages
 t_red_off = t
+if MagnetometryPulseDuration > 0:
+    magnetometry_shim_ramp(t+MagnetometryShimDelay)
 
 if DipoleOn > 0:
     if DipoleTurnOnDelay < -DipoleHoldTime:
@@ -59,6 +61,9 @@ if DipoleOn > 0:
     # Ramp up, hold, then drop the dipole trap
     t += dipole_trap(t)
     t_dipole = t
+
+if MagnetometryPulseDuration > 0:
+    magnetometry_pulse(t + MagnetometryPulseDelay)
 
 # TOF
 t += TimeOfFlight
@@ -80,8 +85,8 @@ if t_im < t_blue_off + 3*AOMDelay:
     
 # If we are doing magnetometry, and the imaging is being requested before the red is turned off, raise an exception, since the magnetometry pulse
 # will not yet have been properly set up - this should be changed so the setup happens in the exposure function
-if MagnetometryPulse != 0 and  t_im < t_mag:
-    raise Exception('Error: Magnetometry pulse cannot happen prior to red light turn-off plus 2 times the AOM turn on/off delay')
+#if MagnetometryPulseDuration != 0 and  t_im < t_mag:
+#    raise Exception('Error: Magnetometry pulse cannot happen prior to red light turn-off plus 2 times the AOM turn on/off delay')
         
 # Take an actual exposure, named atoms 
 # (used whether or not this is absorption or fluorescence, and exposes whatever cameras are selected with global definitions)

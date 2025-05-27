@@ -154,18 +154,18 @@ def red_light_off(t):
     # Turn red light off
     add_time_marker(t, 'all_off')
     red_MOT_RF_TTL.go_low(t)
-    if MagnetometryPulse == 0:
-        # Close red shutter if not doing magnetometry
-        red_MOT_shutter.go_low(t)
-    else:
-        # If doing magnetomety:
-        # Set correct frequency for magnetometry pulse after light has turned off
-        red_MOT_VCO.constant(t + AOMDelay, RedMOTNarrowFrequency + MagPulseDetuning, units = 'MHz')
-        # Set intensity lock setpoint back up to high initial value (this will saturate the integrator)
-        red_MOT_power.constant(t + AOMDelay, RedMOTRampPower0)
-        # Disable integrator after it has saturated 
-        # (this will result in a very intense magnetometry pulse - might want to fix that somehow)
-        red_MOT_Int_Disable.go_high(t + 2*AOMDelay)
+    red_MOT_shutter.go_low(t)
+    #red_MOT_RF_TTL.go_high(t + ShutterDelay)
+
+    #if MagnetometryPulseDuration > 0:
+    # If doing magnetomety:
+    # Set correct frequency for magnetometry pulse after light has turned off
+    red_MOT_VCO.constant(t + AOMDelay, RedMOTNarrowFrequency + MagPulseDetuning, units = 'MHz')
+    # Set intensity lock setpoint back up to high initial value (this will saturate the integrator)
+    red_MOT_power.constant(t + AOMDelay, RedMOTRampPower0)
+    # Disable integrator after it has saturated 
+    # (this will result in a very intense magnetometry pulse - might want to fix that somehow)
+    red_MOT_Int_Disable.go_high(t + 2*AOMDelay)
     # Pretending like this happens instantly - it doesn't
     # don't apply a magnetometry pulse sooner than 2*AOMDelay after this step
     # NOTE: this shoud be updated to do the mag setup in the exposure function
@@ -194,6 +194,31 @@ def dipole_trap(t):
     dipole_RF_TTL.go_high(t + DipoleHoldTime)
     return DipoleHoldTime
 
+def magnetometry_pulse(t):
+    # Turn red RF off, to open the shutter
+    #red_MOT_RF_TTL.go_low(t - ShutterDelay)
+    #red_MOT_shutter.go_high(t - ShutterDelay)
+    # Pulse the magnetometry light
+    red_MOT_RF_TTL.go_high(t)
+    red_MOT_RF_TTL.go_low(t + MagnetometryPulseDuration)
+    # Close shutter and turn red RF back on
+    #red_MOT_shutter.go_low(t + MagnetometryPulseDuration + AOMDelay)
+    #red_MOT_RF_TTL.go_high(t + MagnetometryPulseDuration + AOMDelay + ShutterDelay)
+
+    # Turn probe RF off, to open the shutter
+    probe_RF_TTL.go_low(t + MagnetometryPulseDuration + MagnetometryBlowawayDelay - ShutterDelay)
+    probe_shutter.go_high(t + MagnetometryPulseDuration + MagnetometryBlowawayDelay - ShutterDelay)
+
+    # Pulse the probe just after the magnetometry
+    probe_RF_TTL.go_high(t + MagnetometryPulseDuration + MagnetometryBlowawayDelay)
+    probe_RF_TTL.go_low(t + MagnetometryPulseDuration + MagnetometryBlowawayDelay + MagnetometryBlowawayDuration)
+    # Leaving RF off and Shutter opened for imaging 
+
+def magnetometry_shim_ramp(t):
+    shim_X.ramp(t, MagnetometryShimRampDuration, BlueMOTShimX, MagnetometryShimX, 10000, units = 'A')                # Set default X trim
+    shim_Y.ramp(t, MagnetometryShimRampDuration, BlueMOTShimY, MagnetometryShimY, 10000, units = 'A')                # Set default Y trim
+    shim_Z.ramp(t, MagnetometryShimRampDuration, BlueMOTShimZ, MagnetometryShimZ, 10000, units = 'A')                # Set default Z trim
+
 ################################################################################
 #   Imaging
 ################################################################################
@@ -216,14 +241,11 @@ def exposure(t,name,exposure):
         cam_yz.expose(t - TriggerAdvance, imtype, name, ExposureTime + 2*TriggerAdvance)
     if exposure:    # If we are actually applying an imaging pulse...
         if Absorption:  # If it is an absorption image...
-            # If we are applying a magnetometry pulse...
-            if MagnetometryPulse>0:
-                # Apply the pulse at the specified time, just prior to the probe pulse
-                red_MOT_RF_TTL.go_high(t - MagnetometryPulse)
-                red_MOT_RF_TTL.go_low(t)
             # Apply the probe pulse, with shutter/AOM combo, to expose
-            probe_RF_TTL.go_low(t - ShutterDelay)
-            probe_shutter.go_high(t - ShutterDelay)
+            if MagnetometryPulseDuration == 0 or name != 'atoms':
+                # If we applied a magnetometry pulse, the probe shutter is still open already
+                probe_RF_TTL.go_low(t - ShutterDelay)
+                probe_shutter.go_high(t - ShutterDelay)
             probe_RF_TTL.go_high(t)
             probe_RF_TTL.go_low(t + PulseDuration)
             probe_shutter.go_low(t + PulseDuration)
