@@ -223,6 +223,7 @@ def magnetometry_shim_ramp(t):
 #   Imaging
 ################################################################################
 def exposure(t,name,exposure):
+    print(t)
     # Set imtype constant
     if Absorption:
         imtype = 'absorption'

@@ -2,7 +2,7 @@ import numpy as np
 
 Sr = {'sigma0': 1.015*10**(-13), 'mass': 87.906*1.661*10**(-27), 'tau': 5e-9}
 
-camera = {'GH':{'pixel_size': 3.69*10**-6,'sensor_size':  [1928,1448], 'magnification': 0.93, 'quantum_efficiency': 0.68,
+camera = {'GH':{'pixel_size': 3.69*10**-6,'sensor_size':  [1928,1448], 'magnification': 1.96, 'quantum_efficiency': 0.68,
                  'losses': 0.61, 'focal_length': 200e-3, 'aperture_diameter': 25e-3},
         'Flea':{'pixel_size': 2.5*10**-6,'sensor_size':  [2080,1552], 'magnification': 1.0, 'quantum_efficiency': 0.67,
                  'losses': 0.61, 'focal_length': 150e-3, 'aperture_diameter': 25e-3},
@@ -16,11 +16,14 @@ ROI_GH = {'small':[450,1150,800,1300],
         'large':[300,1800,1,1448],
         'full':[1,1927,1,1448],
         'column':[450,1550,800,1445],
-        'test':[650,1200,750,1075]}
+        'test':[400,1300,550,1200],
+        'red_small':[800,1100,800,1120],
+        'red_tof':[800,1928,800,1120],
+        'red_low':[1000,1400,800,1120]}
 ROI_BF = {'test':[850,1250,550,850]}
 
-filters = {'median': {'small': 3, 'large': 7}, 
-           'gaussian': {'small': 3, 'large': 7}, 
+filters = {'median': {'small': 1, 'large': 3}, 
+           'gaussian': {'small': 1, 'large': 2}, 
            'binning': {'none': 0, 'small': 2, 'medium': 4, 'large': 8}}
 
 result_plot = 'atomNumber'
