@@ -197,7 +197,7 @@ for camera, imageData in densityImages.items():
     axImage = figs[camera].add_subplot(1,1,1)
 
     c_min = np.min(imageData)
-    c_max = np.max(imageData)
+    c_max = np.max(imageData)/5
     
     image = axImage.imshow(imageData,extent=[np.min(x_plot),np.max(x_plot),np.min(y_plot),np.max(y_plot)],vmin=c_min,vmax=c_max)
     

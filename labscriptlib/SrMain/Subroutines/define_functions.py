@@ -190,6 +190,8 @@ def dipole_trap(t):
     # NOTE: The input to the setpoint needs to have a 22nF cap put in parallel with the existing 1k reisitor 
     # NOTE: This will low pass at 8kHz (50kHz/(2pi)), which will work well for a 50kHz samplerate
     dipole_power.ramp(t - DipoleRampDuration, DipoleRampDuration, 0, DipoleLoadDepth, 50000)
+    if DipoleDitherAmp > 0:
+        dipole_power.sine(t, DipoleHoldTime, DipoleLoadDepth*DipoleDitherAmp, 2*np.pi*DipoleDitherFreq, 0, DipoleLoadDepth, 50000)
     # Snap dipole trap off after holdtime
     dipole_RF_TTL.go_high(t + DipoleHoldTime)
     return DipoleHoldTime

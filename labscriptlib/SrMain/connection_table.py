@@ -116,7 +116,7 @@ gh_image_folder = 'xz'
 
 # Exposure settings
 gh_mode = 7                     # Camera mode, must be 0 or 7. Mode 0 is higher noise, but also higher frame rate.
-gh_exp = 50.0     # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
+gh_exp = 16000.0     # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
 gh_gain_man =  0                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
 gh_gain_seq =  0                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
 gh_acceptable_zeros = 100       # The black level is calculated such that you will on average
