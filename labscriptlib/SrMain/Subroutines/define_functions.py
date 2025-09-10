@@ -32,8 +32,21 @@ def initialize(t, blowaway = True):
     red_MOT_shutter.go_low(t)                                   # Open red MOT shutter (not currently actually hooked up)
     red_MOT_RF_TTL.go_high(t)                                   # Turn on red RF
     red_SRS_TTL.go_low(t)                                       # Not currently used(?)
+
+###########################################
+
+    # This is original stuff
+    # repump_707_shutter.go_high(t)                               # Open 707 repump shutter
+    # repump_679_RF_TTL.go_low(t)                                 # Turn on 679 repump AOM
+
+    # This is stuff I added (Tim)
     repump_707_shutter.go_high(t)                               # Open 707 repump shutter
-    repump_679_RF_TTL.go_low(t)                                 # Turn on 679 repump AOM
+    repump_707_TTL.go_high(t)                                   # Turn on 707 repump AOM
+    repump_679_RF_shutter.go_high(t)                            # Open 679 repump shutter
+    repump_679_RF_TTL.go_high(t)                                # Turn on 679 repump AOM
+    
+###########################################
+
     scope_trigger.go_low(t)                                     # Reset scope trigger
     probe_RF_TTL.go_high(t)                                     # Turn on probe AOM
     red_MOT_RF_select.go_low(t)                                 # Select VCO as LF AOM frequency source
