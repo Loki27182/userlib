@@ -75,7 +75,9 @@ try:
             figs[multi_name] = plt.figure(multi_name)
             axs[multi_name] = figs[multi_name].add_subplot(1,1,1)
             x_u = np.unique(x)
+            print(len(x_u))
             y_u = np.unique(y)
+            print(len(y_u))
             z_u = np.zeros([len(y_u),len(x_u)])
             for idx_x in range(len(x_u)):
                 for idx_y in range(len(y_u)):

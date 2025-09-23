@@ -49,6 +49,10 @@ DigitalOut(name='red_aux_shutter',          parent_device=pulseblaster_0.direct_
 DigitalOut(name='dipole_RF_TTL',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 17')
 DigitalOut(name='dipole_shutter',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 18')
 
+DigitalOut(name='repump_707_TTL',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 19')
+DigitalOut(name='repump_707_shutter',      parent_device=pulseblaster_0.direct_outputs, connection = 'flag 20')
+DigitalOut(name='repump_679_RF_TTL',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 21')
+DigitalOut(name='repump_679_RF_shutter',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 22')
 
 ###############################################################################
 #    NI CARD 1
@@ -76,8 +80,8 @@ DigitalOut(name='source_RF_TTL',        parent_device=ni_0, connection='port0/li
 DigitalOut(name='red_MOT_shutter',      parent_device=ni_0, connection='port0/line3')
 DigitalOut(name='red_MOT_RF_TTL',       parent_device=ni_0, connection='port0/line4')
 DigitalOut(name='red_SRS_TTL',          parent_device=ni_0, connection='port0/line5')
-DigitalOut(name='repump_707_shutter',   parent_device=ni_0, connection='port0/line6')
-DigitalOut(name='repump_679_RF_TTL',   parent_device=ni_0, connection='port0/line7')
+#DigitalOut(name='repump_707_shutter',   parent_device=ni_0, connection='port0/line6')
+#DigitalOut(name='repump_679_RF_TTL',   parent_device=ni_0, connection='port0/line7')
 
 ###############################################################################
 #    NI CARD 2
@@ -116,7 +120,7 @@ gh_image_folder = 'xz'
 
 # Exposure settings
 gh_mode = 7                     # Camera mode, must be 0 or 7. Mode 0 is higher noise, but also higher frame rate.
-gh_exp = 50.0     # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
+gh_exp = 5000.0   # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
 gh_gain_man =  0                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
 gh_gain_seq =  0                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
 gh_acceptable_zeros = 100       # The black level is calculated such that you will on average

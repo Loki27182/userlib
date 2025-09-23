@@ -32,8 +32,21 @@ def initialize(t, blowaway = True):
     red_MOT_shutter.go_low(t)                                   # Open red MOT shutter (not currently actually hooked up)
     red_MOT_RF_TTL.go_high(t)                                   # Turn on red RF
     red_SRS_TTL.go_low(t)                                       # Not currently used(?)
+
+###########################################
+
+    # This is original stuff
+    # repump_707_shutter.go_high(t)                               # Open 707 repump shutter
+    # repump_679_RF_TTL.go_low(t)                                 # Turn on 679 repump AOM
+
+    # This is stuff I added (Tim)
     repump_707_shutter.go_high(t)                               # Open 707 repump shutter
-    repump_679_RF_TTL.go_low(t)                                 # Turn on 679 repump AOM
+    repump_707_TTL.go_high(t)                                   # Turn on 707 repump AOM
+    repump_679_RF_shutter.go_high(t)                            # Open 679 repump shutter
+    repump_679_RF_TTL.go_high(t)                                # Turn on 679 repump AOM
+    
+###########################################
+
     scope_trigger.go_low(t)                                     # Reset scope trigger
     probe_RF_TTL.go_high(t)                                     # Turn on probe AOM
     red_MOT_RF_select.go_low(t)                                 # Select VCO as LF AOM frequency source
@@ -190,6 +203,8 @@ def dipole_trap(t):
     # NOTE: The input to the setpoint needs to have a 22nF cap put in parallel with the existing 1k reisitor 
     # NOTE: This will low pass at 8kHz (50kHz/(2pi)), which will work well for a 50kHz samplerate
     dipole_power.ramp(t - DipoleRampDuration, DipoleRampDuration, 0, DipoleLoadDepth, 50000)
+    if DipoleDitherAmp > 0:
+        dipole_power.sine(t, DipoleHoldTime, DipoleLoadDepth*DipoleDitherAmp, 2*np.pi*DipoleDitherFreq, 0, DipoleLoadDepth, 50000)
     # Snap dipole trap off after holdtime
     dipole_RF_TTL.go_high(t + DipoleHoldTime)
     return DipoleHoldTime
