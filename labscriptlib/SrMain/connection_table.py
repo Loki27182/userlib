@@ -13,6 +13,8 @@ from labscript_devices.SpinnakerCamera.labscript_devices import SpinnakerCamera
 from labscript_devices.PrincetonInstrumentsCamera.labscript_devices import PrincetonInstrumentsCamera
 from labscript_devices.LightCrafterDMD import LightCrafterDMD, ImageSet
 from labscript_devices.AD9914 import AD9914
+from labscript_devices.lsduino import lsduino
+from labscript_devices.AD9910 import AD9910
 import logging
 
 from labscript_utils.unitconversions.AOM_VCO import AOMVCO
@@ -34,7 +36,8 @@ ClockLine(name='pulseblaster_0_ni_0_clock',				pseudoclock=pulseblaster_0.pseudo
 ClockLine(name='pulseblaster_0_ni_1_clock',             pseudoclock=pulseblaster_0.pseudoclock, connection='flag 11')
 ClockLine(name='pulseblaster_0_ni_2_clock',             pseudoclock=pulseblaster_0.pseudoclock, connection='flag 14')
 ClockLine(name='pulseblaster_0_blue_BN_arduino_clock', 	pseudoclock=pulseblaster_0.pseudoclock, connection='flag 1')
-ClockLine(name='pulseblaster_0_red_BN_arduino_clock',  pseudoclock=pulseblaster_0.pseudoclock, connection='flag 9')
+ClockLine(name='pulseblaster_0_red_BN_arduino_clock',   pseudoclock=pulseblaster_0.pseudoclock, connection='flag 9')
+ClockLine(name='pulseblaster_0_lsduino_clock',          pseudoclock=pulseblaster_0.pseudoclock, connection='flag 24')
 
 Trigger(   name='GH_camera_trigger',        parent_device=pulseblaster_0.direct_outputs, connection = 'flag 3',  trigger_edge_type = 'falling')
 Trigger(   name='Blackfly_camera_trigger',        parent_device=pulseblaster_0.direct_outputs, connection = 'flag 23',  trigger_edge_type = 'falling')
@@ -109,6 +112,14 @@ Arduino_Single_DDS(name='red_BN_arduino', parent_device=pulseblaster_0_red_BN_ar
 
 DDSAD9954(name='red_BN_DDS',       parent_device=red_BN_arduino, connection='channel 0')
 
+################################################################################
+#    Testing new DDS arduino controller
+################################################################################
+lsduino(name='dds_controller', ndev=2, parent_device=pulseblaster_0_lsduino_clock, com_port='com15', 
+            baud_rate=115200, synchronous_first_line_repeat=True)
+
+AD9910(name='dds_0',   parent_device=dds_controller, connection='channel 0')
+AD9910(name='dds_1',   parent_device=dds_controller, connection='channel 1')
 
 #################################################################################################################
 # Change these values to set up the grasshopper camera
