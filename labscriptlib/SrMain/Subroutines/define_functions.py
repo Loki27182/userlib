@@ -39,11 +39,13 @@ def initialize(t, blowaway = True):
     # repump_707_shutter.go_high(t)                               # Open 707 repump shutter
     # repump_679_RF_TTL.go_low(t)                                 # Turn on 679 repump AOM
 
-    # This is stuff I added (Tim)
+    # This is stuff I added 
     repump_707_shutter.go_high(t)                               # Open 707 repump shutter
     repump_707_TTL.go_high(t)                                   # Turn on 707 repump AOM
-    repump_679_RF_shutter.go_high(t)                            # Open 679 repump shutter
+    repump_679_shutter.go_high(t)                            # Open 679 repump shutter
     repump_679_RF_TTL.go_high(t)                                # Turn on 679 repump AOM
+    repump_688_shutter.go_low(t)                            # close 688 repump shutter
+    repump_688_RF_TTL.go_low(t)                                # Turn off 688 repump AOM
     
 ###########################################
 
@@ -71,6 +73,7 @@ def initialize(t, blowaway = True):
     blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')   # Set blue beatnote frequency
     blue_broken_DDS.setfreq(t, 25, units = 'MHz')               # Set unused blue DDS source to some value
     red_BN_DDS.setfreq(t,RedBeatnote/48, units = 'MHz')         # Set red DDS frequency (not actually used, because it doesn't work for some reason)
+    h_bridge_enable.go_high(t)
     return(dt + ShutterDelay)
 
 def field_off(t):
@@ -210,6 +213,15 @@ def dipole_trap(t):
     return DipoleHoldTime
 
 def magnetometry_pulse(t):
+
+    #turn the repumps off and turn 688 on if we are doing magnetometry pulse in the presense of 688
+    if SixEightEight:
+        repump_707_shutter.go_low(t)                               # Open 707 repump shutter
+        repump_707_TTL.go_low(t)                                   # Turn on 707 repump AOM
+        repump_679_shutter.go_low(t)                            # Open 679 repump shutter
+        repump_679_RF_TTL.go_low(t)
+        repump_688_shutter.go_high(t) 
+        repump_688_RF_TTL.go_high(t)
     # Turn red RF off, to open the shutter
     #red_MOT_RF_TTL.go_low(t - ShutterDelay)
     #red_MOT_shutter.go_high(t - ShutterDelay)

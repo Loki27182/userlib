@@ -38,6 +38,9 @@ ClockLine(name='pulseblaster_0_ni_2_clock',             pseudoclock=pulseblaster
 ClockLine(name='pulseblaster_0_blue_BN_arduino_clock', 	pseudoclock=pulseblaster_0.pseudoclock, connection='flag 1')
 ClockLine(name='pulseblaster_0_red_BN_arduino_clock',   pseudoclock=pulseblaster_0.pseudoclock, connection='flag 9')
 ClockLine(name='pulseblaster_0_lsduino_clock',          pseudoclock=pulseblaster_0.pseudoclock, connection='flag 24')
+ClockLine(name='pulseblaster_0_lsduino_clock_2',          pseudoclock=pulseblaster_0.pseudoclock, connection='flag 34')
+
+#Trigger(   name='pulseblaster_0_lsduino_clock',        parent_device=pulseblaster_0.direct_outputs, connection = 'flag 24',  trigger_edge_type = 'falling')
 
 Trigger(   name='GH_camera_trigger',        parent_device=pulseblaster_0.direct_outputs, connection = 'flag 3',  trigger_edge_type = 'falling')
 Trigger(   name='Blackfly_camera_trigger',        parent_device=pulseblaster_0.direct_outputs, connection = 'flag 23',  trigger_edge_type = 'falling')
@@ -55,7 +58,10 @@ DigitalOut(name='dipole_shutter',         parent_device=pulseblaster_0.direct_ou
 DigitalOut(name='repump_707_TTL',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 19')
 DigitalOut(name='repump_707_shutter',      parent_device=pulseblaster_0.direct_outputs, connection = 'flag 20')
 DigitalOut(name='repump_679_RF_TTL',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 21')
-DigitalOut(name='repump_679_RF_shutter',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 22')
+DigitalOut(name='repump_679_shutter',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 22')
+DigitalOut(name='repump_688_RF_TTL',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 26')
+DigitalOut(name='repump_688_shutter',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 27')
+DigitalOut(name='h_bridge_enable',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 32')
 
 ###############################################################################
 #    NI CARD 1
@@ -112,14 +118,20 @@ Arduino_Single_DDS(name='red_BN_arduino', parent_device=pulseblaster_0_red_BN_ar
 
 DDSAD9954(name='red_BN_DDS',       parent_device=red_BN_arduino, connection='channel 0')
 
-################################################################################
-#    Testing new DDS arduino controller
-################################################################################
-lsduino(name='dds_controller', ndev=2, parent_device=pulseblaster_0_lsduino_clock, com_port='com15', 
-            baud_rate=115200, synchronous_first_line_repeat=True)
-
-AD9910(name='dds_0',   parent_device=dds_controller, connection='channel 0')
-AD9910(name='dds_1',   parent_device=dds_controller, connection='channel 1')
+#################################################################################
+##    Testing new DDS arduino controller
+#################################################################################
+#lsduino(name='dds_controller', ndev=2, parent_device=pulseblaster_0_lsduino_clock, com_port='com15', 
+#            baud_rate=115200, synchronous_first_line_repeat=True)
+#
+#AD9910(name='dds_0',   parent_device=dds_controller, connection='channel 0')
+#AD9910(name='dds_1',   parent_device=dds_controller, connection='channel 1')
+#
+#lsduino(name='dds_controller_2', ndev=2, parent_device=pulseblaster_0_lsduino_clock_2, com_port='com21', 
+#            baud_rate=115200, synchronous_first_line_repeat=True)
+#
+#AD9910(name='dds_2',   parent_device=dds_controller_2, connection='channel 0')
+#AD9910(name='dds_3',   parent_device=dds_controller_2, connection='channel 1')
 
 #################################################################################################################
 # Change these values to set up the grasshopper camera
@@ -149,7 +161,7 @@ bf_image_folder = 'yz'
 
 # Exposure settings
 bf_mode = 7
-bf_exp = 5000.0
+bf_exp = 50.0
 bf_gain_man = 0
 bf_gain_seq = 0
 # Still need to calibrate black level function for the blackfly, and standardize that process
