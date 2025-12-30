@@ -27,6 +27,7 @@ aperture_diameter = {}
 solid_angle_fraction = {}
 total_efficiency = {}
 transpose_image = {}
+rotate_image = {}
 pixel_size['xz'] = np.array(AnalysisSettings.camera['GH']['pixel_size'])*AnalysisSettings.camera['GH']['magnification']
 sensor_size['xz'] = np.array(AnalysisSettings.camera['GH']['sensor_size'])
 quantum_efficiency['xz'] = np.array(AnalysisSettings.camera['GH']['quantum_efficiency'])
@@ -36,6 +37,7 @@ aperture_diameter['xz'] = np.array(AnalysisSettings.camera['GH']['aperture_diame
 solid_angle_fraction['xz'] = np.pi*(aperture_diameter['xz']/2)**2/(4*np.pi*focal_length['xz']**2)
 total_efficiency['xz'] = solid_angle_fraction['xz']*quantum_efficiency['xz']*(1-other_losses['xz'])
 transpose_image['xz'] = np.array(AnalysisSettings.camera['GH']['transpose'])
+rotate_image['xz'] = np.array(AnalysisSettings.camera['GH']['rotate'])
 pixel_size['yz'] = np.array(AnalysisSettings.camera['Blackfly']['pixel_size'])*AnalysisSettings.camera['Blackfly']['magnification']
 sensor_size['yz'] = np.array(AnalysisSettings.camera['Blackfly']['sensor_size'])
 quantum_efficiency['yz'] = np.array(AnalysisSettings.camera['Blackfly']['quantum_efficiency'])
@@ -45,6 +47,7 @@ aperture_diameter['yz'] = np.array(AnalysisSettings.camera['Blackfly']['aperture
 solid_angle_fraction['yz'] = np.pi*(aperture_diameter['yz']/2)**2/(4*np.pi*focal_length['yz']**2)
 total_efficiency['yz'] = solid_angle_fraction['yz']*quantum_efficiency['yz']*(1-other_losses['yz'])
 transpose_image['yz'] = np.array(AnalysisSettings.camera['Blackfly']['transpose'])
+rotate_image['yz'] = np.array(AnalysisSettings.camera['Blackfly']['rotate'])
 
 mass = AnalysisSettings.Sr['mass']
 sigma0 = AnalysisSettings.Sr['sigma0']
@@ -121,12 +124,23 @@ if 'absorption' in imaging_types:
         refNorms[camera] = refImages[camera].copy()
         atomNorms[camera] = atomImages[camera].copy()
 
+        if transpose_image[camera]:
+            atomImages[camera] = np.transpose(atomImages[camera])
+            refImages[camera] = np.transpose(refImages[camera])
+            refNorms[camera] = np.transpose(refNorms[camera])
+            atomNorms[camera] = np.transpose(atomNorms[camera])
+        if rotate_image[camera]>0:
+            atomImages[camera] = np.rot90(atomImages[camera],rotate_image[camera])
+            refImages[camera] = np.rot90(refImages[camera],rotate_image[camera])
+            refNorms[camera] = np.rot90(refNorms[camera],rotate_image[camera])
+            atomNorms[camera] = np.rot90(atomNorms[camera],rotate_image[camera])
+
         if len(ROI[camera])>0:
             pprint(ROI[camera])
-            refNorms[camera][ROI[camera][2]:ROI[camera][3],ROI[camera][0]:ROI[camera][1]] = 0
-            atomNorms[camera][ROI[camera][2]:ROI[camera][3],ROI[camera][0]:ROI[camera][1]] = 0
-            atomImages[camera] = atomImages[camera][ROI[camera][2]:ROI[camera][3],ROI[camera][0]:ROI[camera][1]]
-            refImages[camera] = refImages[camera][ROI[camera][2]:ROI[camera][3],ROI[camera][0]:ROI[camera][1]]
+            refNorms[camera][ROI[camera][0]:ROI[camera][1],ROI[camera][2]:ROI[camera][3]] = 0
+            atomNorms[camera][ROI[camera][0]:ROI[camera][1],ROI[camera][2]:ROI[camera][3]] = 0
+            atomImages[camera] = atomImages[camera][ROI[camera][0]:ROI[camera][1],ROI[camera][2]:ROI[camera][3]]
+            refImages[camera] = refImages[camera][ROI[camera][0]:ROI[camera][1],ROI[camera][2]:ROI[camera][3]]
             if 'NormalizeProbe' in instance_variables.keys() and run_data['NormalizeProbe']:
                 print('    Normalizing probe...')
                 refImages[camera] = refImages[camera]*np.sum(atomNorms[camera])/np.sum(refNorms[camera])
@@ -163,8 +177,10 @@ w = dict()
 dw = dict()
 
 for camera, imageData in densityImages.items():
-    if transpose_image[camera]:
-        imageData = np.transpose(imageData)
+    #if transpose_image[camera]:
+    #    imageData = np.transpose(imageData)
+    #if rotate_image[camera]>0:
+    #    imageData = np.rot90(imageData,rotate_image[camera])
     plot_size = np.shape(imageData)
 
     x_plot = np.arange(plot_size[1])*pixel_size[camera]*10**6

@@ -53,12 +53,7 @@ t_red_off = t
 if MagnetometryPulseDuration > 0:
     magnetometry_shim_ramp(t+MagnetometryShimDelay)
 
-if DipoleOn > 0:
-    if DipoleTurnOnDelay < -DipoleHoldTime:
-        raise Exception('Error: End of dipole trap must go past end of red MOT')
-    # Adjust turn-on time
-    t += DipoleTurnOnDelay
-    # Ramp up, hold, then drop the dipole trap
+if DipoleOn:
     t += dipole_trap(t)
     t_dipole = t
 

@@ -30,7 +30,7 @@ from labscriptlib.SrMain.Subroutines.ConnectionTableSubs import black_level
 #    PULSEBLASTER
 ###############################################################################
 
-PulseBlasterUSB(name='pulseblaster_0', board_number=0, time_based_stop_workaround=True, time_based_stop_workaround_extra_time=0,clock_rate=10,log_level=logging.INFO)
+PulseBlasterUSB(name='pulseblaster_0', board_number=0, time_based_stop_workaround=True, time_based_stop_workaround_extra_time=0,clock_rate=20,log_level=logging.INFO)
 
 ClockLine(name='pulseblaster_0_ni_0_clock',				pseudoclock=pulseblaster_0.pseudoclock, connection='flag 0')
 ClockLine(name='pulseblaster_0_ni_1_clock',             pseudoclock=pulseblaster_0.pseudoclock, connection='flag 11')
@@ -161,9 +161,9 @@ bf_image_folder = 'yz'
 
 # Exposure settings
 bf_mode = 7
-bf_exp = 50.0
+bf_exp = 5000.0
 bf_gain_man = 0
-bf_gain_seq = 0
+bf_gain_seq = 24
 # Still need to calibrate black level function for the blackfly, and standardize that process
 
 #################################################################################################################

@@ -1,4 +1,4 @@
-from labscript import add_time_marker
+from labscript import add_time_marker, wait
 import numpy as np
 
 # Uncomment the line below to make highlighting work better, but recomment to actually run
@@ -7,7 +7,7 @@ import numpy as np
 ################################################################################
 # Define some constants that we might want to make globals at some point
 ShutterDelay = 0.01
-AOMDelay = 0.0002
+AOMDelay = 0.0004
 BlowawayDuration = 0.04
 
 ################################################################################
@@ -15,7 +15,6 @@ BlowawayDuration = 0.04
 ################################################################################
 def initialize(t, blowaway = True):
     # Set analog values (ni_0)
-    dipole_power.constant(t,DipoleLoadDepth)                    # Set default dipole beam power to load depth (shutter will be closed, but lock will keep RF on and AOM warm)
     red_MOT_VCO.constant(t, RedLoadPumpFreq, units = 'MHz')     # Set red MOT light to pump frequency for gray MOT
     mot_field.constant(t,BlueMOTField, units='A')               # Set default MOT field
     shim_X.constant(t,BlueMOTShimX, units = 'A')                # Set default X trim
@@ -54,8 +53,8 @@ def initialize(t, blowaway = True):
     red_MOT_RF_select.go_low(t)                                 # Select VCO as LF AOM frequency source
     red_MOT_Int_Disable.go_low(t)                               # Enable red cooling intensity lock integrator
     red_aux_shutter.go_low(t)                                   # Close red aux beam shutter
-    dipole_shutter.go_low(t)                                    # Close dipole shutter
-    dipole_RF_TTL.go_low(t)                                     # Turn on RF so AOM stays warm
+    #dipole_shutter.go_low(t)                                    # Close dipole shutter
+    
     # Set conditional digital values
     if blowaway:                                        # If initializing and blowing away (start of experiment)
         dt = BlowawayDuration                                # Set a duration for blowaway
@@ -64,11 +63,26 @@ def initialize(t, blowaway = True):
         probe_shutter.go_high(t)                                # Open probe shutter
         probe_shutter.go_low(t + dt)               # Then close it
         blue_MOT_shutter.go_low(t)                              # Close blue MOT shutter
+        if DipoleOn:
+            dipole_shutter.go_high(t)                                   # Open dipole shutter if we are doing a dipole trap
+        else:
+            dipole_shutter.go_low(t)                                    # Close dipole shutter if we aren't doing a dipole trap
+        dipole_RF_TTL.go_low(t)                                     # Turn on RF so AOM stays warm
+        dipole_power.constant(t,0)
+        dipole_power.constant(t + dt,DipoleDepth)                    # Set default dipole beam power to load depth (shutter will be closed, but lock will keep RF on and AOM warm)
     else:                                               # If initializing and loading (end of experiment)
         dt = 0                                                  # Set zero duration
         current_lock_enable.go_high(t)                          # Turn on MOT field
         probe_shutter.go_low(t)                                 # Close probe shutter
         blue_MOT_shutter.go_high(t)                             # Open blue MOT shutter
+        dipole_RF_TTL.go_low(t)
+        if DipoleStadbyDepth > 0:
+            dipole_shutter.go_high(t)
+            dipole_power.constant(t, DipoleStadbyDepth)
+        else:
+            dipole_shutter.go_low(t)
+            dipole_power.constant(t, DipoleDepth)
+
     # Set DDS frequencies
     blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')   # Set blue beatnote frequency
     blue_broken_DDS.setfreq(t, 25, units = 'MHz')               # Set unused blue DDS source to some value
@@ -105,6 +119,8 @@ def load_blue_MOT(t):
     if BlueMOTHoldTime > 0:
         add_time_marker(t_ramp_start, 'blue_hold_start')
     dt += BlueMOTHoldTime
+    if LineTrigger:
+        dt += wait(label='test_wait',t=t+dt,timeout=2)
     # Turn off blue MOT light
     add_time_marker(t + dt, 'blue_off')
     blue_MOT_RF_TTL.go_high(t + dt)
@@ -117,7 +133,7 @@ def load_blue_MOT(t):
         blue_MOT_RF_TTL.go_low(t + dt + ShutterDelay)
     # Turn 2D MOT off when that should happen
     add_time_marker(t + dt - SourceShutoffTime - ShutterDelay, 'source_off')
-    source_RF_TTL.go_high(t + dt - SourceShutoffTime - ShutterDelay)
+    source_RF_TTL.go_high(t + dt - SourceShutoffTime - ShutterDelay)  
     return dt
 
 ################################################################################
@@ -191,23 +207,23 @@ def red_light_off(t):
 #   Dipole!!!!!!!!!!!!!!!!!!!!!
 ################################################################################
 def dipole_trap(t):
-    add_time_marker(t - DipoleRampDuration, 'dipole_ramp_start')
+    #add_time_marker(t - DipoleRampDuration, 'dipole_ramp_start')
     add_time_marker(t, 'dipole_hold_start')
     add_time_marker(t + DipoleHoldTime, 'dipole_off')
     # Start by lowering intensity setpoint so the integrator saturates toward 0,
     # naturally turning the RF power down to 0, so we don't need to switch it off separately
     # Leave plenty of time for the integrator to do its thing
-    dipole_power.constant(t - DipoleRampDuration - 10*ShutterDelay, 0)  
+    #dipole_power.constant(t - DipoleRampDuration - 10*ShutterDelay, DipoleDepthInitial)  
     # Open the dipole shutter, but the power will be nominally 0
     # Leave plenty of time for the shutter to open
-    dipole_shutter.go_high(t - DipoleRampDuration - 5*ShutterDelay)  
+    #dipole_shutter.go_high(t - DipoleRampDuration - 5*ShutterDelay)  
     # Ramp up the setpoint so that it is at full power at the requested time
     # The anti-windup feature of the SRS lockbox should make this smooth, but we should measure
     # NOTE: The input to the setpoint needs to have a 22nF cap put in parallel with the existing 1k reisitor 
     # NOTE: This will low pass at 8kHz (50kHz/(2pi)), which will work well for a 50kHz samplerate
-    dipole_power.ramp(t - DipoleRampDuration, DipoleRampDuration, 0, DipoleLoadDepth, 50000)
+    #dipole_power.ramp(t - DipoleRampDuration, DipoleRampDuration, DipoleDepthInitial, DipoleLoadDepth, 50000)
     if DipoleDitherAmp > 0:
-        dipole_power.sine(t, DipoleHoldTime, DipoleLoadDepth*DipoleDitherAmp, 2*np.pi*DipoleDitherFreq, 0, DipoleLoadDepth, 50000)
+        dipole_power.sine(t, DipoleHoldTime, DipoleDepth*DipoleDitherAmp, 2*np.pi*DipoleDitherFreq, 0, DipoleDepth, 50000)
     # Snap dipole trap off after holdtime
     dipole_RF_TTL.go_high(t + DipoleHoldTime)
     return DipoleHoldTime
