@@ -13,8 +13,8 @@ t = 0
 scope_trigger.go_low(t)
 t = 0.1
 scope_trigger.go_high(t)
-t += 0.05
-#t += wait(label='test',t=t,timeout=2)
+t += 0.1
+t += wait(label='test',t=t,timeout=0.1)
 scope_trigger.go_low(t)
 t += 0.1
 

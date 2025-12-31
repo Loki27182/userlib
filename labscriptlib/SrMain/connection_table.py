@@ -30,7 +30,9 @@ from labscriptlib.SrMain.Subroutines.ConnectionTableSubs import black_level
 #    PULSEBLASTER
 ###############################################################################
 
-PulseBlasterUSB(name='pulseblaster_0', board_number=0, time_based_stop_workaround=True, time_based_stop_workaround_extra_time=0,clock_rate=20,log_level=logging.INFO)
+PulseBlasterUSB(name='pulseblaster_0', board_number=0, #programming_scheme='pb_stop_programming/STOP',
+                time_based_stop_workaround=True, time_based_stop_workaround_extra_time=0,
+                clock_rate=20,log_level=logging.INFO)
 
 ClockLine(name='pulseblaster_0_ni_0_clock',				pseudoclock=pulseblaster_0.pseudoclock, connection='flag 0')
 ClockLine(name='pulseblaster_0_ni_1_clock',             pseudoclock=pulseblaster_0.pseudoclock, connection='flag 11')
