@@ -14,6 +14,7 @@ import AnalysisSettings
 from lyse_setup import load_data
 import os
 
+<<<<<<< HEAD
 import warnings
 
 warnings.filterwarnings('ignore')
@@ -87,3 +88,8 @@ for path in filepaths:
 #except Exception as ex:
 #    print('Error plotting')
 #    print(ex)
+=======
+#print('Initial filepath: {:s}'.format(filepaths[0]))
+#print('Variables: ({:s}): Lengths={:s}'.format(','.join(variables.keys()),','.join([str(ai) for ai in [len(np.unique(ai)) for ai in variables.values()]])))
+#print('Results: ({:s})'.format(','.join(results.keys())))
+>>>>>>> cff72623cf6af46da14e4e6cd260727b96e96277
