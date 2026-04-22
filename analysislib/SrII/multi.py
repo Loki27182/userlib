@@ -4,10 +4,13 @@ import h5py
 import matplotlib.pyplot as plt
 from pprint import pp as pprint
 from helper_functions import load_iterated_data
+import AnalysisSettings
+from scipy.ndimage import gaussian_filter
 
 variable_info, result_info, save_paths = load_iterated_data()
 visible_results_info = {name: val for name, val in result_info.items() if val['plot_flag']}
 
+filter_size = AnalysisSettings.filters['2D']['small']
 
 try:
     if len(variable_info)==1:
@@ -84,6 +87,8 @@ try:
                     mask = np.logical_and(x==x_u[idx_x],y==y_u[idx_y]);
                     if any(mask):
                         z_u[idx_y,idx_x] = np.mean(z[mask])
+            if filter_size>0:
+                z_u = gaussian_filter(z_u,filter_size)
             c_min = np.min(z_u)
             c_max = np.max(z_u)
             im = axs[multi_name].imshow(z_u,extent=[np.min(x_u),np.max(x_u),np.max(y_u),np.min(y_u)],vmin=c_min,vmax=c_max,aspect=(np.max(x_u)-np.min(x_u))/(np.max(y_u)-np.min(y_u))/1.25)

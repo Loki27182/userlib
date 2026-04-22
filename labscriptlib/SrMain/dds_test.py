@@ -17,34 +17,30 @@ from labscriptlib.SrMain.Subroutines.define_functions import initialize, field_o
 ################################################################################
 # Let's do this!
 start()
-
-t = DelayBeforeStart
-dipole_shutter.go_high(t)
-t += initialize(t,True)
-
-scope_trigger.go_low(t)
-dds_0.setfreq(t,20, units = 'MHz')
-dds_1.setfreq(t,20, units = 'MHz')
-t += 0.25
-
-scope_trigger.go_high(t)
-dds_0.setfreq(t,40, units = 'MHz')
-dds_1.setfreq(t,40, units = 'MHz')
-t += 0.25
-
-scope_trigger.go_low(t)
-dds_0.setfreq(t,20, units = 'MHz')
-dds_1.setfreq(t,20, units = 'MHz')
-t += 0.25
-
-scope_trigger.go_high(t)
-dds_0.setfreq(t,40, units = 'MHz')
-dds_1.setfreq(t,40, units = 'MHz')
-t += 0.25
-
-scope_trigger.go_low(t)
-t += 0.25
-
+t = 0
 t += initialize(t,False)
-t += 0.25
+t += DelayBeforeStart
+
+N = 100
+T = 5
+
+for ii in range(N):
+    #add_time_marker(t, 'ii: {:0.0f}'.format(ii))
+    clock_aux_dds.setfreq(t,79+2*ii/N, units = 'MHz')
+    clock_atoms_dds.setfreq(t,79+2*ii/N, units = 'MHz')
+    clock_cavity_dds.setfreq(t,79+2*ii/N, units = 'MHz')
+    t += T/N/2
+    #add_time_marker(t, 'ii2: {:0.0f}'.format(ii))
+    clock_aux_dds.setfreq(t,(79 + 2/(2*N))+2*ii/N, units = 'MHz')
+    clock_atoms_dds.setfreq(t,(79 + 2/(2*N))+2*ii/N, units = 'MHz')
+    clock_cavity_dds.setfreq(t,(79 + 2/(2*N))+2*ii/N, units = 'MHz')
+    t += T/N/2
+
+#clock_aux_dds.setfreq(t,80, units = 'MHz')
+#clock_atoms_dds.setfreq(t,80, units = 'MHz')
+#clock_cavity_dds.setfreq(t,80, units = 'MHz')
+
+t += .05
+t += initialize(t,False)
+t += 0.05
 stop(t)

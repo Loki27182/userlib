@@ -156,14 +156,42 @@ if 'absorption' in imaging_types:
 
 elif 'fluorescence' in imaging_types:
     atomImages = {}
+    refImages = {}
     densityImages = {}
     atomNumbers = {}
+    refNorms = {}
+    atomNorms = {}
     for camera in cameras:
-        atomImages[camera] = run.get_image(camera,'fluorescence','atoms').astype('float') - run.get_image(camera,'fluorescence','background').astype('float')
-        atomImages[camera] = medfilt2d(atomImages[camera],median_filter_size)
+        atomImages[camera] = run.get_image(camera,'fluorescence','atoms').astype('float')
+        refImages[camera] = run.get_image(camera,'fluorescence','background').astype('float')
+        refNorms[camera] = refImages[camera].copy()
+        atomNorms[camera] = atomImages[camera].copy()
+
+        if transpose_image[camera]:
+            atomImages[camera] = np.transpose(atomImages[camera])
+            refImages[camera] = np.transpose(refImages[camera])
+            refNorms[camera] = np.transpose(refNorms[camera])
+            atomNorms[camera] = np.transpose(atomNorms[camera])
+        if rotate_image[camera]>0:
+            atomImages[camera] = np.rot90(atomImages[camera],rotate_image[camera])
+            refImages[camera] = np.rot90(refImages[camera],rotate_image[camera])
+            refNorms[camera] = np.rot90(refNorms[camera],rotate_image[camera])
+            atomNorms[camera] = np.rot90(atomNorms[camera],rotate_image[camera])
+
         if len(ROI[camera])>0:
-            atomImages[camera] = atomImages[camera][ROI[camera][2]:ROI[camera][3],ROI[camera][0]:ROI[camera][1]]
-        densityImages[camera] = gaussian_filter(atomImages[camera],gaussian_filter_size)
+            pprint(ROI[camera])
+            refNorms[camera][ROI[camera][0]:ROI[camera][1],ROI[camera][2]:ROI[camera][3]] = 0
+            atomNorms[camera][ROI[camera][0]:ROI[camera][1],ROI[camera][2]:ROI[camera][3]] = 0
+            atomImages[camera] = atomImages[camera][ROI[camera][0]:ROI[camera][1],ROI[camera][2]:ROI[camera][3]]
+            refImages[camera] = refImages[camera][ROI[camera][0]:ROI[camera][1],ROI[camera][2]:ROI[camera][3]]
+            if 'NormalizeProbe' in instance_variables.keys() and run_data['NormalizeProbe']:
+                print('    Normalizing probe...')
+                #refImages[camera] = refImages[camera] + (np.sum(atomNorms[camera]) - np.sum(refNorms[camera]))
+
+        atomImages[camera] = medfilt2d(atomImages[camera],median_filter_size)
+        refImages[camera] = medfilt2d(refImages[camera],median_filter_size)
+        
+        densityImages[camera] = gaussian_filter(atomImages[camera] - refImages[camera],gaussian_filter_size)
         atomNumbers[camera] = np.sum(densityImages[camera])*decay_time/(total_efficiency[camera]*run_data['PulseDuration'])
         print('    Fluorescence image processed for ' + camera + ' direction')
 
@@ -175,6 +203,8 @@ x_0 = dict()
 dx_0 = dict()
 w = dict()
 dw = dict()
+a = dict()
+da = dict()
 
 for camera, imageData in densityImages.items():
     #if transpose_image[camera]:
@@ -201,12 +231,16 @@ for camera, imageData in densityImages.items():
             dx_0[camera] = (dp_x[1],dp_y[1])
             w[camera] = [p_x[2],p_y[2]]
             dw[camera] = [dp_x[2],dp_y[2]]
+            a[camera] = [p_x[0],p_y[0]]
+            da[camera] = [dp_x[0],dp_y[0]]
         except Exception:
             print('Error fitting data in ' + camera + ' image...')
             x_0[camera] = (0,0)
             dx_0[camera] = (0,0)
             w[camera] = [0,0]
             dw[camera] = [0,0]
+            a[camera] = [0,0]
+            da[camera] = [0,0]
 
     print('Plotting ' + camera + ' image...')
     figs[camera] = plt.figure(figsize=(4, 3), dpi=200)
@@ -242,6 +276,9 @@ for camera, N in atomNumbers.items():
         run.save_result(camera + '/y_position', x_0[camera][1]/(1*10**6))
         run.save_result(camera + '/x_width', w[camera][0]/(1*10**6))
         run.save_result(camera + '/y_width', w[camera][1]/(1*10**6))
+        run.save_result(camera + '/x_fit_N', a[camera][0]*w[camera][0])
+        run.save_result(camera + '/y_fit_N', a[camera][1]*w[camera][1])
+        run.save_result(camera + '/fit_N', (a[camera][1]*w[camera][1]+a[camera][0]*w[camera][0])/2)
 for camera, imageData in densityImages.items():
     if run_data['SaveImage']:
         datapath = path.split('\\')

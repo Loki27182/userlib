@@ -40,7 +40,7 @@ ClockLine(name='pulseblaster_0_ni_2_clock',             pseudoclock=pulseblaster
 ClockLine(name='pulseblaster_0_blue_BN_arduino_clock', 	pseudoclock=pulseblaster_0.pseudoclock, connection='flag 1')
 ClockLine(name='pulseblaster_0_red_BN_arduino_clock',   pseudoclock=pulseblaster_0.pseudoclock, connection='flag 9')
 ClockLine(name='pulseblaster_0_lsduino_clock',          pseudoclock=pulseblaster_0.pseudoclock, connection='flag 24')
-ClockLine(name='pulseblaster_0_lsduino_clock_2',          pseudoclock=pulseblaster_0.pseudoclock, connection='flag 34')
+ClockLine(name='pulseblaster_0_clock_dds_clock',          pseudoclock=pulseblaster_0.pseudoclock, connection='flag 12')
 
 #Trigger(   name='pulseblaster_0_lsduino_clock',        parent_device=pulseblaster_0.direct_outputs, connection = 'flag 24',  trigger_edge_type = 'falling')
 
@@ -53,7 +53,7 @@ DigitalOut(name='probe_shutter',            parent_device=pulseblaster_0.direct_
 DigitalOut(name='probe_RF_TTL',             parent_device=pulseblaster_0.direct_outputs, connection = 'flag 7')
 DigitalOut(name='red_MOT_RF_select',        parent_device=pulseblaster_0.direct_outputs, connection = 'flag 8')
 DigitalOut(name='red_MOT_Int_Disable',      parent_device=pulseblaster_0.direct_outputs, connection = 'flag 10')
-DigitalOut(name='red_aux_shutter',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 16')
+DigitalOut(name='red_sideband_shutter',          parent_device=pulseblaster_0.direct_outputs, connection = 'flag 16')
 DigitalOut(name='dipole_RF_TTL',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 17')
 DigitalOut(name='dipole_shutter',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 18')
 
@@ -62,9 +62,12 @@ DigitalOut(name='repump_707_shutter',      parent_device=pulseblaster_0.direct_o
 DigitalOut(name='repump_679_RF_TTL',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 21')
 DigitalOut(name='repump_679_shutter',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 22')
 DigitalOut(name='repump_688_RF_TTL',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 26')
-DigitalOut(name='repump_688_shutter',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 27')
+DigitalOut(name='repump_688_shutter',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 15')
 DigitalOut(name='h_bridge_enable',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 32')
 
+DigitalOut(name='H_bridge_disable',      parent_device=pulseblaster_0.direct_outputs, connection = 'flag 2') # HIGH is disable, LOW is enable
+
+DigitalOut(name='red_sideband_RF_TTL',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 13')
 ###############################################################################
 #    NI CARD 1
 ###############################################################################
@@ -102,6 +105,8 @@ NI_PCI_6733(name='ni_1', parent_device=pulseblaster_0_ni_1_clock, clock_terminal
 
 AnalogOut(name='probe_VCO', parent_device=ni_1, connection='ao0')
 AnalogOut(name='dipole_power',  parent_device=ni_1, connection='ao1')
+AnalogOut(name='dds_1_amplitude', parent_device=ni_1, connection='ao6')
+AnalogOut(name='red_sideband_VCO',  parent_device=ni_1, connection='ao3')
 
 ################################################################################
 #    BLUE BN ARDUINO
@@ -123,17 +128,22 @@ DDSAD9954(name='red_BN_DDS',       parent_device=red_BN_arduino, connection='cha
 #################################################################################
 ##    Testing new DDS arduino controller
 #################################################################################
-#lsduino(name='dds_controller', ndev=2, parent_device=pulseblaster_0_lsduino_clock, com_port='com15', 
+lsduino(name='dds_controller', ndev=2, parent_device=pulseblaster_0_lsduino_clock, com_port='com15', 
+            baud_rate=115200, synchronous_first_line_repeat=True)
+
+AD9910(name='sideband_dds',   parent_device=dds_controller, connection='channel 0')
+AD9910(name='dds_2',   parent_device=dds_controller, connection='channel 1')
+#
+#################################################################################
+##    Clock DDS controller
+#################################################################################
+
+#lsduino(name='clock_dds_controller', ndev=3, parent_device=pulseblaster_0_clock_dds_clock, com_port='com3', 
 #            baud_rate=115200, synchronous_first_line_repeat=True)
 #
-#AD9910(name='dds_0',   parent_device=dds_controller, connection='channel 0')
-#AD9910(name='dds_1',   parent_device=dds_controller, connection='channel 1')
-#
-#lsduino(name='dds_controller_2', ndev=2, parent_device=pulseblaster_0_lsduino_clock_2, com_port='com21', 
-#            baud_rate=115200, synchronous_first_line_repeat=True)
-#
-#AD9910(name='dds_2',   parent_device=dds_controller_2, connection='channel 0')
-#AD9910(name='dds_3',   parent_device=dds_controller_2, connection='channel 1')
+#AD9910(name='clock_cavity_dds',   parent_device=clock_dds_controller, connection='channel 0')
+#AD9910(name='clock_atoms_dds',   parent_device=clock_dds_controller, connection='channel 1')
+#AD9910(name='clock_aux_dds',   parent_device=clock_dds_controller, connection='channel 2')
 
 #################################################################################################################
 # Change these values to set up the grasshopper camera
@@ -145,8 +155,8 @@ gh_image_folder = 'xz'
 
 # Exposure settings
 gh_mode = 7                     # Camera mode, must be 0 or 7. Mode 0 is higher noise, but also higher frame rate.
-gh_exp = 5000.0   # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
-gh_gain_man =  0                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
+gh_exp = 50000.0   # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
+gh_gain_man =  15                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
 gh_gain_seq =  0                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
 gh_acceptable_zeros = 100       # The black level is calculated such that you will on average
                                     # have camera_acceptable_zeros zero counts on the low end of the distribution.
@@ -163,7 +173,7 @@ bf_image_folder = 'yz'
 
 # Exposure settings
 bf_mode = 7
-bf_exp = 5000.0
+bf_exp = 50000.0
 bf_gain_man = 0
 bf_gain_seq = 24
 # Still need to calibrate black level function for the blackfly, and standardize that process

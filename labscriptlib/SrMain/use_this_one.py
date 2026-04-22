@@ -7,7 +7,8 @@ import_or_reload('labscriptlib.SrMain.connection_table')
 
 # Load all experimental sequence functions 
 # (also defines constants, globals, and controls for proper highlighting )
-from labscriptlib.SrMain.Subroutines.define_functions import initialize, field_off, load_blue_MOT, red_swap_MOT, red_narrow_MOT, red_light_off, dipole_trap, exposure, magnetometry_pulse, magnetometry_shim_ramp, AOMDelay, ShutterDelay
+from labscriptlib.SrMain.Subroutines.define_functions import initialize, field_off, load_blue_MOT, red_swap_MOT, red_narrow_MOT, red_light_off, dipole_trap, exposure
+from labscriptlib.SrMain.Subroutines.define_functions import magnetometry_pulse, magnetometry_shim_ramp, AOMDelay, ShutterDelay, dumb_wait, sideband_blowaway, sideband_pulse
 
 # Uncomment the line below to make highlighting work better, but recomment to actually run
 #from labscriptlib.SrMain.Subroutines.define_constants import *
@@ -20,12 +21,17 @@ start()
 
 # Starting at time=DelayBeforeStart
 # This might need to me slightly positive to avoid errors...we'll see when we try it! Hopefully can be zero
+t = np.round(np.random.rand(1)/60,6)
 add_time_marker(0, 'start_delay')
 t = DelayBeforeStart
+
+scope_trigger.go_low(t)
 
 # Initialize things and blow away old atoms
 add_time_marker(t, 'blow_away')
 t += initialize(t)
+
+scope_trigger.go_high(t)
 
 ## Load atoms into the blue MOT - includes ramp down if that is happening
 ## and also blue light turn-off
@@ -40,25 +46,40 @@ if RedMOTOn:
     # Narrow MOT (skips if narrow MOT duration is set to 0)
     t += red_narrow_MOT(t)
 
+if LineTrigger:
+    t += dumb_wait('end_red_MOT_wait',t,.1,.01)
 ## Turn red light off
 ## This needs to happen, even with just the blue MOT, since we are doing the gray MOT
 red_light_off(t)
 ## Turn the field off
 field_off(t)
+scope_trigger.go_low(t)
+
+
 
 ## Set reference for earliest imaging if magnetometry is happening
 #t_mag = t + 2*AOMDelay
 ## Set reference time for imaging at end of MOT stages
 t_red_off = t
-if MagnetometryPulseDuration > 0:
+if MagnetometryOn > 0 or SidebandBlowawayOn:
     magnetometry_shim_ramp(t+MagnetometryShimDelay)
 
 if DipoleOn:
     t += dipole_trap(t)
     t_dipole = t
 
-if MagnetometryPulseDuration > 0:
+if MagnetometryOn and not SidebandBlowawayOn:
     magnetometry_pulse(t + MagnetometryPulseDelay)
+
+if SidebandBlowawayOn and not MagnetometryOn:
+    t_blowaway = t - SidebandBlowawayAdvance
+    t_sb = t_blowaway - SidebandPulseDuration + SidebandPulseDelay
+    sideband_pulse(t_sb)
+    sideband_blowaway(t_blowaway)
+
+if ShelvingOn:
+    t += shelving_pulse(t - ShelvingAdvance)
+
 
 # TOF
 t += TimeOfFlight

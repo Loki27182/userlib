@@ -200,14 +200,30 @@ def load_iterated_data():
     else:
         temp_dict = dict()
         temp_dict['name'] = 'Time'
-        temp_dict['axis_label'] = 'Time'
         temp_dict['prefer_x'] = 0
         temp_dict['axis_scale'] = np.array(1.0)
         df = data()
-        temp_dict['values'] = pd.to_datetime(df['run time'].values)
+        vals_temp = (df['run time'].values).astype('float')
+        vals_temp = (vals_temp - vals_temp[0])/1e9
+        if vals_temp[-1] >= 120:
+            if vals_temp[-1] >= 7200:
+                if vals_temp[-1] >= 172800:
+                    vals_temp = vals_temp/86400
+                    temp_dict['axis_label'] = 'Time (days)'
+                else:
+                    vals_temp = vals_temp/3600
+                    temp_dict['axis_label'] = 'Time (hours)'
+            else:
+                vals_temp = vals_temp/60
+                temp_dict['axis_label'] = 'Time (minutes)'
+        else:
+            temp_dict['axis_label'] = 'Time (s)'
+            
+        temp_dict['values'] = vals_temp
         temp_dict['range'] = [np.min(temp_dict['values']),np.max(temp_dict['values'])]
         temp_dict['loglin'] = 'linear'
         variable_info.append(temp_dict)
+        pprint(df['run time'].values[0])
 
     result_info = dict()
     for name in column_names:
