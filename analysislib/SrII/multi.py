@@ -56,15 +56,20 @@ try:
             plt.tight_layout()
             plt.savefig(save_paths[-1] + multi_name + '.png')
     if len(variable_info)==2:
-        x = variable_info[0]['values']*variable_info[0]['axis_scale']
-        x_range = variable_info[0]['range']
-        x_label = variable_info[0]['axis_label']
-        x_scale_type = variable_info[0]['loglin']
+        if variable_info[1]['prefer_x']:
+            ii=1
+        else:
+            ii=0
 
-        y = variable_info[1]['values']*variable_info[1]['axis_scale']
-        y_range = variable_info[1]['range']
-        y_label = variable_info[1]['axis_label']
-        y_scale_type = variable_info[1]['loglin']
+        x = variable_info[ii]['values']*variable_info[ii]['axis_scale']
+        x_range = variable_info[ii]['range']
+        x_label = variable_info[ii]['axis_label']
+        x_scale_type = variable_info[ii]['loglin']
+
+        y = variable_info[1-ii]['values']*variable_info[1-ii]['axis_scale']
+        y_range = variable_info[1-ii]['range']
+        y_label = variable_info[1-ii]['axis_label']
+        y_scale_type = variable_info[1-ii]['loglin']
 
         figs = dict()
         axs = dict()
@@ -77,10 +82,9 @@ try:
             multi_name = val['result_type'] + '_' + val['imaging_axis']
             figs[multi_name] = plt.figure(multi_name)
             axs[multi_name] = figs[multi_name].add_subplot(1,1,1)
+
             x_u = np.unique(x)
-            print(len(x_u))
-            y_u = np.unique(y)
-            print(len(y_u))
+            y_u = np.flip(np.unique(y))
             z_u = np.zeros([len(y_u),len(x_u)])
             for idx_x in range(len(x_u)):
                 for idx_y in range(len(y_u)):
@@ -91,7 +95,7 @@ try:
                 z_u = gaussian_filter(z_u,filter_size)
             c_min = np.min(z_u)
             c_max = np.max(z_u)
-            im = axs[multi_name].imshow(z_u,extent=[np.min(x_u),np.max(x_u),np.max(y_u),np.min(y_u)],vmin=c_min,vmax=c_max,aspect=(np.max(x_u)-np.min(x_u))/(np.max(y_u)-np.min(y_u))/1.25)
+            im = axs[multi_name].imshow(z_u,extent=[np.min(x_u),np.max(x_u),np.min(y_u),np.max(y_u)],vmin=c_min,vmax=c_max,aspect=(np.max(x_u)-np.min(x_u))/(np.max(y_u)-np.min(y_u))/1.25)
 
             cb = figs[multi_name].colorbar(im, ax=axs[multi_name])
             cb.set_label(z_label,fontsize=14)

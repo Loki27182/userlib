@@ -1,5 +1,6 @@
 from lyse import *
 import matplotlib.pyplot as plt
+from matplotlib import rcParams
 from pprint import pp as pprint
 import numpy as np
 import h5py
@@ -243,6 +244,7 @@ for camera, imageData in densityImages.items():
             da[camera] = [0,0]
 
     print('Plotting ' + camera + ' image...')
+    rcParams.update({'font.size': 6})
     figs[camera] = plt.figure(figsize=(4, 3), dpi=200)
     axImage = figs[camera].add_subplot(1,1,1)
 
@@ -265,6 +267,7 @@ for camera, imageData in densityImages.items():
     else:
         titleString = (' = {:.2E}').format(atomNumbers[camera])
     axImage.title.set_text('N_' + camera + titleString)
+    
     plt.tight_layout()
     print('    Done plotting ' + camera + ' image.')
 

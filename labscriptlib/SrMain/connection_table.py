@@ -1,7 +1,7 @@
 from labscript import start, stop
-from labscript import ClockLine, DigitalOut, AnalogOut, Trigger
+from labscript import ClockLine, DigitalOut, AnalogOut, Trigger, AnalogIn
 from labscript_devices.Pyncmaster import Pyncmaster as PulseBlasterUSB
-from labscript_devices.NI_DAQmx.labscript_devices import NI_PCI_6733, NI_PXIe_6361
+from labscript_devices.NI_DAQmx.labscript_devices import NI_PCI_6733, NI_PCIe_6361
 from labscript_devices.Arduino_DDS import Arduino_DDS
 from labscript_devices.Arduino_DDS_n_ch import Arduino_DDS_n_ch
 from labscript_devices.Arduino_Single_DDS import Arduino_Single_DDS
@@ -48,7 +48,7 @@ Trigger(   name='GH_camera_trigger',        parent_device=pulseblaster_0.direct_
 Trigger(   name='Blackfly_camera_trigger',        parent_device=pulseblaster_0.direct_outputs, connection = 'flag 23',  trigger_edge_type = 'falling')
 
 DigitalOut(name='current_lock_enable',      parent_device=pulseblaster_0.direct_outputs, connection = 'flag 4')
-DigitalOut(name='scope_trigger',   		parent_device=pulseblaster_0.direct_outputs, connection = 'flag 5')
+DigitalOut(name='scope_trigger',   		parent_device=pulseblaster_0.direct_outputs, connection = 'flag 5')# There is nothing connected to this
 DigitalOut(name='probe_shutter',            parent_device=pulseblaster_0.direct_outputs, connection = 'flag 6')
 DigitalOut(name='probe_RF_TTL',             parent_device=pulseblaster_0.direct_outputs, connection = 'flag 7')
 DigitalOut(name='red_MOT_RF_select',        parent_device=pulseblaster_0.direct_outputs, connection = 'flag 8')
@@ -63,11 +63,16 @@ DigitalOut(name='repump_679_RF_TTL',         parent_device=pulseblaster_0.direct
 DigitalOut(name='repump_679_shutter',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 22')
 DigitalOut(name='repump_688_RF_TTL',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 26')
 DigitalOut(name='repump_688_shutter',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 15')
-DigitalOut(name='h_bridge_enable',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 32')
+DigitalOut(name='h_bridge_ttl',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 32') # There is nothing connected to this
+DigitalOut(name='h_bridge_pol',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 33')
+DigitalOut(name='blowaway_shutter',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 27') # There is nothing connected to this
 
-DigitalOut(name='H_bridge_disable',      parent_device=pulseblaster_0.direct_outputs, connection = 'flag 2') # HIGH is disable, LOW is enable
+DigitalOut(name='clock_LF_DDS_AMP_TTL',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 35')
+DigitalOut(name='clock_HF_DDS_AMP_TTL',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 36')
 
-DigitalOut(name='red_sideband_RF_TTL',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 13')
+DigitalOut(name='H_bridge_disable',      parent_device=pulseblaster_0.direct_outputs, connection = 'flag 2') # HIGH is disable, LOW is enable, There is nothing connected to this
+
+DigitalOut(name='red_sideband_RF_TTL',         parent_device=pulseblaster_0.direct_outputs, connection = 'flag 13') 
 ###############################################################################
 #    NI CARD 1
 ###############################################################################
@@ -105,8 +110,19 @@ NI_PCI_6733(name='ni_1', parent_device=pulseblaster_0_ni_1_clock, clock_terminal
 
 AnalogOut(name='probe_VCO', parent_device=ni_1, connection='ao0')
 AnalogOut(name='dipole_power',  parent_device=ni_1, connection='ao1')
-AnalogOut(name='dds_1_amplitude', parent_device=ni_1, connection='ao6')
+AnalogOut(name='clock_LF_DDS_AOM_ATT', parent_device=ni_1, connection='ao6')
+AnalogOut(name='clock_HF_DDS_AOM_ATT', parent_device=ni_1, connection='ao4')
+AnalogOut(name='dummy_ao5', parent_device=ni_1, connection='ao5') # This is just a dummy channel, does nothing
 AnalogOut(name='red_sideband_VCO',  parent_device=ni_1, connection='ao3')
+
+###############################################################################
+#    NI CARD 4
+###############################################################################
+
+NI_PCIe_6361(name='ni_2', parent_device=pulseblaster_0_ni_2_clock, clock_terminal='/Dev4/PFI0', MAX_name = 'Dev4', acquisition_rate=100000)
+AnalogIn(name='test_input_0', parent_device=ni_2, connection='ai0')
+AnalogOut(name='test_output_0', parent_device=ni_2, connection='ao0')
+AnalogOut(name='test_output_1', parent_device=ni_2, connection='ao1')
 
 ################################################################################
 #    BLUE BN ARDUINO
@@ -115,7 +131,7 @@ AnalogOut(name='red_sideband_VCO',  parent_device=ni_1, connection='ao3')
 Arduino_DDS(name='blue_BN_arduino', parent_device=pulseblaster_0_blue_BN_arduino_clock, com_port='com5', baud_rate=115200, synchronous_first_line_repeat=True)
 
 DDSAD9954(name='blue_BN_DDS',       parent_device=blue_BN_arduino, connection='channel 0')
-DDSAD9954(name='blue_broken_DDS',   parent_device=blue_BN_arduino, connection='channel 1')
+DDSAD9954(name='sideband_dds',   parent_device=blue_BN_arduino, connection='channel 1')
 
 ################################################################################
 #    Red BN ARDUINO
@@ -128,21 +144,21 @@ DDSAD9954(name='red_BN_DDS',       parent_device=red_BN_arduino, connection='cha
 #################################################################################
 ##    Testing new DDS arduino controller
 #################################################################################
-lsduino(name='dds_controller', ndev=2, parent_device=pulseblaster_0_lsduino_clock, com_port='com15', 
+lsduino(name='clock_dds_controller', ndev=2, parent_device=pulseblaster_0_lsduino_clock, com_port='com15', 
             baud_rate=115200, synchronous_first_line_repeat=True)
 
-AD9910(name='sideband_dds',   parent_device=dds_controller, connection='channel 0')
-AD9910(name='dds_2',   parent_device=dds_controller, connection='channel 1')
+AD9910(name='clock_LF_DDS',   parent_device=clock_dds_controller, connection='channel 0')
+AD9910(name='clock_HF_DDS',   parent_device=clock_dds_controller, connection='channel 1')
 #
 #################################################################################
 ##    Clock DDS controller
 #################################################################################
 
 #lsduino(name='clock_dds_controller', ndev=3, parent_device=pulseblaster_0_clock_dds_clock, com_port='com3', 
-#            baud_rate=115200, synchronous_first_line_repeat=True)
+#           baud_rate=115200, synchronous_first_line_repeat=True)
 #
 #AD9910(name='clock_cavity_dds',   parent_device=clock_dds_controller, connection='channel 0')
-#AD9910(name='clock_atoms_dds',   parent_device=clock_dds_controller, connection='channel 1')
+#AD9910(name='clock_80MHz_AOM',   parent_device=clock_dds_controller, connection='channel 1')
 #AD9910(name='clock_aux_dds',   parent_device=clock_dds_controller, connection='channel 2')
 
 #################################################################################################################
@@ -155,8 +171,8 @@ gh_image_folder = 'xz'
 
 # Exposure settings
 gh_mode = 7                     # Camera mode, must be 0 or 7. Mode 0 is higher noise, but also higher frame rate.
-gh_exp = 50000.0   # Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
-gh_gain_man =  15                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
+gh_exp = 4000.0   # 4000 Camera exposure time in us for manual mode (40us to 30s, but timeout needs to be increased from 5s for long exposures)
+gh_gain_man =  0                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
 gh_gain_seq =  0                    # Camera gain setting in dB. Must be between 0 and 24 (inclusive)
 gh_acceptable_zeros = 100       # The black level is calculated such that you will on average
                                     # have camera_acceptable_zeros zero counts on the low end of the distribution.

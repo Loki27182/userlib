@@ -11,6 +11,7 @@ from time import perf_counter as pc
 import matplotlib.patches as patches
 from helper_functions import basic_gaussian_fit, saveAnalysisImage, temp_fit, expansion_TOF, freefall_fit
 import AnalysisSettings
+from helper_functions import load_iterated_data
 from lyse_setup import load_data
 import os
 
@@ -18,23 +19,22 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-variables, iterated_variables, results, filepaths = load_data()
+iterated_variables, results, filepaths = load_iterated_data()
 
 display_variable_info = dict()
-t = iterated_variables['TimeOfFlight']
-N = results['atomNumber']
-w_x = results['x_width']
-w_z = results['y_width']
-r_x = results['x_position']
-r_z = results['y_position']
+t = iterated_variables[0]['values']
+N = results['xz/atomNumber']['values']
+w_x = results['xz/x_width']['values']
+w_z = results['xz/y_width']['values']
+r_x = results['xz/x_position']['values']
+r_z = results['xz/y_position']['values']
 
 t_plot = np.sort(np.unique(t))
-
 N_plot = np.array([np.mean(N[t==t_i])/10**6 for t_i in t_plot])
-w_x_plot = np.array([np.mean(w_x[t==t_i])/10**6 for t_i in t_plot])
-w_z_plot = np.array([np.mean(w_z[t==t_i])/10**6 for t_i in t_plot])
-r_x_plot = np.array([np.mean(r_x[t==t_i])/10**6 for t_i in t_plot])
-r_z_plot = np.array([np.mean(r_z[t==t_i])/10**6 for t_i in t_plot])
+w_x_plot = np.array([np.mean(w_x[t==t_i])*10**6 for t_i in t_plot])
+w_z_plot = np.array([np.mean(w_z[t==t_i])*10**6 for t_i in t_plot])
+r_x_plot = np.array([np.mean(r_x[t==t_i])*10**6 for t_i in t_plot])
+r_z_plot = np.array([np.mean(r_z[t==t_i])*10**6 for t_i in t_plot])
 
 plt.rcParams['text.usetex'] = True
 plt.rc('font', family='serif')
@@ -46,7 +46,7 @@ ax_r = fig.add_subplot(1,3,3)
 
 ax_N.plot(t_plot*10**3,N_plot,'--x')
 ax_N.grid(True)
-ax_N.set_ylim([0,25])
+ax_N.set_ylim([0,np.max(N_plot)*1.2])
 ax_N.set_xlabel('Time of flight (ms)',fontsize=14)
 ax_N.set_ylabel('Atom number ($\\times 10^6$)',fontsize=14)
 
@@ -62,7 +62,7 @@ line_wz, = ax_w.plot(t_plot*10**3,w_z_plot,'x',label='Z-Axis')
 line_wf, = ax_w.plot(t_fit*10**3,w_fit,'--',label='$T_{\mathrm{fit}-z} = ' + '{:1.2f}'.format(p[1]*10**6) + '$ $\mu$K, $\sigma_0 = ' + '{:1.0f}'.format(p[0]*10**6) + '$ $\mu$m')
 line_wf2, = ax_w.plot(t_fit*10**3,w_fit2,'--',label='$T_{\mathrm{fit}-x} = ' + '{:1.2f}'.format(p2[1]*10**6) + '$ $\mu$K, $\sigma_0 = ' + '{:1.0f}'.format(p2[0]*10**6) + '$ $\mu$m')
 ax_w.grid(True)
-ax_w.set_ylim([0,500])
+ax_w.set_ylim([0,750])
 ax_w.set_xlabel('Time of flight (ms)',fontsize=14)
 ax_w.set_ylabel('Cloud widths ($\mu$m)',fontsize=14)
 ax_w.legend(handles=[line_wx,line_wz,line_wf,line_wf2],fontsize=12)
@@ -76,7 +76,7 @@ labelText = '$g_{\mathrm{fit}} = ' + '{:1.2f}'.format(p_g[1]) + '$ $\\frac{\math
 line_rf, = ax_r.plot(t_fit*10**3,r_fit,'--',label=labelText)
 
 ax_r.grid(True)
-ax_r.set_ylim([-1500,300])
+ax_r.set_ylim([-1500,2500])
 ax_r.set_xlabel('Time of flight (ms)',fontsize=14)
 ax_r.set_ylabel('Cloud positions ($\mu$m)',fontsize=14)
 ax_r.legend(handles=[line_rx,line_rz,line_rf],fontsize=12)

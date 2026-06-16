@@ -8,7 +8,9 @@ import_or_reload('labscriptlib.SrMain.connection_table')
 # Load all experimental sequence functions 
 # (also defines constants, globals, and controls for proper highlighting )
 from labscriptlib.SrMain.Subroutines.define_functions import initialize, field_off, load_blue_MOT, red_swap_MOT, red_narrow_MOT, red_light_off, dipole_trap, exposure
-from labscriptlib.SrMain.Subroutines.define_functions import magnetometry_pulse, magnetometry_shim_ramp, AOMDelay, ShutterDelay, dumb_wait, sideband_blowaway, sideband_pulse
+from labscriptlib.SrMain.Subroutines.define_functions import magnetometry_pulse, magnetometry_shim_ramp, AOMDelay, ShutterDelay, dumb_wait, sideband_blowaway, sideband_pulse, shelving_pulse
+from labscriptlib.SrMain.Subroutines.define_functions import hbridge_pulse_start, hbridge_pulse_finish
+# from labscriptlib.SrMain.Subroutines.define_functions import clock_shelving_pulse
 
 # Uncomment the line below to make highlighting work better, but recomment to actually run
 #from labscriptlib.SrMain.Subroutines.define_constants import *
@@ -52,7 +54,7 @@ if LineTrigger:
 ## This needs to happen, even with just the blue MOT, since we are doing the gray MOT
 red_light_off(t)
 ## Turn the field off
-field_off(t)
+t += field_off(t)
 scope_trigger.go_low(t)
 
 
@@ -75,11 +77,18 @@ if SidebandBlowawayOn and not MagnetometryOn:
     t_blowaway = t - SidebandBlowawayAdvance
     t_sb = t_blowaway - SidebandPulseDuration + SidebandPulseDelay
     sideband_pulse(t_sb)
-    sideband_blowaway(t_blowaway)
+    sideband_blowaway(t_blowaway, SidebandBlowawayDuration, SidebandBlowawayVCOVoltage)
 
 if ShelvingOn:
-    t += shelving_pulse(t - ShelvingAdvance)
+    shelving_pulse(t - ShelvingAdvance)
+    sideband_blowaway(t - ShelvingBlowawayAdvance, ShelvingBlowawayDuration, ProbeVCOVoltage)
 
+if SwitchFieldBias:
+    t_0 = t - SwitchFieldBiasAdvance - 0.01
+    t += hbridge_pulse_start(t - SwitchFieldBiasAdvance)
+# if ClockShelvingOn:
+#     clock_shelving_pulse(t - ClockShelvingAdvance)
+#     sideband_blowaway(t - ClockShelvingBlowawayAdvance, ClockShelvingBlowawayDuration, ProbeVCOVoltage)
 
 # TOF
 t += TimeOfFlight
@@ -112,6 +121,11 @@ t_im += exposure(t_im, 'atoms', True)
 #  - the end of the TOF
 #  - the end of the atoms exposure 
 t = np.max((t, t_im))
+
+if SwitchFieldBias: 
+    t += hbridge_pulse_finish(t)
+    t_f = t
+    test_input_0.acquire('field_readout', t_0, t_f)
 
 # Add camera downtime
 t += DownTime

@@ -16,7 +16,7 @@ BlowawayDuration = 0.04
 def initialize(t, blowaway = True):
     # Set analog values (ni_0)
 
-    red_MOT_VCO.constant(t, RedLoadPumpFreq, units = 'MHz')     # Set red MOT light to pump frequency for gray MOT
+    red_MOT_VCO.constant(t, RedLoadPumpFreq + RedMOTVCODriftCompensation, units = 'MHz')     # Set red MOT light to pump frequency for gray MOT
     mot_field.constant(t,BlueMOTField, units='A')               # Set default MOT field
     shim_X.constant(t,BlueMOTShimX, units = 'A')                # Set default X trim
     shim_Y.constant(t,BlueMOTShimY, units = 'A')                # Set default Y trim
@@ -46,12 +46,15 @@ def initialize(t, blowaway = True):
     # repump_679_RF_TTL.go_low(t)                                 # Turn on 679 repump AOM
 
     # This is stuff I added 
-    repump_707_shutter.go_high(t)                               # Open 707 repump shutter
     repump_707_TTL.go_high(t)                                   # Turn on 707 repump AOM
-    repump_679_shutter.go_high(t)                            # Open 679 repump shutter
     repump_679_RF_TTL.go_high(t)                                # Turn on 679 repump AOM
-    repump_688_shutter.go_high(t)                            # close 688 repump shutter
-    repump_688_RF_TTL.go_high(t)                                # Turn off 688 repump AOM
+    repump_688_RF_TTL.go_high(t)                       # Turn off 688 repump AOM
+
+    # Setting clock DDS testing stuff
+    clock_LF_DDS_AMP_TTL.go_low(t)
+    clock_HF_DDS_AMP_TTL.go_low(t)
+    clock_HF_DDS_AOM_ATT.constant(t, 5.5)
+    clock_LF_DDS_AOM_ATT.constant(t, 6.0)
     
 ###########################################
 
@@ -77,32 +80,51 @@ def initialize(t, blowaway = True):
         dipole_RF_TTL.go_low(t)                                     # Turn on RF so AOM stays warm
         dipole_power.constant(t,0)
         dipole_power.constant(t + dt,DipoleDepth)                    # Set default dipole beam power to load depth (shutter will be closed, but lock will keep RF on and AOM warm)
+        if MagnetometryOn or SidebandBlowawayOn or ShelvingOn:
+            blowaway_shutter.go_high(t)
+        else:
+            blowaway_shutter.go_low(t)
+        repump_688_shutter.go_low(t)                         # close 688 repump shutter
+        repump_679_shutter.go_high(t)                            # Open 679 repump shutter
+        repump_707_shutter.go_high(t)                               # Open 707 repump shutter
     else:                                               # If initializing and loading (end of experiment)
         dt = 0                                                  # Set zero duration
         current_lock_enable.go_high(t)                          # Turn on MOT field
         probe_shutter.go_low(t)                                 # Close probe shutter
         blue_MOT_shutter.go_high(t)                             # Open blue MOT shutter
         dipole_RF_TTL.go_low(t)
+        blowaway_shutter.go_low(t)
         if DipoleStadbyDepth > 0:
             dipole_shutter.go_high(t)
             dipole_power.constant(t, DipoleStadbyDepth)
         else:
             dipole_shutter.go_low(t)
             dipole_power.constant(t, DipoleDepth)
+        if ShelvingOn:
+            repump_688_shutter.go_high(t)                         # Open 688 repump shutter
+            repump_679_shutter.go_low(t)                            # close 679 repump shutter
+            repump_707_shutter.go_high(t)                               # Open 707 repump shutter
+        else:
+            repump_688_shutter.go_low(t)                         # close 688 repump shutter
+            repump_679_shutter.go_high(t)                            # Open 679 repump shutter
+            repump_707_shutter.go_high(t)                               # Open 707 repump shutter
+
 
     # Set DDS frequencies
-    sideband_dds.setfreq(t,SidebandFrequency, units = 'MHz')
+    if SidebandHeatingOn:
+        sideband_dds.setfreq(t,SidebandHeatingFrequency, units = 'MHz')
+    else:
+        sideband_dds.setfreq(t,SidebandFrequency, units = 'MHz')
     blue_BN_DDS.setfreq(t,BlueMOTBeatnote / 5, units = 'MHz')   # Set blue beatnote frequency
-    blue_broken_DDS.setfreq(t, 25, units = 'MHz')               # Set unused blue DDS source to some value
     red_BN_DDS.setfreq(t,RedBeatnote/48, units = 'MHz')         # Set red DDS frequency (not actually used, because it doesn't work for some reason)
-    h_bridge_enable.go_high(t)
     return(dt + ShutterDelay)
 
 def field_off(t):
     # Turn the field off with analog and digital controls
-    mot_field.constant(t,0,units='A')
-    current_lock_enable.go_low(t)
-    return 0
+    mot_field.ramp(t,FieldOffRampTime,RedMOTFieldFinal,0,100000,units='A')
+    #mot_field.constant(t,0,units='A')
+    current_lock_enable.go_low(t + FieldOffRampTime)
+    return(FieldOffRampTime)
 
 ################################################################################
 #   Blue MOT
@@ -143,6 +165,10 @@ def load_blue_MOT(t):
     blue_MOT_shutter.go_low(t + dt) 
     blue_MOT_RF_TTL.go_low(t + dt + ShutterDelay)
 
+    if SidebandBlowawayOn:
+        repump_679_shutter.go_low(t + dt + ShutterDelay)
+        repump_707_shutter.go_low(t + dt + ShutterDelay)
+
     # Turn 2D MOT off when that should happen
     add_time_marker(t + dt - SourceShutoffTime - ShutterDelay, 'source_off')
     source_RF_TTL.go_high(t + dt - SourceShutoffTime - ShutterDelay)  
@@ -166,19 +192,19 @@ def red_swap_MOT(t):
     # Disable the intensity lock integrator in preparation for turning the light off to switch frequency (avoid windup)
     red_MOT_Int_Disable.go_high(t - 3*AOMDelay)
     # Turn off RF to red cooling AOM (LF)
-    red_MOT_RF_TTL.go_low(t - 3*AOMDelay)
+    #red_MOT_RF_TTL.go_low(t - 3*AOMDelay)
     # Change LF AOM frequency to starting point for SWAP
-    red_MOT_VCO.constant(t - 2*AOMDelay,RedMOTRamp0L,units='MHz')
+    red_MOT_VCO.constant(t - 2*AOMDelay,RedMOTRamp0L + RedMOTVCODriftCompensation,units='MHz')
     # Turn RF back on at requested time
-    red_MOT_RF_TTL.go_high(t - 1*AOMDelay)
+    #red_MOT_RF_TTL.go_high(t - 1*AOMDelay)
     # Turn intensity lock integrator back on
     red_MOT_Int_Disable.go_low(t - 1*AOMDelay)
     # Power ramp down
     red_MOT_power.ramp(t, RedMOTRampTime, RedMOTRampPower0, RedMOTRampPowerF, 500000)
     # Ramped sawtooth frequency modulation
     red_MOT_VCO.customramp(t, RedMOTRampTime, swap_ramp, 
-                           RedMOTRamp0L, RedMOTRamp0H, RedMOTRampFL, 
-                           RedMOTRampFH, RedMOTRampFreq, 
+                           RedMOTRamp0L+RedMOTVCODriftCompensation, RedMOTRamp0H+RedMOTVCODriftCompensation, RedMOTRampFL+RedMOTVCODriftCompensation, 
+                           RedMOTRampFH+RedMOTVCODriftCompensation, RedMOTRampFreq, 
                            samplerate=500000, units='MHz')
     # Ramp field
     mot_field.ramp(t, RedMOTRampTime, RedMOTField, RedMOTFieldFinal, 500000, units='A')
@@ -189,13 +215,26 @@ def red_narrow_MOT(t):
     if RedMOTNarrowTime > 0:
         add_time_marker(t, 'red_narrow_start')
         # Set frequency
-        red_MOT_VCO.constant(t, RedMOTNarrowFrequency, units='MHz')
+        dc_offset = RedMOTNarrowFrequency+RedMOTVCODriftCompensation
+        if RedMOTModIndex > 0:
+            phase = 0
+            angfreq = 2*np.pi*RedMOTModFrequency*1000
+            amplitude = RedMOTModFrequency*RedMOTModIndex/1000
+            duration = RedMOTNarrowTime + RedMOTRampOffTime
+            red_MOT_VCO.sine(t, duration, amplitude, angfreq, phase, dc_offset, 500000,units='MHz')
+            red_MOT_VCO.constant(t + duration, dc_offset, units='MHz')
+        else:
+            red_MOT_VCO.constant(t, dc_offset, units='MHz')
         # Set power
         if OverrideRedPower:
             red_MOT_power.constant(t, RedMOTRampPowerF)
+            if RedMOTRampOffTime > 0:
+                red_MOT_power.ramp(t + RedMOTNarrowTime, RedMOTRampOffTime, RedMOTRampPowerF, 0, 100000)
         else:
             red_MOT_power.constant(t, RedMOTNarrowPower)
-    return(RedMOTNarrowTime)
+            if RedMOTRampOffTime > 0:
+                red_MOT_power.ramp(t + RedMOTNarrowTime, RedMOTRampOffTime, RedMOTNarrowPower, 0, 100000)
+    return(RedMOTNarrowTime + RedMOTRampOffTime)
 
 def red_light_off(t):
     # Turn red light off
@@ -208,7 +247,7 @@ def red_light_off(t):
     #if MagnetometryPulseDuration > 0:
     # If doing magnetomety:
     # Set correct frequency for magnetometry pulse after light has turned off
-    red_MOT_VCO.constant(t + AOMDelay, RedMOTNarrowFrequency + MagPulseDetuning, units = 'MHz')
+    red_MOT_VCO.constant(t + AOMDelay, RedMOTNarrowFrequency + MagPulseDetuning + RedMOTVCODriftCompensation, units = 'MHz')
     # Set intensity lock setpoint back up to high initial value (this will saturate the integrator)
     red_MOT_power.constant(t + AOMDelay, RedMOTRampPower0)
     # Disable integrator after it has saturated 
@@ -243,6 +282,9 @@ def dipole_trap(t):
     if DipoleDitherAmp > 0:
         dipole_power.sine(t, DipoleHoldTime, DipoleDepth*DipoleDitherAmp, 2*np.pi*DipoleDitherFreq, 0, DipoleDepth, 50000)
     # Snap dipole trap off after holdtime
+    if DipoleFlashDuration > 0:
+        dipole_RF_TTL.go_high(t + DipoleHoldTime - DipoleFlashDuration - DipoleFlashDelay)
+        dipole_RF_TTL.go_low(t + DipoleHoldTime - DipoleFlashDuration)
     dipole_RF_TTL.go_high(t + DipoleHoldTime)
     return DipoleHoldTime
 
@@ -277,33 +319,75 @@ def magnetometry_pulse(t):
     # Pulse the probe just after the magnetometry
     probe_RF_TTL.go_high(t + MagnetometryPulseDuration + MagnetometryBlowawayDelay)
     probe_RF_TTL.go_low(t + MagnetometryPulseDuration + MagnetometryBlowawayDelay + MagnetometryBlowawayDuration)
+    blowaway_shutter.go_low(t + MagnetometryPulseDuration + MagnetometryBlowawayDelay + MagnetometryBlowawayDuration + AOMDelay)
     # Leaving RF off and Shutter opened for imaging 
 
 def magnetometry_shim_ramp(t):
     shim_X.ramp(t, MagnetometryShimRampDuration, BlueMOTShimX, MagnetometryShimX, 10000, units = 'A')                # Set default X trim
     shim_Y.ramp(t, MagnetometryShimRampDuration, BlueMOTShimY, MagnetometryShimY, 10000, units = 'A')                # Set default Y trim
     shim_Z.ramp(t, MagnetometryShimRampDuration, BlueMOTShimZ, MagnetometryShimZ, 10000, units = 'A')                # Set default Z trim
+    dipole_power.ramp(t, MagnetometryShimRampDuration, DipoleDepth, DipoleDepthFinal, 10000)
     #repump_707_shutter.go_low(t)                               # close 707 repump shutter
     #repump_679_shutter.go_low(t)                            # close 679 repump shutter
-
-def sideband_blowaway(t):
-    
-    probe_VCO.constant(t - ShutterDelay - AOMDelay, SidebandBlowawayVCOVoltage)                       # Set blowaway specific probe power
-    probe_RF_TTL.go_low(t - ShutterDelay - AOMDelay)
-    probe_shutter.go_high(t - ShutterDelay)
-    probe_RF_TTL.go_high(t)
-    probe_RF_TTL.go_low(t + SidebandBlowawayDuration)
-    probe_shutter.go_low(t + SidebandBlowawayDuration + AOMDelay)
-    probe_RF_TTL.go_high(t + SidebandBlowawayDuration + AOMDelay + ShutterDelay)
-    probe_VCO.constant(t +SidebandBlowawayDuration + AOMDelay + ShutterDelay, ProbeVCOVoltage)              # Set probe power back to default value
     
 def sideband_pulse(t):
+    t_heating = t - SidebandHeatingPulseAdvance
+
+    
+    if SidebandHeatingOn:
+        red_sideband_RF_TTL.go_low(t_heating - ShutterDelay - AOMDelay)
+        red_sideband_shutter.go_high(t_heating - ShutterDelay)
+        red_sideband_RF_TTL.go_high(t_heating)
+        red_sideband_RF_TTL.go_low(t_heating + SidebandHeatingDuration)
+        red_sideband_shutter.go_low(t_heating + SidebandHeatingDuration + AOMDelay)
+        red_sideband_RF_TTL.go_high(t_heating + SidebandHeatingDuration + AOMDelay + ShutterDelay)
+        sideband_dds.setfreq(t_heating + SidebandHeatingDuration + AOMDelay + ShutterDelay,SidebandFrequency, units = 'MHz')
+
+    t_rp_switch = t - 2*ShutterDelay
+    if SidebandRepumpOn:
+        repump_688_RF_TTL.go_low(t_rp_switch - ShutterDelay - AOMDelay)
+        repump_688_shutter.go_high(t_rp_switch - ShutterDelay)
+        repump_688_RF_TTL.go_high(t_rp_switch)
+
+        repump_707_TTL.go_low(t_rp_switch - ShutterDelay - AOMDelay)
+        repump_707_shutter.go_high(t_rp_switch - ShutterDelay)
+        repump_707_TTL.go_high(t_rp_switch)
+
+        repump_679_RF_TTL.go_low(t_rp_switch)
+        repump_679_shutter.go_low(t_rp_switch + AOMDelay)
+        repump_679_RF_TTL.go_high(t_rp_switch + ShutterDelay + AOMDelay)
+
     red_sideband_RF_TTL.go_low(t - ShutterDelay - AOMDelay)
     red_sideband_shutter.go_high(t - ShutterDelay)
     red_sideband_RF_TTL.go_high(t)
     red_sideband_RF_TTL.go_low(t + SidebandPulseDuration)
     red_sideband_shutter.go_low(t + SidebandPulseDuration + AOMDelay)
     red_sideband_RF_TTL.go_high(t + SidebandPulseDuration + AOMDelay + ShutterDelay)
+
+def sideband_blowaway(t, duration, VCOVoltage):
+    probe_VCO.constant(t - ShutterDelay - AOMDelay, VCOVoltage)                       # Set blowaway specific probe power
+    probe_RF_TTL.go_low(t - ShutterDelay - AOMDelay)
+    probe_shutter.go_high(t - ShutterDelay)
+    probe_RF_TTL.go_high(t)
+    probe_RF_TTL.go_low(t + duration)
+    probe_shutter.go_low(t + duration + AOMDelay)
+    blowaway_shutter.go_low(t + duration + AOMDelay)
+    probe_RF_TTL.go_high(t + duration + AOMDelay + ShutterDelay)
+    probe_VCO.constant(t + duration + AOMDelay + ShutterDelay, ProbeVCOVoltage)              # Set probe power back to default value
+
+    t_rp_switch = t + duration + 5*AOMDelay
+    repump_679_RF_TTL.go_low(t_rp_switch - AOMDelay - ShutterDelay)
+    repump_679_shutter.go_high(t_rp_switch - ShutterDelay)
+    repump_679_RF_TTL.go_high(t_rp_switch)
+
+    repump_688_RF_TTL.go_low(t_rp_switch)
+    repump_688_shutter.go_low(t_rp_switch + AOMDelay)
+    repump_688_RF_TTL.go_high(t_rp_switch + AOMDelay + ShutterDelay)
+
+    repump_707_TTL.go_low(t_rp_switch - ShutterDelay - AOMDelay)
+    repump_707_shutter.go_high(t_rp_switch - ShutterDelay)
+    repump_707_TTL.go_high(t_rp_switch)
+
 
 def shelving_pulse(t):
     repump_679_RF_TTL.go_low(t - ShutterDelay - AOMDelay)                                   # Turn off 679 repump AOM
@@ -317,20 +401,44 @@ def shelving_pulse(t):
     red_sideband_RF_TTL.go_low(t - ShutterDelay - AOMDelay)    # Turn off 689 sideband AOM
     red_sideband_shutter.go_high(t - ShutterDelay)              # Open 689 sideband shutter  
     red_sideband_RF_TTL.go_high(t)                              # Turn on 689 sideband AOM 
-
-
     red_sideband_RF_TTL.go_low(t + ShelvingPulseDuration)        # Turn off 689 sideband AOM
     red_sideband_shutter.go_low(t + ShelvingPulseDuration + AOMDelay)     # Close 689 sideband shutter
     red_sideband_RF_TTL.go_high(t + ShelvingPulseDuration + AOMDelay + ShutterDelay)    # Open 689 sideband AOM
 
-    repump_679_RF_TTL.go_low(t + ShelvingPulseDuration + ShelvingHoldTime)           # Turn off 679 repump AOM
-    repump_679_shutter.go_high(t + ShelvingPulseDuration + ShelvingHoldTime)       # Open 679 repump shutter
-    repump_679_RF_TTL.go_high(t + ShelvingPulseDuration + ShelvingHoldTime + AOMDelay + ShutterDelay)       # Turn on 679 repump AOM
+    repump_679_RF_TTL.go_low(t + ShelvingPulseDuration + ShelvingHoldTime - (AOMDelay + ShutterDelay))           # Turn off 679 repump AOM
+    repump_679_shutter.go_high(t + ShelvingPulseDuration + ShelvingHoldTime - (AOMDelay + ShutterDelay))       # Open 679 repump shutter
+    repump_679_RF_TTL.go_high(t + ShelvingPulseDuration + ShelvingHoldTime)       # Turn on 679 repump AOM
 
-    repump_688_RF_TTL.go_high(t + ShelvingPulseDuration + ShelvingHoldTime)           # Turn off 688 repump AOM
+    repump_688_RF_TTL.go_low(t + ShelvingPulseDuration + ShelvingHoldTime)           # Turn off 688 repump AOM
     repump_688_shutter.go_low(t + ShelvingPulseDuration + ShelvingHoldTime)           # Close 688 repump shutter
     repump_688_RF_TTL.go_high(t + ShelvingPulseDuration + ShelvingHoldTime + AOMDelay + ShutterDelay)      # Turn on 688 repump AOM
 
+
+# def clock_shelving_pulse(t):
+#     #turn off 679 and 707 repumps
+#     repump_679_RF_TTL.go_low(t - ShutterDelay - AOMDelay)                      # Turn off 679 repump AOM
+#     repump_679_shutter.go_low(t - ShutterDelay)                               # Close 679 repump shutter
+#     repump_679_RF_TTL.go_high(t)                                   # Turn on 679 repump AOM
+
+#     repump_707_RF_TTL.go_low(t - ShutterDelay - AOMDelay)                      # Turn off 679 repump AOM
+#     repump_707_shutter.go_low(t - ShutterDelay)                               # Close 679 repump shutter
+#     repump_707_RF_TTL.go_high(t)                                   # Turn on 679 repump AOM
+
+#     clock_rf_ttl.go_low(t - ShutterDelay - AOMDelay)                  # Turn on clock aom (this should get added to initialize later to get turned on with shutter closed of course)
+#     clock_shutter.go_high(t - ShutterDelay)                           # Open clock shutter (this should also get added to initialize)     
+#     clock_rf_ttl.go_high(t)                                           # Turn on clock aom
+#     clock_rf_ttl.go_low(t + ClockPulseDuration)                       # Turn off clock aom after the pulse duration
+#     clock_shutter.go_low(t + ClockPulseDuration + AOMDelay)           # Close clock shutter
+#     clock_rf_ttl.go_high(t + ClockPulseDuration + AOMDelay + ShutterDelay)  # Turn clock aom back on
+
+#     #Turn 679 and 707 back on
+#     repump_679_RF_TTL.go_low(t + ClockPulseDuration + ClockShelvingHoldTIme)                                        # Turn off 679 repump AOM
+#     repump_679_shutter.go_high(t + ClockPulseDuration + ClockShelvingHoldTIme + AOMDelay)                          # Open 679 repump shutter
+#     repump_679_RF_TTL.go_high(t + ClockPulseDuration + ClockShelvingHoldTIme + AOMDelay + ShutterDelay)            # Turn on 679 repump AOM
+
+#     repump_707_RF_TTL.go_low(t + ClockPulseDuration + ClockShelvingHoldTIme)                                        # Turn off 707 repump AOM
+#     repump_707_shutter.go_high(t + ClockPulseDuration + ClockShelvingHoldTIme + AOMDelay)                          # Open 707 repump shutter
+#     repump_707_RF_TTL.go_high(t + ClockPulseDuration + ClockShelvingHoldTIme + AOMDelay + ShutterDelay)            # Turn on 707 repump AOM
 
 
 ################################################################################
@@ -384,3 +492,20 @@ def dumb_wait(label,t,timeout=.04,delay=.0105):
     dt += delay
     dt += wait(label=label + '-3',t=t+dt,timeout=timeout)
     return dt
+################################################################################
+#   H-Bridge
+################################################################################
+def hbridge_pulse_start(t):
+   #mot_field.ramp(t, HBridgeRampTimeA, RedMOTFieldFinal, 0, 500000, units='A') 
+   current_lock_enable.go_high(t)
+   h_bridge_pol.go_high(t)
+   mot_field.ramp(t + HBridgeSwitchDelay, HBridgeRampTime, 0, HelmholtzField, 500000, units='A')
+   return(HBridgeSwitchDelay + HBridgeRampTime)
+
+def hbridge_pulse_finish(t):
+   #mot_field.ramp(t, HBridgeRampTimeC, HelmholtzField, 0, 500000, units='A')
+   mot_field.constant(t,0, units='A')
+   h_bridge_pol.go_low(t + HBridgeSwitchDelay)
+   mot_field.constant(t + 2*HBridgeSwitchDelay, BlueMOTField, units='A')
+   #mot_field.ramp(t + HBridgeRampTimeC + HBridgeSwitchDelay ,HBridgeRampTimeD, 0, BlueMOTField, 500000, units='A')
+   return(2*HBridgeSwitchDelay)
